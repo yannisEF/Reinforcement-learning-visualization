@@ -1,0 +1,3 @@
+Ces runs ont été réalisés avec un algorithme TD3.
+Les résultats supposent un problème de "deceptive gradient".
+D'autres runs à venir prochainement.

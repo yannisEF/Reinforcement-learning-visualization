@@ -1,0 +1,4 @@
+Apprentissage :
+-TD3
+-itérations : 300.000
+-RL agent fitness : 48

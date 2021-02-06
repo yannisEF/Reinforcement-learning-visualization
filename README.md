@@ -1,5 +1,4 @@
 # P_androide
-
 Visualisation du paysage de valeur pour mieux comprendre l’apprentissage par renforcement
 
 Un projet P-Androide 2019-2020 a consisté à mettre au point des outils de visualisation du paysage de valeur et des trajectoires de descente de gradient pour mieux comprendre la dynamique des algorithmes d’apprentissage par renforcement. Ces outils ont été appliqués à l’environnement de contrôle classique Swimmer et en utilisant l’algorithme Twin Delayed Deterministic Gradient (TD3).

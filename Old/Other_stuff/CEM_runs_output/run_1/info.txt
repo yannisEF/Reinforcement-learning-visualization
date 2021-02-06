@@ -1,0 +1,6 @@
+Apprentissage :
+-réseau de neurones : 30*40
+-itérations : 20.000
+-récompense de l'acteur pendant l'apprentissage : 31
+-Actor Mu Average Fitness:14.32385374478557
+
