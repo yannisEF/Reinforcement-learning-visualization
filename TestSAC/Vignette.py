@@ -4,7 +4,7 @@ import numpy as np
 from copy import deepcopy
 from models import RLNN
 import matplotlib.pyplot as plt
-import torch
+import torch as t 
 import torch.nn as nn
 import torch.nn.functional as F
 import argparse
@@ -13,11 +13,11 @@ import gym.spaces
 from memory import Memory
 from util import *
 
-USE_CUDA = torch.cuda.is_available()
+USE_CUDA = t.cuda.is_available()
 if USE_CUDA:
-    FloatTensor = torch.cuda.FloatTensor
+    FloatTensor = t.cuda.FloatTensor
 else:
-    FloatTensor = torch.FloatTensor
+    FloatTensor = t.FloatTensor
 
 
 # model definition
