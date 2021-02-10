@@ -7,16 +7,14 @@ import torch.nn as nn
 import gym
 
 # configurations
-env = gym.make("Pendulum-v0")
-observe_dim = 3
+env = gym.make("Swimmer-v2")
+observe_dim = 8
 action_dim = 1
 action_range = 2
-max_episodes = 1000
+max_episodes = 10
 max_steps = 200
 noise_param = (0, 0.2)
 noise_mode = "normal"
-solved_reward = -150
-solved_repeat = 5
 
 
 def atanh(x):
@@ -75,6 +73,20 @@ class Actor(nn.Module):
         # environment.
         return act, act_log_prob, act_entropy
 
+    def save_model(self, output, net_name):
+        t.save(self.state_dict(),'{}/{}.pkl'.format(output, net_name))
+    
+    def load_model(self, filename, net_name):
+        """
+        Loads the model
+        """
+        if filename is None:
+            return
+
+        self.load_state_dict(
+            torch.load('{}/{}.pkl'.format(filename, net_name),
+                       map_location=lambda storage, loc: storage)
+        )
 
 class Critic(nn.Module):
     def __init__(self, state_dim, action_dim):
@@ -121,13 +133,13 @@ if __name__ == "__main__":
                 action = sac.act({"state": old_state})[0]
                 state, reward, terminal, _ = env.step(action.numpy())
                 state = t.tensor(state, dtype=t.float32).view(1, observe_dim)
-                total_reward += reward[0]
+                total_reward += reward
 
                 sac.store_transition({
                     "state": {"state": old_state},
                     "action": {"action": action},
                     "next_state": {"state": state},
-                    "reward": reward[0],
+                    "reward": reward,
                     "terminal": terminal or step == max_steps
                 })
 
@@ -141,11 +153,5 @@ if __name__ == "__main__":
                                  total_reward * 0.1)
         logger.info("Episode {} total reward={:.2f}"
                     .format(episode, smoothed_total_reward))
-
-        if smoothed_total_reward > solved_reward:
-            reward_fulfilled += 1
-            if reward_fulfilled >= solved_repeat:
-                logger.info("Environment solved!")
-                exit(0)
-        else:
-            reward_fulfilled = 0
+                    
+    actor.save_model("Testouy","camarche")

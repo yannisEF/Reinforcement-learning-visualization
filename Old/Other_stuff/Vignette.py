@@ -1,3 +1,5 @@
+# coding: utf-8
+
 import numpy as np
 from copy import deepcopy
 from models import RLNN
@@ -19,60 +21,57 @@ else:
 
 
 class Actor(RLNN):
+    def __init__(self, state_dim, action_dim, action_range):
+        super(Actor, self).__init__(state_dim, action_dim, action_range)
 
-    def __init__(self, state_dim, action_dim, max_action, args):
-        super(Actor, self).__init__(state_dim, action_dim, max_action)
+        self.fc1 = nn.Linear(state_dim, 16)
+        self.fc2 = nn.Linear(16, 16)
+        self.mu_head = nn.Linear(16, action_dim)
+        self.sigma_head = nn.Linear(16, action_dim)
+        self.action_range = action_range
 
-        self.l1 = nn.Linear(state_dim, 400)
-        self.l2 = nn.Linear(400, 300)
-        self.l3 = nn.Linear(300, action_dim)
+    def forward(self, state, action=None):
+        a = t.relu(self.fc1(state))
+        a = t.relu(self.fc2(a))
+        mu = self.mu_head(a)
+        sigma = softplus(self.sigma_head(a))
+        dist = Normal(mu, sigma)
+        act = (atanh(action / self.action_range)
+               if action is not None
+               else dist.rsample())
+        act_entropy = dist.entropy()
 
-        if args.layer_norm:
-            self.n1 = nn.LayerNorm(400)
-            self.n2 = nn.LayerNorm(300)
-        self.layer_norm = args.layer_norm
+        # the suggested way to confine your actions within a valid range
+        # is not clamping, but remapping the distribution
+        act_log_prob = dist.log_prob(act)
+        act_tanh = t.tanh(act)
+        act = act_tanh * self.action_range
 
-        self.optimizer = torch.optim.Adam(self.parameters(), lr=args.actor_lr)
-        self.tau = args.tau
-        self.discount = args.discount
-        self.state_dim = state_dim
-        self.action_dim = action_dim
-        self.max_action = max_action
+        # the distribution remapping process used in the original essay.
+        act_log_prob -= t.log(self.action_range *
+                              (1 - act_tanh.pow(2)) +
+                              1e-6)
+        act_log_prob = act_log_prob.sum(1, keepdim=True)
 
-    def forward(self, x):
+        # If your distribution is different from "Normal" then you may either:
+        # 1. deduce the remapping function for your distribution and clamping
+        #    function such as tanh
+        # 2. clamp you action, but please take care:
+        #    1. do not clamp actions before calculating their log probability,
+        #       because the log probability of clamped actions might will be
+        #       extremely small, and will cause nan
+        #    2. do not clamp actions after sampling and before storing them in
+        #       the replay buffer, because during update, log probability will
+        #       be re-evaluated they might also be extremely small, and network
+        #       will "nan". (might happen in PPO, not in SAC because there is
+        #       no re-evaluation)
+        # Only clamp actions sent to the environment, this is equivalent to
+        # change the action reward distribution, will not cause "nan", but
+        # this makes your training environment further differ from you real
+        # environment.
+        return act, act_log_prob, act_entropy
 
-        if not self.layer_norm:
-            x = torch.tanh(self.l1(x))
-            x = torch.tanh(self.l2(x))
-            x = self.max_action * torch.tanh(self.l3(x))
-
-        else:
-            x = torch.tanh(self.n1(self.l1(x)))
-            x = torch.tanh(self.n2(self.l2(x)))
-            x = self.max_action * torch.tanh(self.l3(x))
-
-        return x
-
-    def update(self, memory, batch_size, critic, actor_t):
-
-        # Sample replay buffer
-        states, _, _, _, _ = memory.sample(batch_size)
-
-        # Compute actor loss
-        if args.use_td3:
-            actor_loss = -critic(states, self(states))[0].mean()
-        else:
-            actor_loss = -critic(states, self(states)).mean()
-
-        # Optimize the actor
-        self.optimizer.zero_grad()
-        actor_loss.backward()
-        self.optimizer.step()
-
-        # Update the frozen target models
-        for param, target_param in zip(self.parameters(), actor_t.parameters()):
-            target_param.data.copy_(
-                self.tau * param.data + (1 - self.tau) * target_param.data)
+			
 
 def evaluate(actor, env, memory=None, n_episodes=1, random=False, noise=None, render=False, maxiter=1000): #init evaluation
     """
@@ -82,9 +81,9 @@ def evaluate(actor, env, memory=None, n_episodes=1, random=False, noise=None, re
     """
 
     if not random:
-        def policy(state): # Prise de décision de l'action à effectuer => ça nous intéresse
+        def policy(state):
             state = FloatTensor(state.reshape(-1))
-            action = actor(state).cpu().data.numpy().flatten() # ???
+            action = actor(state).cpu().data.numpy().flatten()
 
             if noise is not None:
                 action += noise.sample()
@@ -321,18 +320,18 @@ if __name__ == "__main__":
 
 	parser = argparse.ArgumentParser()
 	parser.add_argument('--env', default='Swimmer-v2', type=str)
-	parser.add_argument('--tau', default=0.005, type=float) #for initializing the actor, not used really
+	parser.add_argument('--tau', default=1, type=float) #for initializing the actor, not used really
 	parser.add_argument('--layer_norm', dest='layer_norm', action='store_true') #for initialising the actor
 	parser.add_argument('--nb_lines', default=60, type=int)# number of directions generated,good value : precise 100, fast 60, ultrafast 50
 	parser.add_argument('--discount', default=0.99, type=float) #for initializing the actor, not used really
 	parser.add_argument('--minalpha', default=0.0, type=float)# start value for alpha, good value : 0.0
-	parser.add_argument('--maxalpha', default=10, type=float)# end value for alpha, good value : precise 120, fast 100, ultrafast 100
-	parser.add_argument('--stepalpha', default=0.25, type=float)# step for alpha in the loop, good value : precise 1, fast 2, ultrafast 3
+	parser.add_argument('--maxalpha', default=10, type=float)# end value for alpha, good value : large 100, around actor 10
+	parser.add_argument('--stepalpha', default=0.25, type=float)# step for alpha in the loop, good value : precise 0.5 or 1, less precise 2 or 3
 	parser.add_argument('--eval_maxiter', default=1000, type=float)# number of steps for the evaluation. Depends on environment.
 	parser.add_argument('--min_colormap', default=-10, type=int)# min score value for colormap used (depend of benchmark used)
 	parser.add_argument('--max_colormap', default=360, type=int)# max score value for colormap used (depend of benchmark used)
 	parser.add_argument('--proba', default=0.1, type=float)# proba of choosing an element of the actor parameters for the direction, if using the choice method.
-	parser.add_argument('--basename', default="actor_td3_2_step_1_", type=str)# base (files prefix) name of the actor pkl files to load
+	parser.add_argument('--basename', default="ok", type=str)# base (files prefix) name of the actor pkl files to load
 	parser.add_argument('--min_iter', default=1000, type=int)# iteration (file suffix) of the first actor pkl files to load
 	parser.add_argument('--max_iter', default=200000, type=int)# iteration (file suffix) of the last actor pkl files to load
 	parser.add_argument('--step_iter', default=1000, type=int)# iteration step between two consecutive actor pkl files to load
@@ -349,7 +348,7 @@ if __name__ == "__main__":
 	state_dim = env.observation_space.shape[0]
 	action_dim = env.action_space.shape[0]
 	max_action = int(env.action_space.high[0])
-	actor = Actor(state_dim, action_dim, max_action, args)
+	actor = Actor(state_dim, action_dim, max_action)
 	theta0 = actor.get_params()
 	num_params = len(theta0)
 	v_min_fit = args.min_colormap
@@ -371,7 +370,7 @@ if __name__ == "__main__":
 		filename = filename_list[indice_file]
 		# Loading actor params
 		print("STARTING : "+str(filename))
-		actor = Actor(state_dim, action_dim, max_action, args) #removed to study start point only
+		actor = Actor(state_dim, action_dim, max_action) #removed to study start point only
 		actor.load_model(args.filename, filename)
 		theta0 = actor.get_params()
 		if(len(last_actor_params)>0):
