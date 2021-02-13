@@ -16,7 +16,7 @@ eval_env = gym.make("Swimmer-v2")
 # Train the agent
 model.learn(total_timesteps=int(10000))
 # Save the agent
-model.save("dqn_lunar")
-del model  # delete trained model to demonstrate loading
+#model.save("dqn_lunar")
+#del model  # delete trained model to demonstrate loading
 
 
