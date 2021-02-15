@@ -9,7 +9,9 @@ import gym
 
 from stable_baselines3 import SAC
 from stable_baselines3.common.evaluation import evaluate_policy
+from collections import OrderedDict
 
+from util import to_numpy
 
 def getPointsChoice(init_params,num_params, minalpha, maxaplha, stepalpha, prob):
 	"""
@@ -147,13 +149,23 @@ def euclidienne(x,y):
     """
     # Params :
 
-    x,y : vectors of the same size
+    x : vect or OrderedDict of parameters
+	y : vect
 	
     # Function:
 
     Returns a simple euclidian distance between x and y.
     """
-    return np.linalg.norm(np.array(x)-np.array(y))
+	
+    nouvX = x
+	# If we entered as input a model's parameters
+    if type(x) is dict:
+		# Get the OrderedDict of weights
+        dictPolicy = x["policy"]
+
+        nouvX = deepcopy(np.hstack([to_numpy(v).flatten() for v in dictPolicy.values()]))
+	
+    return np.linalg.norm(np.array(nouvX)-np.array(y))
 
 def order_all_by_proximity(vectors):
     """
@@ -230,7 +242,7 @@ if __name__ == "__main__":
 
 	# Creating environment and initialising model and parameters
 	print("Creating environment")
-	env = gym.make(args.env) #on Swimmer, 1/3 eval is enouth to have a good estimation of the reward of an model
+	env = gym.make(args.env)
 	state_dim = env.observation_space.shape[0]
 	action_dim = env.action_space.shape[0]
 	max_action = int(env.action_space.high[0])
@@ -329,7 +341,3 @@ if __name__ == "__main__":
 		plt.imsave(args.base_output_filename+"_"+str(filename)+".png",final_image, vmin=v_min_fit, vmax=v_max_fit, format='png')
 
 	env.close()
-
-
-
-	
