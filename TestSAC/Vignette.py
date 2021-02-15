@@ -1,139 +1,21 @@
 # coding: utf-8
 
 import numpy as np
-from copy import deepcopy
-from models import RLNN
 import matplotlib.pyplot as plt
-import torch as t 
-import torch.nn as nn
-import torch.nn.functional as F
 import argparse
+from copy import deepcopy
+
 import gym
-import gym.spaces
-from memory import Memory
-from util import *
 
-USE_CUDA = t.cuda.is_available()
-if USE_CUDA:
-    FloatTensor = t.cuda.FloatTensor
-else:
-    FloatTensor = t.FloatTensor
-
-
-# model definition
-class Actor(RLNN):
-    def __init__(self, state_dim, action_dim, action_range):
-        super(Actor, self).__init__(state_dim, action_dim, action_range)
-
-        self.fc1 = nn.Linear(state_dim, 16)
-        self.fc2 = nn.Linear(16, 16)
-        self.mu_head = nn.Linear(16, action_dim)
-        self.sigma_head = nn.Linear(16, action_dim)
-        self.action_range = action_range
-
-    def forward(self, state, action=None):
-        a = t.relu(self.fc1(state))
-        a = t.relu(self.fc2(a))
-        mu = self.mu_head(a)
-        sigma = softplus(self.sigma_head(a))
-        dist = Normal(mu, sigma)
-        act = (atanh(action / self.action_range)
-               if action is not None
-               else dist.rsample())
-        act_entropy = dist.entropy()
-
-        # the suggested way to confine your actions within a valid range
-        # is not clamping, but remapping the distribution
-        act_log_prob = dist.log_prob(act)
-        act_tanh = t.tanh(act)
-        act = act_tanh * self.action_range
-
-        # the distribution remapping process used in the original essay.
-        act_log_prob -= t.log(self.action_range *
-                              (1 - act_tanh.pow(2)) +
-                              1e-6)
-        act_log_prob = act_log_prob.sum(1, keepdim=True)
-
-        # If your distribution is different from "Normal" then you may either:
-        # 1. deduce the remapping function for your distribution and clamping
-        #    function such as tanh
-        # 2. clamp you action, but please take care:
-        #    1. do not clamp actions before calculating their log probability,
-        #       because the log probability of clamped actions might will be
-        #       extremely small, and will cause nan
-        #    2. do not clamp actions after sampling and before storing them in
-        #       the replay buffer, because during update, log probability will
-        #       be re-evaluated they might also be extremely small, and network
-        #       will "nan". (might happen in PPO, not in SAC because there is
-        #       no re-evaluation)
-        # Only clamp actions sent to the environment, this is equivalent to
-        # change the action reward distribution, will not cause "nan", but
-        # this makes your training environment further differ from you real
-        # environment.
-        return act, act_log_prob, act_entropy
-
-
-def evaluate(actor, env, memory=None, n_episodes=1, random=False, noise=None, render=False, maxiter=1000): #init evaluation
-    """
-    Computes the score of an actor on a given number of runs, on a giver number of steps (1000 for full episode evaluation,
-    500 for 1/2 épisodes evaluations...)
-    fills the replay buffer if given (not None)
-    """
-
-    if not random:
-        def policy(state):
-            state = FloatTensor(state.reshape(-1))
-            action = actor(state).cpu().data.numpy().flatten()
-
-            if noise is not None:
-                action += noise.sample()
-
-            return np.clip(action, -max_action, max_action)
-
-    else:
-        def policy(state):
-            return env.action_space.sample()
-
-    scores = []
-    steps = 0
-
-    for _ in range(n_episodes):
-        score = 0
-        obs = deepcopy(env.reset())
-        done = False
-        iter_nb = 0
-        while not done and iter_nb<maxiter:
-            iter_nb+=1
-            # get next action and act
-            action = policy(obs)
-            n_obs, reward, done, info = env.step(action)
-            done_bool = 0 if steps + \
-                1 == env._max_episode_steps else float(done)
-            score += reward
-            steps += 1
-
-            # adding in memory
-            if memory is not None:
-                memory.add((obs, n_obs, action, reward, done_bool))
-            obs = n_obs
-
-            # render if needed
-            if render:
-                env.render()
-
-            # reset when done
-            if done:
-                env.reset()
-        scores.append(score)
-
-    return np.mean(scores), steps
+from stable_baselines3 import SAC
+from stable_baselines3.common.evaluation import evaluate_policy
 
 
 def getPointsChoice(init_params,num_params, minalpha, maxaplha, stepalpha, prob):
 	"""
 	# Params :
 
-	init_params : actor parameters to study around (array)
+	init_params : model parameters to study around (array)
 	num_params : the length of the parameters array (int)
 	minalpha : the start value for alpha parameter (float)
 	maxalpha : the end/highest value for alpha parameter (float)
@@ -162,7 +44,7 @@ def getPointsUniform(init_params,num_params, minalpha, maxaplha,stepalpha):
 	"""
 	# Params :
 
-	init_params : actor parameters to study around (array)
+	init_params : model parameters to study around (array)
 	num_params : the length of the parameters array (int)
 	minalpha : the start value for alpha parameter (float)
 	maxalpha : the end/highest value for alpha parameter (float)
@@ -189,7 +71,7 @@ def getPointsDirection(init_params,num_params, minalpha, maxaplha,stepalpha, d):
 	"""
 	# Params :
 
-	init_params : actor parameters to study around (array)
+	init_params : model parameters to study around (array)
 	num_params : the length of the parameters array (int)
 	minalpha : the start value for alpha parameter (float)
 	maxalpha : the end/highest value for alpha parameter (float)
@@ -216,7 +98,7 @@ def getPointsUniformCentered(init_params,num_params, minalpha, maxaplha,stepalph
 	"""
 	# Params :
 
-	init_params : actor parameters to study around (array)
+	init_params : model parameters to study around (array)
 	num_params : the length of the parameters array (int)
 	minalpha : the start value for alpha parameter (float)
 	maxalpha : the end/highest value for alpha parameter (float)
@@ -224,7 +106,7 @@ def getPointsUniformCentered(init_params,num_params, minalpha, maxaplha,stepalph
 	
 	# Function:
 
-	Returns parameters around base_params on direction choosen by uniform random draw on param dimensions in [-1,1).
+	Returns parameters around base_params on direction choosen by uniform random draw on param dimensions in [-1,1].
 	Parameters starts from base_params to base_params+maxalpha on one side of the direction and
 	from base_params to base_params-maxaplha on the other side. The step of alpha is stepalpha. 
 	This method gives bad visualisation.
@@ -317,140 +199,133 @@ def compute_best_insert_place(vect, ordered_vectors):
 if __name__ == "__main__":
 
 	print("Parsing arguments")
-
 	parser = argparse.ArgumentParser()
+
+	# Model parameters
 	parser.add_argument('--env', default='Swimmer-v2', type=str)
-	parser.add_argument('--tau', default=0.005, type=float) #for initializing the actor, not used really
-	parser.add_argument('--layer_norm', dest='layer_norm', action='store_true') #for initialising the actor
+	parser.add_argument('--policy', default = 'MlpPolicy', type=str) # Policy of the model
+	parser.add_argument('--tau', default=0.005, type=float) # the soft update coefficient (“Polyak update”, between 0 and 1)
+	parser.add_argument('--gamma', default=0.99, type=float) # the discount fmodel
+	parser.add_argument('--learning_rate', default=0.0003, type=float) #learning rate for adam optimizer, the same learning rate will be used
+																 # for all networks (Q-Values, model and Value function) it can be a function
+																 #  of the current progress remaining (from 1 to 0)
+
+	# Tools parameters
 	parser.add_argument('--nb_lines', default=60, type=int)# number of directions generated,good value : precise 100, fast 60, ultrafast 50
-	parser.add_argument('--discount', default=0.99, type=float) #for initializing the actor, not used really
 	parser.add_argument('--minalpha', default=0.0, type=float)# start value for alpha, good value : 0.0
-	parser.add_argument('--maxalpha', default=10, type=float)# end value for alpha, good value : large 100, around actor 10
+	parser.add_argument('--maxalpha', default=10, type=float)# end value for alpha, good value : large 100, around model 10
 	parser.add_argument('--stepalpha', default=0.25, type=float)# step for alpha in the loop, good value : precise 0.5 or 1, less precise 2 or 3
 	parser.add_argument('--eval_maxiter', default=1000, type=float)# number of steps for the evaluation. Depends on environment.
 	parser.add_argument('--min_colormap', default=-10, type=int)# min score value for colormap used (depend of benchmark used)
 	parser.add_argument('--max_colormap', default=360, type=int)# max score value for colormap used (depend of benchmark used)
-	parser.add_argument('--proba', default=0.1, type=float)# proba of choosing an element of the actor parameters for the direction, if using the choice method.
-	parser.add_argument('--basename', default="actor_sac_2_step_1_", type=str)# base (files prefix) name of the actor pkl files to load
-	parser.add_argument('--min_iter', default=1000, type=int)# iteration (file suffix) of the first actor pkl files to load
-	parser.add_argument('--max_iter', default=200000, type=int)# iteration (file suffix) of the last actor pkl files to load
-	parser.add_argument('--step_iter', default=1000, type=int)# iteration step between two consecutive actor pkl files to load
+
+	# File management
+	parser.add_argument('--directory', default="TEST_5", type=str)# name of the directory containing the models to load
+	parser.add_argument('--basename', default="model_sac_step_1_", type=str)# file prefix for the loaded model
+	parser.add_argument('--min_iter', default=1000, type=int)# iteration (file suffix) of the first model
+	parser.add_argument('--max_iter', default=200000, type=int)# iteration (file suffix) of the last model
+	parser.add_argument('--step_iter', default=1000, type=int)# iteration step between two consecutive models
 	parser.add_argument('--base_output_filename', default="vignette_output", type=str)# name of the output file to create
-	parser.add_argument('--epsilon', default=10, type=float) #for initialising the actor, not used really
-	parser.add_argument('--filename', default="TEST_5", type=str)# name of the directory containing the actors pkl files to load
-	parser.add_argument('--actor_lr', default=0.001, type=float) #for initializing the actor, not used really
-	parser.add_argument('--critic_lr', default=0.001, type=float) #for initializing the actor, not used really
 	args = parser.parse_args()
 
-	# Creating environment and initialising actor and parameters
+	# Creating environment and initialising model and parameters
 	print("Creating environment")
-	env = gym.make(args.env) #on Swimmer, 1/3 eval is enouth to have a good estimation of the reward of an actor
+	env = gym.make(args.env) #on Swimmer, 1/3 eval is enouth to have a good estimation of the reward of an model
 	state_dim = env.observation_space.shape[0]
 	action_dim = env.action_space.shape[0]
 	max_action = int(env.action_space.high[0])
-	actor = Actor(state_dim, action_dim, max_action)
-	theta0 = actor.get_params()
+
+	# Instantiating the model
+	model = SAC(args.policy, args.env,
+				learning_rate=args.learning_rate,
+				tau=args.tau,
+				gamma=args.gamma)
+	theta0 = model.get_parameters()
 	num_params = len(theta0)
+
+	# Plotting parameters
 	v_min_fit = args.min_colormap
 	v_max_fit = args.max_colormap
 	print("VMAX :"+str(v_max_fit))
 
-	# Choosing directions
-	#D = np.random.rand(args.nb_lines,num_params)
+	# Choosing directions to follow
 	D = getDirectionsMuller(args.nb_lines,num_params)
-
-	# Ordering the directions :
+	# 	Ordering the directions :
 	D = order_all_by_proximity(D)
 
-	# Name of the actor files to analyse consecutively with the same set of directions: 
-	filename_list = [args.basename+str(i) for i in range(args.min_iter,args.max_iter+args.step_iter,args.step_iter)]# generate actor file list to load
-	# Compute fitness over these directions :
-	last_actor_params = [] #save the last parameters, to compute direction followed from the previous actor
-	for indice_file in range(len(filename_list)):
-		filename = filename_list[indice_file]
-		# Loading actor params
-		print("STARTING : "+str(filename))
-		actor = Actor(state_dim, action_dim, max_action) #removed to study start point only
-		actor.load_model(args.filename, filename)
-		theta0 = actor.get_params()
-		if(len(last_actor_params)>0):
-			previous = last_actor_params
-			base_vect = theta0 - previous #compute direction followed from the previous actor
-			last_actor_params = theta0 #update last_actor_params
-		else:
-			base_vect = theta0 #if first actor (no previous), considering null vector is the previous
-			last_actor_params = theta0 #update last_actor_params
-		print("params : "+str(theta0))
-		# evaluate the actor
-		init_score, _ = evaluate(actor, env, maxiter=args.eval_maxiter)
-		epsilon = args.epsilon
-		print("Actor initial fitness : "+str(init_score))
-		# Running geometry study around the actor
-		print("Starting study aroud...")
-		theta_plus_scores = []
-		theta_minus_scores = []
-		image = []
-		base_image = []
-		
-		### Direction followed from precedent actor :
-		length_dist = euclidienne(base_vect, np.zeros(len(base_vect)))
-		d= base_vect / length_dist #reduce to unit vector
-		theta_plus, theta_minus = getPointsDirection(theta0,num_params, args.minalpha, args.maxalpha, args.stepalpha, d)
-		temp_scores_theta_plus = []
-		temp_scores_theta_minus = []
-		for param_i in range(len(theta_plus)):
-			# we evaluate the actor (theta_plus) :
-			actor.set_params(theta_plus[param_i])
-			score_plus,_ = evaluate(actor, env,maxiter=args.eval_maxiter)
-			temp_scores_theta_plus.append(score_plus)
-			# we evaluate the actor (theta_minus) :
-			actor.set_params(theta_minus[param_i])
-			score_minus,_ = evaluate(actor, env,maxiter=args.eval_maxiter)
-			temp_scores_theta_minus.append(score_minus)
-		#we invert scores on theta_minus list to display symetricaly the image with init params at center,
-		# theta_minus side on the left and to theta_plus side on the right
-		buff_inverted = np.flip(temp_scores_theta_minus)
-		plot_pixels = np.concatenate((buff_inverted,[init_score],temp_scores_theta_plus))
-		base_image.append(plot_pixels)#adding these results as a line in the output image
-		#saving the score values
-		theta_plus_scores.append(temp_scores_theta_plus)
-		theta_minus_scores.append(temp_scores_theta_minus)
+	# Name of the model files to analyse consecutively with the same set of directions: 
+	filename_list = [args.basename+str(i) for i in range(args.min_iter,
+														args.max_iter+args.step_iter,
+														args.step_iter)]
 
-		### Directions chosen
-		for step in range(len(D)) :
-			print("step "+str(step))
-			#computing actor parameters
-			d = D[step]
-			theta_plus, theta_minus = getPointsDirection(theta0,num_params, args.minalpha, args.maxalpha, args.stepalpha, d)
-			temp_scores_theta_plus = []
-			temp_scores_theta_minus = []
+	# Compute fitness over these directions :
+	previous_theta = None # Remembers theta
+	for indice_file in range(len(filename_list)):
+
+		# Change which model to load
+		filename = filename_list[indice_file]
+
+		# Load the model
+		print("STARTING : "+str(filename))
+		model.load("{}/{}".format(args.directory, filename))
+		
+		# Get the new parameters
+		theta0 = model.get_parameters()
+		base_vect = theta0 if previous_theta is None else theta0 - previous_theta
+		previous_theta = theta0
+		print("params : "+str(theta0))
+
+		# Evaluate the Model : mean, std
+		init_score, _ = evaluate_policy(model, env, n_eval_episodes=10)
+		print("model initial fitness : "+str(init_score))
+
+		# Study the geometry around the model
+		print("Starting study aroud...")
+		theta_plus_scores, theta_minus_scores = [], []
+		image, base_image = [], []
+
+		#	Norm of the model
+		length_dist = euclidienne(base_vect, np.zeros(len(base_vect)))
+		# 		Direction taken by the model (normalized)
+		d = base_vect / length_dist
+
+		# Iterating over all directions, -1 is the direction that was originally taken by the model
+		for step in range(-1,len(D)):
+			# New parameters following the direction
+			theta_plus, theta_minus = getPointsDirection(theta0, num_params, args.minalpha, args.maxalpha, args.stepalpha, d)
+			
+			# Get the next direction
+			if step != -1:	d = D[step]
+
+			# Evaluate using new parameters
+			scores_plus, scores_minus = [], []
 			for param_i in range(len(theta_plus)):
-				# we evaluate the actor (theta_plus) :
-				actor.set_params(theta_plus[param_i])
-				score_plus,_ = evaluate(actor, env,maxiter=args.eval_maxiter)
-				#print("score plus : "+str(score_plus))
-				temp_scores_theta_plus.append(score_plus)
-				# we evaluate the actor (theta_minus) :
-				actor.set_params(theta_minus[param_i])
-				score_minus,_ = evaluate(actor, env,maxiter=args.eval_maxiter)
-				temp_scores_theta_minus.append(score_minus)
-			#we invert scores on theta_minus list to display symetricaly the image with init params at center,
-			# theta_minus side on the left and to theta_plus side on the right
-			buff_inverted = np.flip(temp_scores_theta_minus)
-			plot_pixels = np.concatenate((buff_inverted,[init_score],temp_scores_theta_plus))
-			image.append(plot_pixels)#adding these results as a line in the output image
-			#saving the score values
-			theta_plus_scores.append(temp_scores_theta_plus)
-			theta_minus_scores.append(temp_scores_theta_minus)
-		#assemble picture from different parts (choosen directions, dark line for separating, and followed direction)
+				# 	Go forward in the direction
+				model.set_params(theta_plus[param_i])
+				#		Get the new performance
+				scores_plus.append(evaluate_policy(model, env, n_eval_episodes=args.eval_maxiter)[0])
+				# 	Go backward in the direction
+				model.set_params(theta_minus[param_i])
+				#		Get the new performance
+				scores_minus.append(evaluate_policy(model, env, n_eval_episodes=args.eval_maxiter[0]))
+
+			# Inverting scores for a symetrical Vignette (theta_minus going left, theta_plus going right)
+			scores_minus = scores_minus[::-1]
+			# 	Adding the line to the image
+			if step == -1:	base_image.append(scores_minus + [init_score] + scores_plus)
+			else:	image.append(scores_minus + [init_score] + scores_plus)
+
+		# Assemble the image
+		# 	Dark line separating the base and the directions
 		separating_line = np.zeros(len(base_image[0]))
 		last_params_marker = int(length_dist/args.stepalpha)
 		marker_pixel = int((len(base_image[0])-1)/2-last_params_marker)
 		separating_line[marker_pixel] = v_max_fit
+		#		Concatenation, repeating each line 10 times for visibility
 		final_image = np.concatenate((image, [separating_line], base_image), axis=0)
-		#showing final result
 		final_image = np.repeat(final_image,10,axis=0)#repeating each line 10 times to be visible
 		final_image = np.repeat(final_image,10,axis=1)#repeating each line 10 times to be visible
+		#			Saving the image
 		plt.imsave(args.base_output_filename+"_"+str(filename)+".png",final_image, vmin=v_min_fit, vmax=v_max_fit, format='png')
 
 	env.close()
