@@ -11,7 +11,11 @@ from stable_baselines3 import SAC
 from stable_baselines3.common.evaluation import evaluate_policy
 from collections import OrderedDict
 
-from util import to_numpy
+from util import to_numpy, getActorFromDict
+from progress.bar import Bar
+
+# To test
+# python3 Vignette.py --directory Ex_Sauvegarde/Saves --basename save --min_iter 1 --max_iter 10
 
 def getPointsChoice(init_params,num_params, minalpha, maxaplha, stepalpha, prob):
 	"""
@@ -149,23 +153,13 @@ def euclidienne(x,y):
     """
     # Params :
 
-    x : vect or OrderedDict of parameters
-	y : vect
 	
     # Function:
 
     Returns a simple euclidian distance between x and y.
     """
 	
-    nouvX = x
-	# If we entered as input a model's parameters
-    if type(x) is dict:
-		# Get the OrderedDict of weights
-        dictPolicy = x["policy"]
-
-        nouvX = deepcopy(np.hstack([to_numpy(v).flatten() for v in dictPolicy.values()]))
-	
-    return np.linalg.norm(np.array(nouvX)-np.array(y))
+    return np.linalg.norm(np.array(x)-np.array(y))
 
 def order_all_by_proximity(vectors):
     """
@@ -246,13 +240,13 @@ if __name__ == "__main__":
 	state_dim = env.observation_space.shape[0]
 	action_dim = env.action_space.shape[0]
 	max_action = int(env.action_space.high[0])
-
+	
 	# Instantiating the model
 	model = SAC(args.policy, args.env,
 				learning_rate=args.learning_rate,
 				tau=args.tau,
 				gamma=args.gamma)
-	theta0 = model.get_parameters()
+	theta0 = model.policy.parameters_to_vector()
 	num_params = len(theta0)
 
 	# Plotting parameters
@@ -282,14 +276,14 @@ if __name__ == "__main__":
 		model.load("{}/{}".format(args.directory, filename))
 		
 		# Get the new parameters
-		theta0 = model.get_parameters()
+		theta0 = model.policy.parameters_to_vector()
 		base_vect = theta0 if previous_theta is None else theta0 - previous_theta
 		previous_theta = theta0
-		print("params : "+str(theta0))
+		print("Loaded parameters from file")
 
 		# Evaluate the Model : mean, std
 		init_score, _ = evaluate_policy(model, env, n_eval_episodes=10)
-		print("model initial fitness : "+str(init_score))
+		print("Model initial fitness : "+str(init_score))
 
 		# Study the geometry around the model
 		print("Starting study aroud...")
@@ -297,12 +291,13 @@ if __name__ == "__main__":
 		image, base_image = [], []
 
 		#	Norm of the model
-		length_dist = euclidienne(base_vect, np.zeros(len(base_vect)))
+		length_dist = euclidienne(base_vect, np.zeros(np.shape(base_vect)))
 		# 		Direction taken by the model (normalized)
 		d = base_vect / length_dist
 
-		# Iterating over all directions, -1 is the direction that was originally taken by the model
+		# Iterating over all directions, -1 is the direction that was initially taken by the model
 		for step in range(-1,len(D)):
+			print("Step ", step, "/", len(D))
 			# New parameters following the direction
 			theta_plus, theta_minus = getPointsDirection(theta0, num_params, args.minalpha, args.maxalpha, args.stepalpha, d)
 			
@@ -311,15 +306,18 @@ if __name__ == "__main__":
 
 			# Evaluate using new parameters
 			scores_plus, scores_minus = [], []
-			for param_i in range(len(theta_plus)):
-				# 	Go forward in the direction
-				model.set_params(theta_plus[param_i])
-				#		Get the new performance
-				scores_plus.append(evaluate_policy(model, env, n_eval_episodes=args.eval_maxiter)[0])
-				# 	Go backward in the direction
-				model.set_params(theta_minus[param_i])
-				#		Get the new performance
-				scores_minus.append(evaluate_policy(model, env, n_eval_episodes=args.eval_maxiter[0]))
+			with Bar('Processing', max=len(theta_plus)) as bar:
+				for param_i in range(len(theta_plus)):
+					# 	Go forward in the direction
+					model.policy.load_from_vector(theta_plus[param_i])
+					#		Get the new performance
+					scores_plus.append(evaluate_policy(model, env, n_eval_episodes=args.eval_maxiter))
+					# 	Go backward in the direction
+					model.policy.load_from_vector(theta_minus[param_i])
+					#		Get the new performance
+					scores_minus.append(evaluate_policy(model, env, n_eval_episodes=args.eval_maxiter))
+
+					bar.next()
 
 			# Inverting scores for a symetrical Vignette (theta_minus going left, theta_plus going right)
 			scores_minus = scores_minus[::-1]
