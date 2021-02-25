@@ -12,6 +12,9 @@ from stable_baselines3 import SAC
 from stable_baselines3.common.evaluation import evaluate_policy
 from collections import OrderedDict
 
+from savedPlot import SavedPlot
+
+
 # To test
 # python3 Vignette.py --directory Ex_Sauvegarde/Saves --basename save --min_iter 1 --max_iter 10 --eval_maxiter 10 --plot3D True --show3D True
 
@@ -35,7 +38,6 @@ def getPointsChoice(init_params,num_params, minalpha, maxaplha, stepalpha, prob)
 	"""
 	#init_params = np.copy(base_params)
 	d = np.random.choice([1, 0], size=(num_params,), p=[prob, 1-prob]) #select random dimensions with proba 
-	print("d: "+str(d))
 	print("proportion: "+str(np.count_nonzero(d==1))+"/"+str(num_params))
 	theta_plus = []
 	theta_minus = []
@@ -63,7 +65,6 @@ def getPointsUniform(init_params,num_params, minalpha, maxaplha,stepalpha):
 	"""
 	#init_params = np.copy(base_params)
 	d = np.random.uniform(0, 1, num_params) #select uniformly dimensions [0,1)
-	print("d: "+str(d))
 	theta_plus = []
 	theta_minus = []
 	for alpha in np.arange(minalpha, maxaplha, stepalpha):
@@ -90,7 +91,6 @@ def getPointsDirection(init_params,num_params, minalpha, maxaplha,stepalpha, d):
 	This method gives an output that is comparable with other results if directions are the same.
 	"""
 	#init_params = np.copy(base_params)
-	print("d: "+str(d))
 	theta_plus = []
 	theta_minus = []
 	for alpha in np.arange(minalpha, maxaplha, stepalpha):
@@ -117,7 +117,6 @@ def getPointsUniformCentered(init_params,num_params, minalpha, maxaplha,stepalph
 	"""
 	#init_params = np.copy(base_params)
 	d = np.random.uniform(-1, 1, num_params) #select uniformly dimensions in [-1,1)
-	print("d: "+str(d))
 	theta_plus = []
 	theta_minus = []
 	for alpha in np.arange(minalpha, maxaplha, stepalpha):
@@ -137,14 +136,16 @@ def getDirectionsMuller(nb_directions,num_params):
     Returns a list of vectors generated in the uni ball of 'num_params' dimensions, using Muller
     """
     D = []
-    for _ in range(nb_directions):
-        u = np.random.normal(0,1,num_params)
-        norm = np.sum(u**2)**(0.5)
-        r = np.random.random()**(1.0/num_params)
-        x = r*u/norm
-        print("vect muller:"+str(x))
-        print("euclidian dist:"+str(euclidienne(x, np.zeros(len(x)))))
-        D.append(x)
+    with Bar('Directions computed', max=nb_directions) as bar:
+        for _ in range(nb_directions):
+            u = np.random.normal(0,1,num_params)
+            norm = np.sum(u**2)**(0.5)
+            r = np.random.random()**(1.0/num_params)
+            x = r*u/norm
+
+            D.append(x)
+		    
+            bar.next()
     return D
 
 def euclidienne(x,y):
@@ -170,12 +171,14 @@ def order_all_by_proximity(vectors):
     Returns the list of vectors ordered by inserting the vectors between their nearest neighbors
     """
     ordered = []
-    for vect in vectors :
-        if(len(ordered)==0):
-            ordered.append(vect)
-        else:
-            ind = compute_best_insert_place(vect, ordered)
-            ordered.insert(ind,vect)
+    with Bar('Ordering them between nearest neighbors', max=len(vectors)) as bar:
+        for vect in vectors:
+            if(len(ordered)==0):
+                ordered.append(vect)
+            else:
+                ind = compute_best_insert_place(vect, ordered)
+                ordered.insert(ind,vect)
+            bar.next()
     return ordered
 
 def compute_best_insert_place(vect, ordered_vectors):
@@ -225,10 +228,14 @@ if __name__ == "__main__":
 	#	3D plot parameters
 	parser.add_argument('--x_diff', default=2., type=float)# the space between each point along the x-axis
 	parser.add_argument('--y_diff', default=2., type=float)# the space between each point along the y-axis
-	parser.add_argument('--plot3D', default=False, type=bool)# true if the plot needs to be saved
+	parser.add_argument('--line_width', default=1., type=float)# the width of each line
+	parser.add_argument('--plot3D', default=False, type=bool)# true if an image of the plot needs to be saved
 	parser.add_argument('--show3D', default=True, type=bool)# true if the plot needs to be shown
 	parser.add_argument('--step3D', default=False, type=bool)# true if want to show the plot after each file (suspends execution)
-
+	#		Save plot parameters
+	parser.add_argument('--savePlot', default=True, type=bool)# true if want to save Plot for later use
+	parser.add_argument('--saveFolder', default="Saved_plots", type=str)# name of the folder to save the plot in
+	
 	# File management
 	parser.add_argument('--directory', default="TEST_5", type=str)# name of the directory containing the models to load
 	parser.add_argument('--basename', default="model_sac_step_1_", type=str)# file prefix for the loaded model
@@ -239,7 +246,7 @@ if __name__ == "__main__":
 	args = parser.parse_args()
 
 	# Creating environment and initialising model and parameters
-	print("Creating environment")
+	print("Creating environment\n")
 	env = gym.make(args.env)
 	state_dim = env.observation_space.shape[0]
 	action_dim = env.action_space.shape[0]
@@ -252,11 +259,12 @@ if __name__ == "__main__":
 				gamma=args.gamma)
 	theta0 = model.policy.parameters_to_vector()
 	num_params = len(theta0)
-
+	
+	print('\n')
+	
 	# Plotting parameters
 	v_min_fit = args.min_colormap
 	v_max_fit = args.max_colormap
-	print("VMAX :"+str(v_max_fit))
 
 	# Choosing directions to follow
 	D = getDirectionsMuller(args.nb_lines,num_params)
@@ -281,7 +289,7 @@ if __name__ == "__main__":
 		filename = filename_list[indice_file]
 
 		# Load the model
-		print("STARTING : "+str(filename))
+		print("\nSTARTING : "+str(filename))
 		model.load("{}/{}".format(args.directory, filename))
 		
 		# Get the new parameters
@@ -291,11 +299,11 @@ if __name__ == "__main__":
 		print("Loaded parameters from file")
 
 		# Evaluate the Model : mean, std
-		init_score, _ = evaluate_policy(model, env, n_eval_episodes=10)
+		init_score = evaluate_policy(model, env, n_eval_episodes=args.eval_maxiter, warn=False)[0]
 		print("Model initial fitness : "+str(init_score))
 
 		# Study the geometry around the model
-		print("Starting study aroud...")
+		print("Starting study around the model...")
 		theta_plus_scores, theta_minus_scores = [], []
 		image, base_image = [], []
 
@@ -305,8 +313,9 @@ if __name__ == "__main__":
 		d = base_vect / length_dist
 
 		# Iterating over all directions, -1 is the direction that was initially taken by the model
+		newSave = SavedPlot(x_diff=args.x_diff, y_diff=args.y_diff, line_width=args.line_width) if args.savePlot is True else None # Creating a new save if asked
 		for step in range(-1,len(D)):
-			print("Step ", step, "/", len(D))
+			print("\nDirection ", step, "/", len(D))
 			# New parameters following the direction
 			theta_plus, theta_minus = getPointsDirection(theta0, num_params, args.minalpha, args.maxalpha, args.stepalpha, d)
 			# Get the next direction
@@ -314,16 +323,16 @@ if __name__ == "__main__":
 
 			# Evaluate using new parameters
 			scores_plus, scores_minus = [], []
-			with Bar('Processing', max=len(theta_plus)) as bar:
+			with Bar('Evaluating along the direction', max=len(theta_plus)) as bar:
 				for param_i in range(len(theta_plus)):
 					# 	Go forward in the direction
 					model.policy.load_from_vector(theta_plus[param_i])
 					#		Get the new performance
-					scores_plus.append(evaluate_policy(model, env, n_eval_episodes=args.eval_maxiter)[0])
+					scores_plus.append(evaluate_policy(model, env, n_eval_episodes=args.eval_maxiter, warn=False)[0])
 					# 	Go backward in the direction
 					model.policy.load_from_vector(theta_minus[param_i])
 					#		Get the new performance
-					scores_minus.append(evaluate_policy(model, env, n_eval_episodes=args.eval_maxiter)[0])
+					scores_minus.append(evaluate_policy(model, env, n_eval_episodes=args.eval_maxiter, warn=False)[0])
 
 					bar.next()
 
@@ -334,11 +343,16 @@ if __name__ == "__main__":
 			if step == -1:	base_image.append(line)
 			else:	image.append(line)
 			#	Adding the line to the plot
-			if args.plot3D or args.show3D is True:
+			if args.plot3D or args.show3D or args.savePlot is True:
 				x_line, y_line = np.linspace(-len(line)/2,len(line)/2,len(line)), np.ones(len(line))
 				# Inverting y_line because Vignette reads from top to bottom
 				height = -step if step != -1 else -len(D)-1
 				ax.plot3D(args.x_diff * x_line, args.y_diff * height * y_line, line)
+				
+				# Adding to the save
+				if args.savePlot is True:
+					newSave.axes[step] = ax
+					newSave.lines[step] = line
 
 		# Assemble the image
 		# 	Dark line separating the base and the directions
@@ -353,11 +367,13 @@ if __name__ == "__main__":
 		#			Saving the image
 		plt.imsave(args.base_output_filename+"_"+str(filename)+".png",final_image, vmin=v_min_fit, vmax=v_max_fit, format='png')
 
-		# Saving the 3D plot if asked
+		# Saving an image of the 3D plot if asked
 		if args.plot3D is True: plt.savefig("3D_"+args.base_output_filename+"_"+str(filename)+".png")
-		# Showing the 3D plot if asked (suspends execution)
+		# 	Showing the 3D plot if asked (suspends execution)
 		if args.step3D is True: plt.show()
-
+		#		Saving the plot in a file for later use if asked
+		if args.savePlot is True: newSave.saveInFile("Plot_"+args.base_output_filename+"_"+str(filename), args.saveFolder)
+		
 	# Showing all the plots if asked
 	if args.show3D is True: plt.show()
 
