@@ -223,10 +223,11 @@ if __name__ == "__main__":
 	parser.add_argument('--min_colormap', default=-10, type=int)# min score value for colormap used (depend of benchmark used)
 	parser.add_argument('--max_colormap', default=360, type=int)# max score value for colormap used (depend of benchmark used)
 	#	3D plot parameters
-	parser.add_argument('--x_diff', default=.5, type=float)# the space between each point along the x-axis
-	parser.add_argument('--y_diff', default=.5, type=float)# the space between each point along the y-axis
+	parser.add_argument('--x_diff', default=.5, type=float)# the space between each point along the x-axis (to be implemented)
+	parser.add_argument('--y_diff', default=.5, type=float)# the space between each point along the y-axis (to be implemented)
 	parser.add_argument('--plot3D', default=False, type=bool)# true if the plot needs to be saved
 	parser.add_argument('--show3D', default=True, type=bool)# true if the plot needs to be shown
+	parser.add_argument('--step3D', default=False, type=bool)# true if want to show the plot after each file
 
 	# File management
 	parser.add_argument('--directory', default="TEST_5", type=str)# name of the directory containing the models to load
@@ -352,6 +353,7 @@ if __name__ == "__main__":
 
 		# Saving the 3D plot if asked
 		if args.plot3D is True: plt.savefig("3D_"+args.base_output_filename+"_"+str(filename)+".png")
+		if args.step3D is True: plt.show()
 
 	# Showing all the plots if asked
 	if args.show3D is True: plt.show()
