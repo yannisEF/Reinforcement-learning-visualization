@@ -274,8 +274,7 @@ if __name__ == "__main__":
 		# Intitializing the 3D plot
 		if args.plot3D or args.show3D is True:
 			fig, ax = plt.figure(), plt.axes(projection="3d")
-			n = len(np.arange(args.minalpha, args.maxalpha, args.stepalpha)) + 1
-			x_line, y_line = np.linspace(-n/2,n/2,int(n/args.x_diff)), np.ones(int(n/args.x_diff))
+			
 
 		# Change which model to load
 		filename = filename_list[indice_file]
@@ -319,11 +318,11 @@ if __name__ == "__main__":
 					# 	Go forward in the direction
 					model.policy.load_from_vector(theta_plus[param_i])
 					#		Get the new performance
-					scores_plus.append(evaluate_policy(model, env, n_eval_episodes=args.eval_maxiter))
+					scores_plus.append(evaluate_policy(model, env, n_eval_episodes=args.eval_maxiter)[0])
 					# 	Go backward in the direction
 					model.policy.load_from_vector(theta_minus[param_i])
 					#		Get the new performance
-					scores_minus.append(evaluate_policy(model, env, n_eval_episodes=args.eval_maxiter))
+					scores_minus.append(evaluate_policy(model, env, n_eval_episodes=args.eval_maxiter)[0])
 
 					bar.next()
 
@@ -335,6 +334,7 @@ if __name__ == "__main__":
 			else:	image.append(line)
 			#	Adding the line to the plot
 			if args.plot3D or args.show3D is True:
+				x_line, y_line = np.linspace(-len(line)/2,len(line)/2,len(line)), np.ones(len(line))
 				ax.plot3D(x_line, step * y_line, line)
 
 		# Assemble the image
