@@ -12,11 +12,8 @@ from stable_baselines3 import SAC
 from stable_baselines3.common.evaluation import evaluate_policy
 from collections import OrderedDict
 
-from util import to_numpy, getActorFromDict
-
-
 # To test
-# python3 Vignette.py --directory Ex_Sauvegarde/Saves --basename save --min_iter 1 --max_iter 10
+# python3 Vignette.py --directory Ex_Sauvegarde/Saves --basename save --min_iter 1 --max_iter 10 --eval_maxiter 10 --plot3D True --show3D True
 
 def getPointsChoice(init_params,num_params, minalpha, maxaplha, stepalpha, prob):
 	"""
@@ -278,7 +275,7 @@ if __name__ == "__main__":
 		if args.plot3D or args.show3D is True:
 			fig, ax = plt.figure(), plt.axes(projection="3d")
 			n = len(np.arange(args.minalpha, args.maxalpha, args.stepalpha)) + 1
-			x_line, y_line = np.linspace(-n/2,n/2,int(n/args.x_diff)), np.ones(n)
+			x_line, y_line = np.linspace(-n/2,n/2,int(n/args.x_diff)), np.ones(int(n/args.x_diff))
 
 		# Change which model to load
 		filename = filename_list[indice_file]
