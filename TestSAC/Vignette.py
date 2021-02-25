@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import argparse
 from copy import deepcopy
+from progress.bar import Bar
 
 import gym
 
@@ -11,7 +12,8 @@ from stable_baselines3 import SAC
 from stable_baselines3.common.evaluation import evaluate_policy
 from collections import OrderedDict
 
-from util import to_numpy
+# To test
+# python3 Vignette.py --directory Ex_Sauvegarde/Saves --basename save --min_iter 1 --max_iter 10 --eval_maxiter 10 --plot3D True --show3D True
 
 def getPointsChoice(init_params,num_params, minalpha, maxaplha, stepalpha, prob):
 	"""
@@ -149,23 +151,13 @@ def euclidienne(x,y):
     """
     # Params :
 
-    x : vect or OrderedDict of parameters
-	y : vect
 	
     # Function:
 
     Returns a simple euclidian distance between x and y.
     """
 	
-    nouvX = x
-	# If we entered as input a model's parameters
-    if type(x) is dict:
-		# Get the OrderedDict of weights
-        dictPolicy = x["policy"]
-
-        nouvX = deepcopy(np.hstack([to_numpy(v).flatten() for v in dictPolicy.values()]))
-	
-    return np.linalg.norm(np.array(nouvX)-np.array(y))
+    return np.linalg.norm(np.array(x)-np.array(y))
 
 def order_all_by_proximity(vectors):
     """
@@ -230,13 +222,19 @@ if __name__ == "__main__":
 	parser.add_argument('--eval_maxiter', default=1000, type=float)# number of steps for the evaluation. Depends on environment.
 	parser.add_argument('--min_colormap', default=-10, type=int)# min score value for colormap used (depend of benchmark used)
 	parser.add_argument('--max_colormap', default=360, type=int)# max score value for colormap used (depend of benchmark used)
+	#	3D plot parameters
+	parser.add_argument('--x_diff', default=2., type=float)# the space between each point along the x-axis
+	parser.add_argument('--y_diff', default=2., type=float)# the space between each point along the y-axis
+	parser.add_argument('--plot3D', default=False, type=bool)# true if the plot needs to be saved
+	parser.add_argument('--show3D', default=True, type=bool)# true if the plot needs to be shown
+	parser.add_argument('--step3D', default=False, type=bool)# true if want to show the plot after each file (suspends execution)
 
 	# File management
 	parser.add_argument('--directory', default="TEST_5", type=str)# name of the directory containing the models to load
 	parser.add_argument('--basename', default="model_sac_step_1_", type=str)# file prefix for the loaded model
-	parser.add_argument('--min_iter', default=1000, type=int)# iteration (file suffix) of the first model
-	parser.add_argument('--max_iter', default=200000, type=int)# iteration (file suffix) of the last model
-	parser.add_argument('--step_iter', default=1000, type=int)# iteration step between two consecutive models
+	parser.add_argument('--min_iter', default=1, type=int)# iteration (file suffix) of the first model
+	parser.add_argument('--max_iter', default=10, type=int)# iteration (file suffix) of the last model
+	parser.add_argument('--step_iter', default=1, type=int)# iteration step between two consecutive models
 	parser.add_argument('--base_output_filename', default="vignette_output", type=str)# name of the output file to create
 	args = parser.parse_args()
 
@@ -246,13 +244,13 @@ if __name__ == "__main__":
 	state_dim = env.observation_space.shape[0]
 	action_dim = env.action_space.shape[0]
 	max_action = int(env.action_space.high[0])
-
+	
 	# Instantiating the model
 	model = SAC(args.policy, args.env,
 				learning_rate=args.learning_rate,
 				tau=args.tau,
 				gamma=args.gamma)
-	theta0 = model.get_parameters()
+	theta0 = model.policy.parameters_to_vector()
 	num_params = len(theta0)
 
 	# Plotting parameters
@@ -274,6 +272,11 @@ if __name__ == "__main__":
 	previous_theta = None # Remembers theta
 	for indice_file in range(len(filename_list)):
 
+		# Intitializing the 3D plot
+		if args.plot3D or args.show3D is True:
+			fig, ax = plt.figure(), plt.axes(projection="3d")
+			
+
 		# Change which model to load
 		filename = filename_list[indice_file]
 
@@ -282,14 +285,14 @@ if __name__ == "__main__":
 		model.load("{}/{}".format(args.directory, filename))
 		
 		# Get the new parameters
-		theta0 = model.get_parameters()
+		theta0 = model.policy.parameters_to_vector()
 		base_vect = theta0 if previous_theta is None else theta0 - previous_theta
 		previous_theta = theta0
-		print("params : "+str(theta0))
+		print("Loaded parameters from file")
 
 		# Evaluate the Model : mean, std
 		init_score, _ = evaluate_policy(model, env, n_eval_episodes=10)
-		print("model initial fitness : "+str(init_score))
+		print("Model initial fitness : "+str(init_score))
 
 		# Study the geometry around the model
 		print("Starting study aroud...")
@@ -297,35 +300,45 @@ if __name__ == "__main__":
 		image, base_image = [], []
 
 		#	Norm of the model
-		length_dist = euclidienne(base_vect, np.zeros(len(base_vect)))
+		length_dist = euclidienne(base_vect, np.zeros(np.shape(base_vect)))
 		# 		Direction taken by the model (normalized)
 		d = base_vect / length_dist
 
-		# Iterating over all directions, -1 is the direction that was originally taken by the model
+		# Iterating over all directions, -1 is the direction that was initially taken by the model
 		for step in range(-1,len(D)):
+			print("Step ", step, "/", len(D))
 			# New parameters following the direction
 			theta_plus, theta_minus = getPointsDirection(theta0, num_params, args.minalpha, args.maxalpha, args.stepalpha, d)
-			
 			# Get the next direction
 			if step != -1:	d = D[step]
 
 			# Evaluate using new parameters
 			scores_plus, scores_minus = [], []
-			for param_i in range(len(theta_plus)):
-				# 	Go forward in the direction
-				model.set_params(theta_plus[param_i])
-				#		Get the new performance
-				scores_plus.append(evaluate_policy(model, env, n_eval_episodes=args.eval_maxiter)[0])
-				# 	Go backward in the direction
-				model.set_params(theta_minus[param_i])
-				#		Get the new performance
-				scores_minus.append(evaluate_policy(model, env, n_eval_episodes=args.eval_maxiter[0]))
+			with Bar('Processing', max=len(theta_plus)) as bar:
+				for param_i in range(len(theta_plus)):
+					# 	Go forward in the direction
+					model.policy.load_from_vector(theta_plus[param_i])
+					#		Get the new performance
+					scores_plus.append(evaluate_policy(model, env, n_eval_episodes=args.eval_maxiter)[0])
+					# 	Go backward in the direction
+					model.policy.load_from_vector(theta_minus[param_i])
+					#		Get the new performance
+					scores_minus.append(evaluate_policy(model, env, n_eval_episodes=args.eval_maxiter)[0])
+
+					bar.next()
 
 			# Inverting scores for a symetrical Vignette (theta_minus going left, theta_plus going right)
 			scores_minus = scores_minus[::-1]
+			line = scores_minus + [init_score] + scores_plus
 			# 	Adding the line to the image
-			if step == -1:	base_image.append(scores_minus + [init_score] + scores_plus)
-			else:	image.append(scores_minus + [init_score] + scores_plus)
+			if step == -1:	base_image.append(line)
+			else:	image.append(line)
+			#	Adding the line to the plot
+			if args.plot3D or args.show3D is True:
+				x_line, y_line = np.linspace(-len(line)/2,len(line)/2,len(line)), np.ones(len(line))
+				# Inverting y_line because Vignette reads from top to bottom
+				height = -step if step != -1 else -len(D)-1
+				ax.plot3D(args.x_diff * x_line, args.y_diff * height * y_line, line)
 
 		# Assemble the image
 		# 	Dark line separating the base and the directions
@@ -339,5 +352,14 @@ if __name__ == "__main__":
 		final_image = np.repeat(final_image,10,axis=1)#repeating each line 10 times to be visible
 		#			Saving the image
 		plt.imsave(args.base_output_filename+"_"+str(filename)+".png",final_image, vmin=v_min_fit, vmax=v_max_fit, format='png')
+
+		# Saving the 3D plot if asked
+		if args.plot3D is True: plt.savefig("3D_"+args.base_output_filename+"_"+str(filename)+".png")
+		# Showing the 3D plot if asked (suspends execution)
+		if args.step3D is True: plt.show()
+
+	# Showing all the plots if asked
+	if args.show3D is True: plt.show()
+
 
 	env.close()
