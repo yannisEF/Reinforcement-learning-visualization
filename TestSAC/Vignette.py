@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import argparse
 from copy import deepcopy
+from progress.bar import Bar
 
 import gym
 
@@ -12,7 +13,7 @@ from stable_baselines3.common.evaluation import evaluate_policy
 from collections import OrderedDict
 
 from util import to_numpy, getActorFromDict
-from progress.bar import Bar
+
 
 # To test
 # python3 Vignette.py --directory Ex_Sauvegarde/Saves --basename save --min_iter 1 --max_iter 10
@@ -224,6 +225,11 @@ if __name__ == "__main__":
 	parser.add_argument('--eval_maxiter', default=1000, type=float)# number of steps for the evaluation. Depends on environment.
 	parser.add_argument('--min_colormap', default=-10, type=int)# min score value for colormap used (depend of benchmark used)
 	parser.add_argument('--max_colormap', default=360, type=int)# max score value for colormap used (depend of benchmark used)
+	#	3D plot parameters
+	parser.add_argument('--x_diff', default=.5, type=float)# the space between each point along the x-axis
+	parser.add_argument('--y_diff', default=.5, type=float)# the space between each point along the y-axis
+	parser.add_argument('--plot3D', default=False, type=bool)# true if the plot needs to be saved
+	parser.add_argument('--show3D', default=True, type=bool)# true if the plot needs to be shown
 
 	# File management
 	parser.add_argument('--directory', default="TEST_5", type=str)# name of the directory containing the models to load
@@ -268,6 +274,12 @@ if __name__ == "__main__":
 	previous_theta = None # Remembers theta
 	for indice_file in range(len(filename_list)):
 
+		# Intitializing the 3D plot
+		if args.plot3D or args.show3D is True:
+			fig, ax = plt.figure(), plt.axes(projection="3d")
+			n = len(np.arange(args.minalpha, args.maxalpha, args.stepalpha)) + 1
+			x_line, y_line = np.linspace(-n/2,n/2,int(n/args.x_diff)), np.ones(n)
+
 		# Change which model to load
 		filename = filename_list[indice_file]
 
@@ -300,7 +312,6 @@ if __name__ == "__main__":
 			print("Step ", step, "/", len(D))
 			# New parameters following the direction
 			theta_plus, theta_minus = getPointsDirection(theta0, num_params, args.minalpha, args.maxalpha, args.stepalpha, d)
-			
 			# Get the next direction
 			if step != -1:	d = D[step]
 
@@ -321,9 +332,13 @@ if __name__ == "__main__":
 
 			# Inverting scores for a symetrical Vignette (theta_minus going left, theta_plus going right)
 			scores_minus = scores_minus[::-1]
+			line = scores_minus + [init_score] + scores_plus
 			# 	Adding the line to the image
-			if step == -1:	base_image.append(scores_minus + [init_score] + scores_plus)
-			else:	image.append(scores_minus + [init_score] + scores_plus)
+			if step == -1:	base_image.append(line)
+			else:	image.append(line)
+			#	Adding the line to the plot
+			if args.plot3D or args.show3D is True:
+				ax.plot3D(x_line, step * y_line, line)
 
 		# Assemble the image
 		# 	Dark line separating the base and the directions
@@ -337,5 +352,12 @@ if __name__ == "__main__":
 		final_image = np.repeat(final_image,10,axis=1)#repeating each line 10 times to be visible
 		#			Saving the image
 		plt.imsave(args.base_output_filename+"_"+str(filename)+".png",final_image, vmin=v_min_fit, vmax=v_max_fit, format='png')
+
+		# Saving the 3D plot if asked
+		if args.plot3D is True: plt.savefig("3D_"+args.base_output_filename+"_"+str(filename)+".png")
+
+	# Showing all the plots if asked
+	if args.show3D is True: plt.show()
+
 
 	env.close()
