@@ -1,3 +1,5 @@
+# coding: utf-8
+
 import numpy as np
 from copy import deepcopy
 from models import RLNN
@@ -18,61 +20,71 @@ else:
     FloatTensor = torch.FloatTensor
 
 
-class Actor(RLNN):
+class Actor(nn.Module):
+    def __init__(self, state_dim, action_dim, action_range):
+        super(Actor, self).__init__()
 
-    def __init__(self, state_dim, action_dim, max_action, args):
-        super(Actor, self).__init__(state_dim, action_dim, max_action)
+        self.fc1 = nn.Linear(state_dim, 16)
+        self.fc2 = nn.Linear(16, 16)
+        self.mu_head = nn.Linear(16, action_dim)
+        self.sigma_head = nn.Linear(16, action_dim)
+        self.action_range = action_range
 
-        self.l1 = nn.Linear(state_dim, 400)
-        self.l2 = nn.Linear(400, 300)
-        self.l3 = nn.Linear(300, action_dim)
+    def forward(self, state, action=None):
+        a = t.relu(self.fc1(state))
+        a = t.relu(self.fc2(a))
+        mu = self.mu_head(a)
+        sigma = softplus(self.sigma_head(a))
+        dist = Normal(mu, sigma)
+        act = (atanh(action / self.action_range)
+               if action is not None
+               else dist.rsample())
+        act_entropy = dist.entropy()
 
-        if args.layer_norm:
-            self.n1 = nn.LayerNorm(400)
-            self.n2 = nn.LayerNorm(300)
-        self.layer_norm = args.layer_norm
+        # the suggested way to confine your actions within a valid range
+        # is not clamping, but remapping the distribution
+        act_log_prob = dist.log_prob(act)
+        act_tanh = t.tanh(act)
+        act = act_tanh * self.action_range
 
-        self.optimizer = torch.optim.Adam(self.parameters(), lr=args.actor_lr)
-        self.tau = args.tau
-        self.discount = args.discount
-        self.state_dim = state_dim
-        self.action_dim = action_dim
-        self.max_action = max_action
+        # the distribution remapping process used in the original essay.
+        act_log_prob -= t.log(self.action_range *
+                              (1 - act_tanh.pow(2)) +
+                              1e-6)
+        act_log_prob = act_log_prob.sum(1, keepdim=True)
 
-    def forward(self, x):
+        # If your distribution is different from "Normal" then you may either:
+        # 1. deduce the remapping function for your distribution and clamping
+        #    function such as tanh
+        # 2. clamp you action, but please take care:
+        #    1. do not clamp actions before calculating their log probability,
+        #       because the log probability of clamped actions might will be
+        #       extremely small, and will cause nan
+        #    2. do not clamp actions after sampling and before storing them in
+        #       the replay buffer, because during update, log probability will
+        #       be re-evaluated they might also be extremely small, and network
+        #       will "nan". (might happen in PPO, not in SAC because there is
+        #       no re-evaluation)
+        # Only clamp actions sent to the environment, this is equivalent to
+        # change the action reward distribution, will not cause "nan", but
+        # this makes your training environment further differ from you real
+        # environment.
+        return act, act_log_prob, act_entropy
 
-        if not self.layer_norm:
-            x = torch.tanh(self.l1(x))
-            x = torch.tanh(self.l2(x))
-            x = self.max_action * torch.tanh(self.l3(x))
+    def save_model(self, output, net_name):
+        t.save(self.state_dict(),'{}/{}.pkl'.format(output, net_name))
+    
+    def load_model(self, filename, net_name):
+    """
+    Loads the model
+    """
+    	if filename is None:
+            return
 
-        else:
-            x = torch.tanh(self.n1(self.l1(x)))
-            x = torch.tanh(self.n2(self.l2(x)))
-            x = self.max_action * torch.tanh(self.l3(x))
-
-        return x
-
-    def update(self, memory, batch_size, critic, actor_t):
-
-        # Sample replay buffer
-        states, _, _, _, _ = memory.sample(batch_size)
-
-        # Compute actor loss
-        if args.use_td3:
-            actor_loss = -critic(states, self(states))[0].mean()
-        else:
-            actor_loss = -critic(states, self(states)).mean()
-
-        # Optimize the actor
-        self.optimizer.zero_grad()
-        actor_loss.backward()
-        self.optimizer.step()
-
-        # Update the frozen target models
-        for param, target_param in zip(self.parameters(), actor_t.parameters()):
-            target_param.data.copy_(
-                self.tau * param.data + (1 - self.tau) * target_param.data)
+        self.load_state_dict(
+            torch.load('{}/{}.pkl'.format(filename, net_name),
+                       map_location=lambda storage, loc: storage)
+        )
 
 def evaluate(actor, env, memory=None, n_episodes=1, random=False, noise=None, render=False, maxiter=1000): #init evaluation
     """
@@ -82,9 +94,9 @@ def evaluate(actor, env, memory=None, n_episodes=1, random=False, noise=None, re
     """
 
     if not random:
-        def policy(state): # Prise de décision de l'action à effectuer => ça nous intéresse
+        def policy(state):
             state = FloatTensor(state.reshape(-1))
-            action = actor(state).cpu().data.numpy().flatten() # ???
+            action = actor(state).cpu().data.numpy().flatten()
 
             if noise is not None:
                 action += noise.sample()
@@ -209,7 +221,6 @@ def getPointsDirection(init_params,num_params, minalpha, maxaplha,stepalpha, d):
 	theta_plus = []
 	theta_minus = []
 	for alpha in np.arange(minalpha, maxaplha, stepalpha):
-		print(alpha)
 		theta_plus.append(init_params + alpha * d)
 		theta_minus.append(init_params - alpha * d)
 	return theta_plus, theta_minus #return separaterly points generated around init_params on each side (+/-)
@@ -259,6 +270,7 @@ def getDirectionsMuller(nb_directions,num_params):
         r = np.random.random()**(1.0/num_params)
         x = r*u/norm
         print("vect muller:"+str(x))
+        print("euclidian dist:"+str(euclidienne(x, np.zeros(len(x)))))
         D.append(x)
     return D
 
@@ -314,81 +326,6 @@ def compute_best_insert_place(vect, ordered_vectors):
     dist_place.append(value_dist)
     ind = np.argmin(dist_place)
     return ind
-
-"""OLD METHOD NO MORE USED, NOT WORKING WELL : UNBALANCED REPARTITION AND TOO LONG"""
-def order_by_proximity(base_vector, vectors):
-    # Ordonne la liste de vecteur 'vectors' en plaçant chaque vecteur à la position où il est 
-    # le plus proche de ses voisins, autour d'un vecteur central 'base_vector'.
-    # On subdivise en deux groupes pour faciliter les choses :
-    # un groupe "supérieur" et un groupe "inférieur". 
-    # Ces noms sont arbitraires et ne représente rien. On pourra ainsi afficher sur une image 
-    # le vecteur de base, d'un côté la partie "supérieure" et de l'autre côté la partie "inférieure".
-    sup_part = []
-    inf_part = []
-    for vect in vectors :
-        if(len(inf_part)==0 and len(sup_part)==0):#si c'est le premier élément
-            sup_part.append(vect)#ajout dans la partie suppérieure
-        elif(len(inf_part)==0): #si rien dans la partie inférieure mais pas le premier élément
-            dist_sup = [euclidienne(vect, sup_part[i]) for i in range(len(sup_part))]
-            dist_base = euclidienne(vect, base_vect)
-            if np.min(dist_sup) > dist_base : #si la distance au plus proche de la partie sup est plus grande que celle du vecteur de base -> partie inf
-                inf_part.append(vect) #on place cet élément comme premier élément inférieur
-            else:
-                #insérer dans la partie supérieure
-                value_dist = np.mean([euclidienne(vect, base_vect),euclidienne(vect, sup_part[0])])
-                dist_place = [value_dist]
-                #print("sup_part 0 : "+str(value_dist))
-                for sup in range(len(sup_part)-1):
-                    value_dist = np.mean([euclidienne(vect, sup_part[sup]),euclidienne(vect, sup_part[sup+1])])
-                    #print("sup_part "+str(sup)+" : "+str(value_dist))
-                    dist_place.append(value_dist)
-                value_dist = euclidienne(vect, sup_part[len(sup_part)-1])
-                dist_place.append(value_dist)
-                #print("sup_part "+str(len(sup_part))+" : "+str(value_dist))
-                #on insère à l'endroit le plus approprié
-                ind = np.argmin(dist_place) #indice où insérer, juste après sup
-                #print("sup insert : "+str(ind))
-                #insertion  
-                sup_part.insert(ind,vect)
-
-        else:
-            sup_dist = np.min([euclidienne(vect, sup_part[i]) for i in range(len(sup_part))])
-            inf_dist = np.min([euclidienne(vect, inf_part[i]) for i in range(len(inf_part))])
-            if(sup_dist>inf_dist):
-                #insérer dans la partie inférieure
-                value_dist = np.mean([euclidienne(vect, base_vect),euclidienne(vect, inf_part[0])])
-                dist_place = [value_dist]
-                #print("inf_part 0 : "+str(value_dist))
-                for inf in range(len(inf_part)-1):
-                    value_dist = np.mean([euclidienne(vect, inf_part[inf]),euclidienne(vect, inf_part[inf+1])])
-                    #print("inf_part "+str(inf+1)+" : "+str(value_dist))
-                    dist_place.append(value_dist)
-                value_dist = euclidienne(vect, inf_part[len(inf_part)-1])
-                dist_place.append(value_dist)
-                #print("inf_part "+str(len(inf_part))+" : "+str(value_dist))
-                #on insère à l'endroit le plus approprié
-                ind = np.argmin(dist_place) #indice où insérer, juste après inf
-                #print("inf insert : "+str(ind))
-                #insertion  
-                inf_part.insert(ind,vect)
-            else:
-                #insérer dans la partie supérieure
-                value_dist = np.mean([euclidienne(vect, base_vect),euclidienne(vect, sup_part[0])])
-                dist_place = [value_dist]
-                #print("sup_part 0 : "+str(value_dist))
-                for sup in range(len(sup_part)-1):
-                    value_dist = np.mean([euclidienne(vect, sup_part[sup]),euclidienne(vect, sup_part[sup+1])])
-                    #print("sup_part "+str(sup+1)+" : "+str(value_dist))
-                    dist_place.append(value_dist)
-                value_dist = euclidienne(vect, sup_part[len(sup_part)-1])
-                dist_place.append(value_dist)
-                #print("sup_part "+str(len(sup_part))+" : "+str(value_dist))
-                #on insère à l'endroit le plus approprié
-                ind = np.argmin(dist_place) #indice où insérer, juste après sup
-                #print("sup insert : "+str(ind))
-                #insertion  
-                sup_part.insert(ind,vect)
-    return inf_part, base_vect, sup_part
 	
 if __name__ == "__main__":
 
@@ -396,19 +333,26 @@ if __name__ == "__main__":
 
 	parser = argparse.ArgumentParser()
 	parser.add_argument('--env', default='Swimmer-v2', type=str)
-	parser.add_argument('--tau', default=0.005, type=float) #for initialising the actor, not used really
+	parser.add_argument('--tau', default=1, type=float) #for initializing the actor, not used really
 	parser.add_argument('--layer_norm', dest='layer_norm', action='store_true') #for initialising the actor
-	parser.add_argument('--max_steps', default=100, type=int)# number of directions generated,good value : 100
-	parser.add_argument('--discount', default=0.99, type=float) #for initialising the actor, not used really
+	parser.add_argument('--nb_lines', default=60, type=int)# number of directions generated,good value : precise 100, fast 60, ultrafast 50
+	parser.add_argument('--discount', default=0.99, type=float) #for initializing the actor, not used really
 	parser.add_argument('--minalpha', default=0.0, type=float)# start value for alpha, good value : 0.0
-	parser.add_argument('--maxalpha', default=100, type=float)# end value for alpha, good value : 100
-	parser.add_argument('--stepalpha', default=1, type=float)# step for alpha in the loop, good value : 1
-	parser.add_argument('--eval_maxiter', default=300, type=float)# number of steps for the evaluation. Depends on environment episode length. On Swimmer, full eval : 1000, 1/2 eval : 500, 1/3 eval : 300 ... (faster but more aproximated)
+	parser.add_argument('--maxalpha', default=10, type=float)# end value for alpha, good value : large 100, around actor 10
+	parser.add_argument('--stepalpha', default=0.25, type=float)# step for alpha in the loop, good value : precise 0.5 or 1, less precise 2 or 3
+	parser.add_argument('--eval_maxiter', default=1000, type=float)# number of steps for the evaluation. Depends on environment.
+	parser.add_argument('--min_colormap', default=-10, type=int)# min score value for colormap used (depend of benchmark used)
+	parser.add_argument('--max_colormap', default=360, type=int)# max score value for colormap used (depend of benchmark used)
 	parser.add_argument('--proba', default=0.1, type=float)# proba of choosing an element of the actor parameters for the direction, if using the choice method.
+	parser.add_argument('--basename', default="ok", type=str)# base (files prefix) name of the actor pkl files to load
+	parser.add_argument('--min_iter', default=1000, type=int)# iteration (file suffix) of the first actor pkl files to load
+	parser.add_argument('--max_iter', default=200000, type=int)# iteration (file suffix) of the last actor pkl files to load
+	parser.add_argument('--step_iter', default=1000, type=int)# iteration step between two consecutive actor pkl files to load
+	parser.add_argument('--base_output_filename', default="vignette_output", type=str)# name of the output file to create
 	parser.add_argument('--epsilon', default=10, type=float) #for initialising the actor, not used really
-	parser.add_argument('--filename', default="actors", type=str)# name of the directory containing the actors pkl files to load
-	parser.add_argument('--actor_lr', default=0.001, type=float) #for initialising the actor, not used really
-	parser.add_argument('--critic_lr', default=0.001, type=float) #for initialising the actor, not used really
+	parser.add_argument('--filename', default="TEST_5", type=str)# name of the directory containing the actors pkl files to load
+	parser.add_argument('--actor_lr', default=0.001, type=float) #for initializing the actor, not used really
+	parser.add_argument('--critic_lr', default=0.001, type=float) #for initializing the actor, not used really
 	args = parser.parse_args()
 
 	# Creating environment and initialising actor and parameters
@@ -420,35 +364,34 @@ if __name__ == "__main__":
 	actor = Actor(state_dim, action_dim, max_action, args)
 	theta0 = actor.get_params()
 	num_params = len(theta0)
-	v_min_fit = -5 # min fitness
-	v_max_fit = 360/(1000/args.eval_maxiter) #adapting max fitness on number of evaluation steps (aproximatively)
+	v_min_fit = args.min_colormap
+	v_max_fit = args.max_colormap
+	print("VMAX :"+str(v_max_fit))
 
 	# Choosing directions
-	#D = np.random.rand(args.max_steps,num_params)
-	D = getDirectionsMuller(args.max_steps,num_params)
+	#D = np.random.rand(args.nb_lines,num_params)
+	D = getDirectionsMuller(args.nb_lines,num_params)
 
-	# 0rdering the directions :
+	# Ordering the directions :
 	D = order_all_by_proximity(D)
 
 	# Name of the actor files to analyse consecutively with the same set of directions: 
-	filename_list = ["actor_td3_buffer_NIGHT_1_step_1_91000","actor_td3_buffer_NIGHT_1_step_1_96000","actor_td3_buffer_NIGHT_1_step_1_101000","actor_td3_buffer_NIGHT_1_step_1_106000"]
-
-
-	# Compute fitness over these direcitons :
-	last_actor_params = [] #save the last parameters, to compute direction followed from the precedent actor
+	filename_list = [args.basename+str(i) for i in range(args.min_iter,args.max_iter+args.step_iter,args.step_iter)]# generate actor file list to load
+	# Compute fitness over these directions :
+	last_actor_params = [] #save the last parameters, to compute direction followed from the previous actor
 	for indice_file in range(len(filename_list)):
 		filename = filename_list[indice_file]
 		# Loading actor params
 		print("STARTING : "+str(filename))
-		actor = Actor(state_dim, action_dim, max_action, args)
-		actor.load_model("actors", filename)
+		actor = Actor(state_dim, action_dim, max_action, args) #removed to study start point only
+		actor.load_model(args.filename, filename)
 		theta0 = actor.get_params()
 		if(len(last_actor_params)>0):
 			previous = last_actor_params
-			base_vect = theta0 - previous #compute direction followed from the precedent actor
+			base_vect = theta0 - previous #compute direction followed from the previous actor
 			last_actor_params = theta0 #update last_actor_params
 		else:
-			base_vect = theta0 #if first actor (no precedent), considering null vector is the precedent
+			base_vect = theta0 #if first actor (no previous), considering null vector is the previous
 			last_actor_params = theta0 #update last_actor_params
 		print("params : "+str(theta0))
 		# evaluate the actor
@@ -463,8 +406,8 @@ if __name__ == "__main__":
 		base_image = []
 		
 		### Direction followed from precedent actor :
-		d= base_vect / np.max(base_vect) # reduce vector distance to do small steps : NOT GOOD, not proportional to choosen directions,
-		### TODO : calibrate 'd' on the followed direction to have a unit euclidian distance (~1) as for choosen directions.
+		length_dist = euclidienne(base_vect, np.zeros(len(base_vect)))
+		d= base_vect / length_dist #reduce to unit vector
 		theta_plus, theta_minus = getPointsDirection(theta0,num_params, args.minalpha, args.maxalpha, args.stepalpha, d)
 		temp_scores_theta_plus = []
 		temp_scores_theta_minus = []
@@ -486,10 +429,10 @@ if __name__ == "__main__":
 		theta_plus_scores.append(temp_scores_theta_plus)
 		theta_minus_scores.append(temp_scores_theta_minus)
 
-		### Directions choosen
+		### Directions chosen
 		for step in range(len(D)) :
 			print("step "+str(step))
-			#drawing actor parameters
+			#computing actor parameters
 			d = D[step]
 			theta_plus, theta_minus = getPointsDirection(theta0,num_params, args.minalpha, args.maxalpha, args.stepalpha, d)
 			temp_scores_theta_plus = []
@@ -513,11 +456,16 @@ if __name__ == "__main__":
 			theta_plus_scores.append(temp_scores_theta_plus)
 			theta_minus_scores.append(temp_scores_theta_minus)
 		#assemble picture from different parts (choosen directions, dark line for separating, and followed direction)
-		final_image = np.concatenate((image, [np.zeros(len(base_image[0]))], base_image), axis=0)
+		separating_line = np.zeros(len(base_image[0]))
+		last_params_marker = int(length_dist/args.stepalpha)
+		marker_pixel = int((len(base_image[0])-1)/2-last_params_marker)
+		separating_line[marker_pixel] = v_max_fit
+		final_image = np.concatenate((image, [separating_line], base_image), axis=0)
 		#showing final result
 		final_image = np.repeat(final_image,10,axis=0)#repeating each line 10 times to be visible
 		final_image = np.repeat(final_image,10,axis=1)#repeating each line 10 times to be visible
-		plt.imsave(filename+"_vignette",final_image, vmin=v_min_fit, vmax=v_max_fit, format='png')
+		plt.imsave(args.base_output_filename+"_"+str(filename)+".png",final_image, vmin=v_min_fit, vmax=v_max_fit, format='png')
+
 	env.close()
 
 
