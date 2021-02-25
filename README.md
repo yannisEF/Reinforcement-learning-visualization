@@ -9,5 +9,5 @@ python3 Vignette.py --directory Ex_Sauvegarde/Saves --basename save --min_iter 1
 
 Celle-ci applique Vignette centrées en Ex_Sauvegarde/Saves de "save1" à "save10".
 L'argument "--eval_maxiter 1" permet une éxecution rapide en évaluant chaque acteur sur seulement 1 épisode.
-           "--plot3D True" affiche le plot en 3D de chaque Vignette au fûr et à mesure
+           "--plot3D True" affiche le plot en 3D de chaque Vignette au fur et à mesure
            "--show3D True" affiche tous les plots en 3D une fois que tous les fichiers ont été parcouru.
