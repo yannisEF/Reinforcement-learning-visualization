@@ -11,3 +11,5 @@ Celle-ci applique Vignette centrées en Ex_Sauvegarde/Saves de "save1" à "save1
 L'argument "--eval_maxiter 1" permet une éxecution rapide en évaluant chaque acteur sur seulement 1 épisode.
            "--plot3D True" affiche le plot en 3D de chaque Vignette au fur et à mesure
            "--show3D True" affiche tous les plots en 3D une fois que tous les fichiers ont été parcouru.
+
+Le dossier "Old" contient ce qui a été fait l'année dernière.
