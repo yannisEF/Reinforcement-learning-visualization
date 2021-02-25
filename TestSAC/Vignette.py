@@ -223,18 +223,18 @@ if __name__ == "__main__":
 	parser.add_argument('--min_colormap', default=-10, type=int)# min score value for colormap used (depend of benchmark used)
 	parser.add_argument('--max_colormap', default=360, type=int)# max score value for colormap used (depend of benchmark used)
 	#	3D plot parameters
-	parser.add_argument('--x_diff', default=.5, type=float)# the space between each point along the x-axis (to be implemented)
-	parser.add_argument('--y_diff', default=.5, type=float)# the space between each point along the y-axis (to be implemented)
+	parser.add_argument('--x_diff', default=2., type=float)# the space between each point along the x-axis
+	parser.add_argument('--y_diff', default=2., type=float)# the space between each point along the y-axis
 	parser.add_argument('--plot3D', default=False, type=bool)# true if the plot needs to be saved
 	parser.add_argument('--show3D', default=True, type=bool)# true if the plot needs to be shown
-	parser.add_argument('--step3D', default=False, type=bool)# true if want to show the plot after each file
+	parser.add_argument('--step3D', default=False, type=bool)# true if want to show the plot after each file (suspends execution)
 
 	# File management
 	parser.add_argument('--directory', default="TEST_5", type=str)# name of the directory containing the models to load
 	parser.add_argument('--basename', default="model_sac_step_1_", type=str)# file prefix for the loaded model
-	parser.add_argument('--min_iter', default=1000, type=int)# iteration (file suffix) of the first model
-	parser.add_argument('--max_iter', default=200000, type=int)# iteration (file suffix) of the last model
-	parser.add_argument('--step_iter', default=1000, type=int)# iteration step between two consecutive models
+	parser.add_argument('--min_iter', default=1, type=int)# iteration (file suffix) of the first model
+	parser.add_argument('--max_iter', default=10, type=int)# iteration (file suffix) of the last model
+	parser.add_argument('--step_iter', default=1, type=int)# iteration step between two consecutive models
 	parser.add_argument('--base_output_filename', default="vignette_output", type=str)# name of the output file to create
 	args = parser.parse_args()
 
@@ -336,7 +336,9 @@ if __name__ == "__main__":
 			#	Adding the line to the plot
 			if args.plot3D or args.show3D is True:
 				x_line, y_line = np.linspace(-len(line)/2,len(line)/2,len(line)), np.ones(len(line))
-				ax.plot3D(x_line, step * y_line, line)
+				# Inverting y_line because Vignette reads from top to bottom
+				height = -step if step != -1 else -len(D)-1
+				ax.plot3D(args.x_diff * x_line, args.y_diff * height * y_line, line)
 
 		# Assemble the image
 		# 	Dark line separating the base and the directions
@@ -353,6 +355,7 @@ if __name__ == "__main__":
 
 		# Saving the 3D plot if asked
 		if args.plot3D is True: plt.savefig("3D_"+args.base_output_filename+"_"+str(filename)+".png")
+		# Showing the 3D plot if asked (suspends execution)
 		if args.step3D is True: plt.show()
 
 	# Showing all the plots if asked
