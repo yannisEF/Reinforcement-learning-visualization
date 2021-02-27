@@ -18,7 +18,7 @@ from vector_util import *
 from slowBar import SlowBar
 
 
-# To test
+# To test (~5 minutes computing time)
 # python3 GradientStudy.py --directory Ex_Sauvegarde/Saves --basename save --min_iter 1 --max_iter 5 --eval_maxiter 1
 
 if __name__ == "__main__":
@@ -40,17 +40,16 @@ if __name__ == "__main__":
 	parser.add_argument('--minalpha', default=0.0, type=float)# start value for alpha, good value : 0.0
 	parser.add_argument('--maxalpha', default=10, type=float)# end value for alpha, good value : large 100, around model 10
 	parser.add_argument('--stepalpha', default=0.25, type=float)# step for alpha in the loop, good value : precise 0.5 or 1, less precise 2 or 3
-	parser.add_argument('--eval_maxiter', default=1000, type=float)# number of steps for the evaluation. Depends on environment.
-	parser.add_argument('--min_colormap', default=-10, type=int)# min score value for colormap used (depend of benchmark used)
-	parser.add_argument('--max_colormap', default=360, type=int)# max score value for colormap used (depend of benchmark used)
+	parser.add_argument('--eval_maxiter', default=1000, type=float)# number of steps for the evaluation.
 	parser.add_argument('--pixelWidth', default=20, type=int)# width of each pixel
 	parser.add_argument('--pixelHeight', default=10, type=int)# height of each pixel
+	parser.add_argument('--maxValue', default=360, type=int)# max score value for colormap used (dependent of benchmark used)
 	#	Dot product parameters
 	parser.add_argument('--dotWidth', default=150, type=int)# max width of the dot product (added on the side)
 	parser.add_argument('--dotText', default=True, type=str)# true if want to show value of the dot product
 
 	# File management
-	parser.add_argument('--directory', default="TEST_5", type=str)# name of the directory containing the models to load
+	parser.add_argument('--directory', default="Models", type=str)# name of the directory containing the models to load
 	parser.add_argument('--basename', default="model_sac_step_1_", type=str)# file prefix for the loaded model
 	parser.add_argument('--min_iter', default=1, type=int)# iteration (file suffix) of the first model
 	parser.add_argument('--max_iter', default=10, type=int)# iteration (file suffix) of the last model
@@ -75,10 +74,6 @@ if __name__ == "__main__":
 	num_params = len(theta0)
 	
 	print('\n')
-	
-	# Plotting parameters
-	v_min_fit = args.min_colormap
-	v_max_fit = args.max_colormap
 
 	# Choosing directions to follow
 	D = getDirectionsMuller(args.nb_lines,num_params)
@@ -178,7 +173,7 @@ if __name__ == "__main__":
 		for c in range(len(results[l])):
 			x0 = c * args.pixelWidth
 			x1 = x0 + args.pixelWidth
-			color = valueToRGB(results[l][c], color1, color2, pureNorm=v_max_fit)
+			color = valueToRGB(results[l][c], color1, color2, pureNorm=args.maxValue)
 			newDraw.rectangle([x0, y0, x1, y1], fill=color)
 		
 		#	Processing the dot product,
@@ -195,6 +190,6 @@ if __name__ == "__main__":
 			# Showing the value of the dot product if asked
 			if args.dotText is True: newDraw.text((x0,y1), "{:.2f}".format(dot_product), fill=invertColor(color))
 
-	newIm.save(args.image_filename+'.png', format='png')
+	newIm.save("Gradient_output/"+args.image_filename+'.png', format='png')
 	env.close()
 	
