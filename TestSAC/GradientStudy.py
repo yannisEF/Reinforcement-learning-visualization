@@ -6,13 +6,17 @@ import argparse
 
 from progress.bar import Bar
 from PIL import Image
+from PIL import ImageDraw
 import gym
 
 from stable_baselines3 import SAC
 from stable_baselines3.common.evaluation import evaluate_policy
 
+import colorTest
+
 from vector_util import *
 from slowBar import SlowBar
+
 
 # To test
 # python3 GradientStudy.py --directory Ex_Sauvegarde/Saves --basename save --min_iter 1 --max_iter 5 --eval_maxiter 1
@@ -41,7 +45,10 @@ if __name__ == "__main__":
 	parser.add_argument('--max_colormap', default=360, type=int)# max score value for colormap used (depend of benchmark used)
 	parser.add_argument('--pixelWidth', default=20, type=int)# width of each pixel
 	parser.add_argument('--pixelHeight', default=10, type=int)# height of each pixel
-	
+	#	Dot product parameters
+	parser.add_argument('--dotWidth', default=150, type=int)# max width of the dot product (added on the side)
+	parser.add_argument('--dotText', default=True, type=str)# true if want to show value of the dot product
+
 	# File management
 	parser.add_argument('--directory', default="TEST_5", type=str)# name of the directory containing the models to load
 	parser.add_argument('--basename', default="model_sac_step_1_", type=str)# file prefix for the loaded model
@@ -84,11 +91,9 @@ if __name__ == "__main__":
 														args.step_iter)]
 
 	# Compute fitness over these directions :
-	previous_theta = None # Remembers theta
-	directions = [] # Remembers the directions taken
-	red_markers, yellow_markers = [], [] # Remembers the path taken by the model
-										 # yellow is an image of the current parameters
-										 # red is and image of the previous parameters
+	previous_theta = None # Stores theta
+	directions = [] # Stores the directions taken
+	red_markers, green_markers = [], [] # Stores the previous and current models' positions at each step
 	results = [] # Stores each line
 	for indice_file in range(len(filename_list)):
 
@@ -111,20 +116,17 @@ if __name__ == "__main__":
 
 		# Study the geometry around the model
 		print("Starting study around the model...")
-		theta_plus_scores, theta_minus_scores = [], []
-		image, base_image = [], []
-
 		#	Norm of the model
 		length_dist = euclidienne(base_vect, np.zeros(np.shape(base_vect)))
 		# 		Direction taken by the model (normalized)
 		d = np.zeros(np.shape(base_vect)) if length_dist ==0 else base_vect / length_dist
-		directions.append(5*d)
+		directions.append(d)
 		#		New parameters following the direction
 		theta_plus, theta_minus = getPointsDirection(theta0, num_params, args.minalpha, args.maxalpha, args.stepalpha, d)
 
 		# Evaluate using new parameters
 		scores_plus, scores_minus = [], []
-		with SlowBar('Evaluating along the direction', max=len(theta_plus)) as bar:
+		with SlowBar("Evaluating along the model's direction", max=len(theta_plus)) as bar:
 			for param_i in range(len(theta_plus)):
 				# 	Go forward in the direction
 				model.policy.load_from_vector(theta_plus[param_i])
@@ -146,46 +148,53 @@ if __name__ == "__main__":
 		#	Mark two consecutive positions on the line
 		marker_actor = int((len(line)-1)/2)
 		marker_last = max(marker_actor-last_params_marker, 0)
-		#		Dark separation between each line, contains the models' markers
-		separating_line = np.array([v_min_fit]*len(line))
-		separating_line[marker_last] = (v_max_fit+v_min_fit)/2
-		separating_line[marker_actor] = v_max_fit
-		#		A list of the markers, yellow is current for each line, red is previous
+		#		A list of the markers, previous will be shown in red and current in green
 		red_markers.append(marker_last)
-		yellow_markers.append(marker_actor)
+		green_markers.append(marker_actor)
 		# 	Putting it all together
-		results.append(separating_line)
 		results.append(line)
 	
 	# Assembling the image
-	final_image = np.repeat(results,args.pixelHeight,axis=0)
-	final_image = np.repeat(final_image,args.pixelWidth,axis=1)
-	plt.imsave(args.image_filename,final_image, vmin=v_min_fit, vmax=v_max_fit, format='png')
+	nbLines = 3 # The height in number of pixels for each result
+	width, height = args.pixelWidth * len(line), args.pixelHeight * len(results) * (nbLines+1)
+	newIm = Image.new("RGB",(width+args.dotWidth, height))
+	newDraw = ImageDraw.Draw(newIm)
+	
+	#	Putting the results and markers
+	color1, color2 = colorTest.color1, colorTest.color2
+	for l in range(len(results)):
+		#	Separating lines containing the model's markers
+		x0, y0 = red_markers[l] * args.pixelWidth, l * (nbLines+1) * args.pixelHeight
+		x1, y1 = x0 + args.pixelWidth, y0 + args.pixelHeight
+		newDraw.rectangle([x0, y0, x1, y1], fill=(255,0,0))
 
-	# Adding a side-image showing the dot product
-	im = Image.open(args.image_filename)
-	width, height = im.size
-	output = Image.new("RGB",(width+170, height))
-	for y in range(height):
-		for x in range(width):
-			output.putpixel((x,y),im.getpixel((x,y)))
-	for nb_m in range(len(red_markers)):# red markers
-		for y in range(10):
-			for x in range(20):
-				output.putpixel((x+20*red_markers[nb_m],y+nb_m*40),(255,0,0))
+		x0 = green_markers[l] * args.pixelWidth
+		x1 = x0 + args.pixelWidth
+		newDraw.rectangle([x0, y0, x1, y1], fill=(0,255,0))
 
-	for i in range(0,len(filename_list)-1):# dot product values
-		scalar_product = np.dot(directions[i], directions[i+1])
-		print("dot prod : "+str(scalar_product))
-		color = (0,255,0)
-		if(scalar_product < -0.2):
-			color = (255,0,0)
-		else :
-			if (scalar_product >-0.2 and scalar_product < 0.2):
-				color = (255,140,0)
-		for j in range(min(int(10*abs(scalar_product))+10,150)):
-			for k in range(1,20):
-				output.putpixel((width+j+10,i*40+30+k),color)
+		# 	Drawing the results
+		y0 += args.pixelHeight
+		y1 = y0 + nbLines * args.pixelHeight
+		for c in range(len(results[l])):
+			x0 = c * args.pixelWidth
+			x1 = x0 + args.pixelWidth
+			color = valueToRGB(results[l][c], color1, color2, pureNorm=v_max_fit)
+			newDraw.rectangle([x0, y0, x1, y1], fill=color)
+		
+		#	Processing the dot product,
+		if l < len(results)-1:
+			dot_product = np.dot(directions[l], directions[l+1])
+			color = valueToRGB(dot_product, (255,0,0), (0,255,0), pureNorm=1)
 
+			# Putting in on the side with a small margin
+			xMargin, yMargin = 10, args.pixelHeight
+			x0, y0Dot = xMargin + width, y1 - yMargin
+			x1, y1Dot = x0 + min(abs(dot_product), args.dotWidth-xMargin), y1 + args.pixelHeight + yMargin
+			newDraw.rectangle([x0, y0Dot, x1, y1Dot], fill=color)
+
+			# Showing the value of the dot product if asked
+			if args.dotText is True: newDraw.text((x0,y1), "{:.2f}".format(dot_product), fill=invertColor(color))
+
+	newIm.save(args.image_filename+'.png', format='png')
 	env.close()
 	
