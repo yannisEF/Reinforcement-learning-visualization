@@ -16,7 +16,7 @@ from vector_util import *
 from slowBar import SlowBar
 
 # Draws the gradient of color between color1 and color2
-image_filename = "test_color"
+image_filename = "color_palette"
 pixelHeight, pixelWidth = 360, 10
 length = 80
 
@@ -29,7 +29,10 @@ if __name__ == "__main__":
 	
 	for k in range(len(colors)):
 		outputDraw.rectangle([k*pixelWidth,0,(k+1)*pixelWidth, pixelHeight], fill=valueToRGB(colors[k], color1, color2))
-		
-	output.save(image_filename+'2.png', format='png')
+	
+	textContent = "Color 1: " + str(color1) + "\nColor 2: " + str(color2)
+	outputDraw.text((0,0), textContent, fill=invertColor(color1))
+
+	output.save(image_filename+'.png', format='png')
 
 	

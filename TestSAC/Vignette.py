@@ -10,12 +10,12 @@ import gym
 from stable_baselines3 import SAC
 from stable_baselines3.common.evaluation import evaluate_policy
 
-from savedPlot import SavedPlot
-from vector_util import *
+from savedVignette import SavedVignette
 from slowBar import SlowBar
+from vector_util import *
 
-# To test
-# python3 Vignette.py --directory Ex_Sauvegarde/Saves --basename save --min_iter 1 --max_iter 10 --eval_maxiter 10 --plot3D True --show3D True
+# To test (~8 minutes computing time)
+# python3 Vignette.py --inputDir Ex_Sauvegarde/Saves --basename save --min_iter 1 --max_iter 1 --eval_maxiter 1 --nb_lines 10
 	
 if __name__ == "__main__":
 
@@ -23,41 +23,45 @@ if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
 
 	# Model parameters
-	parser.add_argument('--env', default='Swimmer-v2', type=str)
+	parser.add_argument('--env', default='Swimmer-v2', type=str)# the environment to load
 	parser.add_argument('--policy', default = 'MlpPolicy', type=str) # Policy of the model
 	parser.add_argument('--tau', default=0.005, type=float) # the soft update coefficient (“Polyak update”, between 0 and 1)
-	parser.add_argument('--gamma', default=0.99, type=float) # the discount fmodel
+	parser.add_argument('--gamma', default=0.99, type=float) # the discount model
 	parser.add_argument('--learning_rate', default=0.0003, type=float) #learning rate for adam optimizer, the same learning rate will be used
 																 # for all networks (Q-Values, model and Value function) it can be a function
 																 #  of the current progress remaining (from 1 to 0)
-
+	
 	# Tools parameters
 	parser.add_argument('--nb_lines', default=60, type=int)# number of directions generated,good value : precise 100, fast 60, ultrafast 50
 	parser.add_argument('--minalpha', default=0.0, type=float)# start value for alpha, good value : 0.0
 	parser.add_argument('--maxalpha', default=10, type=float)# end value for alpha, good value : large 100, around model 10
 	parser.add_argument('--stepalpha', default=0.25, type=float)# step for alpha in the loop, good value : precise 0.5 or 1, less precise 2 or 3
 	parser.add_argument('--eval_maxiter', default=1000, type=float)# number of steps for the evaluation. Depends on environment.
+	#	2D plot parameters
 	parser.add_argument('--min_colormap', default=-10, type=int)# min score value for colormap used (depend of benchmark used)
 	parser.add_argument('--max_colormap', default=360, type=int)# max score value for colormap used (depend of benchmark used)
+	parser.add_argument('--resolution', default=10, type=int)# the size of each pixel in 2D Vignette
 	#	3D plot parameters
 	parser.add_argument('--x_diff', default=2., type=float)# the space between each point along the x-axis
 	parser.add_argument('--y_diff', default=2., type=float)# the space between each point along the y-axis
 	parser.add_argument('--line_width', default=1., type=float)# the width of each line
-	parser.add_argument('--plot3D', default=False, type=bool)# true if an image of the plot needs to be saved
-	parser.add_argument('--show3D', default=True, type=bool)# true if the plot needs to be shown
-	parser.add_argument('--step3D', default=False, type=bool)# true if want to show the plot after each file (suspends execution)
-	#		Save plot parameters
-	parser.add_argument('--savePlot', default=True, type=bool)# true if want to save Plot for later use
-	parser.add_argument('--saveFolder', default="Saved_plots", type=str)# name of the folder to save the plot in
 	
 	# File management
-	parser.add_argument('--directory', default="TEST_5", type=str)# name of the directory containing the models to load
-	parser.add_argument('--basename', default="model_sac_step_1_", type=str)# file prefix for the loaded model
+	#	Input parameters
+	parser.add_argument('--inputDir', default="Models", type=str)# name of the directory containing the models to load
+	parser.add_argument('--basename', default="model", type=str)# file prefix for the loaded model
 	parser.add_argument('--min_iter', default=1, type=int)# iteration (file suffix) of the first model
 	parser.add_argument('--max_iter', default=10, type=int)# iteration (file suffix) of the last model
 	parser.add_argument('--step_iter', default=1, type=int)# iteration step between two consecutive models
-	parser.add_argument('--base_output_filename', default="vignette_output", type=str)# name of the output file to create
+	#	Output parameters
+	parser.add_argument('--saveInFile', default=True, type=bool)# true if want to save the savedVignette
+	parser.add_argument('--save2D', default=True, type=bool)# true if want to save the 2D Vignette
+	parser.add_argument('--save3D', default=True, type=bool)# true if want to save the 3D Vignette
+	parser.add_argument('--directoryFile', default="SavedVignette", type=str)# name of the directory that will contain the vignettes
+	parser.add_argument('--directory2D', default="Vignette_output", type=str)# name of the directory that will contain the 2D vignette
+	parser.add_argument('--directory3D', default="Vignette_output", type=str)# name of the directory that will contain the 3D vignette
 	args = parser.parse_args()
+
 
 	# Creating environment and initialising model and parameters
 	print("Creating environment\n")
@@ -93,18 +97,13 @@ if __name__ == "__main__":
 	# Compute fitness over these directions :
 	previous_theta = None # Remembers theta
 	for indice_file in range(len(filename_list)):
-
-		# Intitializing the 3D plot
-		if args.plot3D or args.show3D is True:
-			fig, ax = plt.figure(), plt.axes(projection="3d")
 			
-
 		# Change which model to load
 		filename = filename_list[indice_file]
 
 		# Load the model
 		print("\nSTARTING : "+str(filename))
-		model.load("{}/{}".format(args.directory, filename))
+		model.load("{}/{}".format(args.inputDir, filename))
 		
 		# Get the new parameters
 		theta0 = model.policy.parameters_to_vector()
@@ -127,7 +126,9 @@ if __name__ == "__main__":
 		d = np.zeros(np.shape(base_vect)) if length_dist ==0 else base_vect / length_dist
 
 		# Iterating over all directions, -1 is the direction that was initially taken by the model
-		newSave = SavedPlot(x_diff=args.x_diff, y_diff=args.y_diff, line_width=args.line_width) if args.savePlot is True else None # Creating a new save if asked
+		newVignette = SavedVignette(d, D, length_dist,
+									v_min_fit=v_min_fit, v_max_fit=v_max_fit, stepalpha=args.stepalpha, resolution=args.resolution,
+									x_diff=args.x_diff, y_diff=args.y_diff, line_width=args.line_width)
 		for step in range(-1,len(D)):
 			print("\nDirection ", step, "/", len(D))
 			# New parameters following the direction
@@ -154,42 +155,18 @@ if __name__ == "__main__":
 			scores_minus = scores_minus[::-1]
 			line = scores_minus + [init_score] + scores_plus
 			# 	Adding the line to the image
-			if step == -1:	base_image.append(line)
-			else:	image.append(line)
-			#	Adding the line to the plot
-			if args.plot3D or args.show3D or args.savePlot is True:
-				x_line, y_line = np.linspace(-len(line)/2,len(line)/2,len(line)), np.ones(len(line))
-				# Inverting y_line because Vignette reads from top to bottom
-				height = -step if step != -1 else -len(D)-1
-				ax.plot3D(args.x_diff * x_line, args.y_diff * height * y_line, line)
-				
-				# Adding to the save
-				if args.savePlot is True:
-					newSave.axes[step] = ax
-					newSave.lines[step] = line
+			if step == -1:	newVignette.baseLines.append(line)
+			else:	newVignette.lines.append(line)
 
-		# Assemble the image
-		# 	Dark line separating the base and the directions
-		separating_line = np.zeros(len(base_image[0]))
-		last_params_marker = int(length_dist/args.stepalpha)
-		marker_pixel = int((len(base_image[0])-1)/2-last_params_marker)
-		separating_line[marker_pixel] = v_max_fit
-		#		Concatenation, repeating each line 10 times for visibility
-		final_image = np.concatenate((image, [separating_line], base_image), axis=0)
-		final_image = np.repeat(final_image,10,axis=0)#repeating each line 10 times to be visible
-		final_image = np.repeat(final_image,10,axis=1)#repeating each line 10 times to be visible
-		#			Saving the image
-		plt.imsave(args.base_output_filename+"_"+str(filename)+".png",final_image, vmin=v_min_fit, vmax=v_max_fit, format='png')
 
-		# Saving an image of the 3D plot if asked
-		if args.plot3D is True: plt.savefig("3D_"+args.base_output_filename+"_"+str(filename)+".png")
-		# 	Showing the 3D plot if asked (suspends execution)
-		if args.step3D is True: plt.show()
-		#		Saving the plot in a file for later use if asked
-		if args.savePlot is True: newSave.saveInFile("Plot_"+args.base_output_filename+"_"+str(filename), args.saveFolder)
+		# Computing the 2D Vignette
+		if args.save2D is True:	newVignette.plot2D()
+		# Computing the 3D Vignette
+		if args.save3D is True: newVignette.plot3D() 
 		
-	# Showing all the plots if asked
-	if args.show3D is True: plt.show()
-
+		# Saving the Vignette
+		newVignette.saveAll(filename, saveInFile=args.saveInFile, save2D=args.save2D, save3D=args.save3D,
+							directoryFile=args.directoryFile, directory2D=args.directory2D, directory3D=args.directory3D)
+	
 
 	env.close()
