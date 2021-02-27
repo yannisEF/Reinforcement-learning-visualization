@@ -5,6 +5,23 @@ import matplotlib.pyplot as plt
 
 from progress.bar import Bar
 
+def valueToRGB(value, color1=(255,0,0), color2=(0,255,0), pureNorm=1):
+	"""
+	Converts a value to an RGB color, between color1 and color2
+
+	Pure colors for values of norm >= pureNorm
+	"""
+	if value**2 > pureNorm**2:
+		value = pureNorm if value > 0 else -pureNorm
+	weight = value/pureNorm
+	return tuple(int(color1[k] * (1-weight)/2) + int(color2[k]* (1+weight)/2) for k in range(len(color1)))
+
+def invertColor(color):
+	"""
+	Inverts an RGB color
+	"""
+	return tuple((255 - p for p in color))
+
 def getPointsChoice(init_params,num_params, minalpha, maxaplha, stepalpha, prob):
 	"""
 	# Params :
