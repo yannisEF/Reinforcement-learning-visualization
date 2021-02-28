@@ -19,7 +19,7 @@ from slowBar import SlowBar
 
 
 # To test (~5 minutes computing time)
-# python3 GradientStudy.py --directory Ex_Sauvegarde/Saves --basename save --min_iter 1 --max_iter 5 --eval_maxiter 1
+# python3 GradientStudy.py --min_iter 1000 --max_iter 5000 --step_maxiter 1000 --eval_maxiter 1
 
 if __name__ == "__main__":
 
@@ -41,6 +41,7 @@ if __name__ == "__main__":
 	parser.add_argument('--maxalpha', default=10, type=float)# end value for alpha, good value : large 100, around model 10
 	parser.add_argument('--stepalpha', default=0.25, type=float)# step for alpha in the loop, good value : precise 0.5 or 1, less precise 2 or 3
 	parser.add_argument('--eval_maxiter', default=1000, type=float)# number of steps for the evaluation.
+	#	Drawing parameters
 	parser.add_argument('--pixelWidth', default=20, type=int)# width of each pixel
 	parser.add_argument('--pixelHeight', default=10, type=int)# height of each pixel
 	parser.add_argument('--maxValue', default=360, type=int)# max score value for colormap used (dependent of benchmark used)
@@ -50,11 +51,11 @@ if __name__ == "__main__":
 
 	# File management
 	parser.add_argument('--directory', default="Models", type=str)# name of the directory containing the models to load
-	parser.add_argument('--basename', default="model_sac_step_1_", type=str)# file prefix for the loaded model
+	parser.add_argument('--basename', default="rl_model_", type=str)# file prefix for the loaded model
 	parser.add_argument('--min_iter', default=1, type=int)# iteration (file suffix) of the first model
 	parser.add_argument('--max_iter', default=10, type=int)# iteration (file suffix) of the last model
 	parser.add_argument('--step_iter', default=1, type=int)# iteration step between two consecutive models
-	parser.add_argument('--image_filename', default="gradient_output", type=str)# name of the output file to create
+	parser.add_argument('--image_filename', default="rl_model_gradient", type=str)# name of the output file to create
 	args = parser.parse_args()
 
 
@@ -81,7 +82,7 @@ if __name__ == "__main__":
 	D = order_all_by_proximity(D)
 
 	# Name of the model files to analyse consecutively with the same set of directions: 
-	filename_list = [args.basename+str(i) for i in range(args.min_iter,
+	filename_list = [args.basename+str(i)+'_steps' for i in range(args.min_iter,
 														args.max_iter+args.step_iter,
 														args.step_iter)]
 
@@ -106,6 +107,7 @@ if __name__ == "__main__":
 		print("Loaded parameters from file")
 
 		# Evaluate the Model : mean, std
+		print("Evaluating the model...")
 		init_score = evaluate_policy(model, env, n_eval_episodes=args.eval_maxiter, warn=False)[0]
 		print("Model initial fitness : "+str(init_score))
 
@@ -121,7 +123,7 @@ if __name__ == "__main__":
 
 		# Evaluate using new parameters
 		scores_plus, scores_minus = [], []
-		with SlowBar("Evaluating along the model's direction", max=len(theta_plus)) as bar:
+		with SlowBar("Evaluating along its direction", max=len(theta_plus)) as bar:
 			for param_i in range(len(theta_plus)):
 				# 	Go forward in the direction
 				model.policy.load_from_vector(theta_plus[param_i])
