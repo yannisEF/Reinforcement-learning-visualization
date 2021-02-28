@@ -130,7 +130,7 @@ if __name__ == "__main__":
 									v_min_fit=v_min_fit, v_max_fit=v_max_fit, stepalpha=args.stepalpha, resolution=args.resolution,
 									x_diff=args.x_diff, y_diff=args.y_diff, line_width=args.line_width)
 		for step in range(-1,len(D)):
-			print("\nDirection ", step, "/", len(D))
+			print("\nDirection ", step, "/", len(D)-1)
 			# New parameters following the direction
 			theta_plus, theta_minus = getPointsDirection(theta0, num_params, args.minalpha, args.maxalpha, args.stepalpha, d)
 			# Get the next direction
@@ -165,8 +165,10 @@ if __name__ == "__main__":
 		if args.save3D is True: newVignette.plot3D() 
 		
 		# Saving the Vignette
+		angles3D = [0,45,90] # angles at which to save the plot3D
 		newVignette.saveAll(filename, saveInFile=args.saveInFile, save2D=args.save2D, save3D=args.save3D,
-							directoryFile=args.directoryFile, directory2D=args.directory2D, directory3D=args.directory3D)
+							directoryFile=args.directoryFile, directory2D=args.directory2D, directory3D=args.directory3D,
+							angles3D=angles3D)
 	
 
 	env.close()
