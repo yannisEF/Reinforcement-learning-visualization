@@ -26,6 +26,7 @@ Test des outils en utilisant l'algorithme SAC
 * Models doit contenir un fichier .zip d'un modèle entrainé (pour la K-ième sauvegarde : modelNameK.zip)
 
 **Code source de GradientStudy :**
+* savedGradient.py contient la class SavedGradient contenant un Gradient et des outils de visualisation
 * GradientStudy.py calcule l'étude de gradient d'un modèle
 
 **Output de GradientStudy :**
