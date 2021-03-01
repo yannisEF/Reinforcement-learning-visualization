@@ -146,6 +146,6 @@ if __name__ == "__main__":
 	# Processing the 3D plot
 	loadedVignette.plot3D()
 	# 	Saving the 3D in different angles
-	loadedVignette.save3D("Vignette_output/test.png", angles = [0,45,90])
+	loadedVignette.save3D("Vignette_output/test.png", angles = [0,25,50])
 	# 	Showing the 3D plot
 	loadedVignette.show3D()

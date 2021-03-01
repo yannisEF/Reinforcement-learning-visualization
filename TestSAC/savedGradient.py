@@ -107,8 +107,8 @@ if __name__ == "__main__":
     print("Parsing arguments")
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--directory', default="SavedVignette", type=str) # directory containing the savedModel
-    parser.add_argument('--filename', default="save1", type=str) # name of the file to load
+    parser.add_argument('--directory', default="SavedGradient", type=str) # directory containing the savedModel
+    parser.add_argument('--filename', default="rl_model_", type=str) # name of the file to load
 
     args = parser.parse_args()
 

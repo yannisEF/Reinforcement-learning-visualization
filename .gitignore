@@ -1,6 +1,3 @@
 # .gitignore
 TestSAC/__pycache__
 TestSAC/.vscode
-TestSAC/stable_baselines3
-TestSAC/SavedVignette
-TestSAC/SavedGradient
