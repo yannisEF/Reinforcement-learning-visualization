@@ -1,6 +1,8 @@
 # coding: utf-8
 
 import pickle
+import lzma
+
 import matplotlib.pyplot as plt
 import numpy as np
 import argparse
@@ -10,8 +12,8 @@ def loadFromFile(filename, folder="SavedVignette"):
 	"""
 	Returns a saved plot
 	"""
-	if filename[-3:] != ".pkl": filename = filename+'.pkl'
-	with open(folder+"/"+filename, 'rb') as handle:
+	if filename[-3:] != ".xz": filename = filename+'.xz'
+	with lzma.open(folder+"/"+filename, 'rb') as handle:
 		content = pickle.load(handle)
 	return content
 
@@ -22,7 +24,7 @@ class SavedVignette:
 	"""
 	def __init__(self, d, D, length_dist,
 				 v_min_fit=-10, v_max_fit=360, stepalpha=.25, resolution=10,
-				 x_diff=2., y_diff=2., line_width=2.):
+				 x_diff=2., y_diff=2., line_width=1.):
 
 		# Content of the Vignette
 		self.baseLines = []	# Bottom lines
@@ -51,8 +53,8 @@ class SavedVignette:
 		"""
 		Save the Vignette in a file
 		"""
-		with open(filename, 'wb') as handle:
-			pickle.dump(self, handle, protocol=pickle.HIGHEST_PROTOCOL)
+		with lzma.open(filename, 'wb') as handle:
+			pickle.dump(self, handle)
 	
 	def save2D(self, filename):
 		"""
@@ -62,20 +64,25 @@ class SavedVignette:
 					vmin=self.v_min_fit, vmax=self.v_max_fit,
 					format='png')
 
-	def save3D(self, filename, angle=0):
+	def save3D(self, filename, elevs=[30], angles=[0]):
 		"""
 		Save the Vignette as a 3D image
 		"""
-		plt.savefig(filename, format='png')
+		for elev in elevs:
+			for angle in angles:
+				self.ax.view_init(elev, angle)
+				plt.draw()
+				plt.savefig(filename+'_e{}_a{}'.format(elev,angle), format='png')
 	
 	def saveAll(self, filename, saveInFile=False, save2D=False, save3D=False,
-								directoryFile="SavedVignette", directory2D="Vignette_output", directory3D="Vignette_output"):
+								directoryFile="SavedVignette", directory2D="Vignette_output", directory3D="Vignette_output",
+								angles3D=[0]):
 		"""
 		Centralises the saving process
 		"""
-		if saveInFile is True: self.saveInFile(directoryFile+'/'+filename+'.pkl')
+		if saveInFile is True: self.saveInFile(directoryFile+'/'+filename+'.xz')
 		if save2D is True: self.save2D(directory2D+'/'+filename+'_2D'+'.png')
-		if save3D is True: self.save3D(directory3D+'/'+filename+'_3D'+'.png')
+		if save3D is True: self.save3D(directory3D+'/'+filename+'_3D'+'.png', elevs=[30], angles=angles3D)
 
 	def plot2D(self):
 		"""
@@ -102,18 +109,17 @@ class SavedVignette:
 			# Check if current lines is a baseLine
 			if step == -1:
 				# baseLines are at the bottom of the image
-				height = -len(self.directions)+step
+				height = -len(self.directions)-1
 				line = self.baseLines[0]
 			else:
 				# Vignette reads from top to bottom
 				height = -step
-				line = self.directions[step]
+				line = self.lines[step]
 
 			x_line = np.linspace(-len(line)/2, len(line)/2, len(line))
 			y_line = np.ones(len(line))
 
-			self.ax.plot3D(self.x_diff * x_line, self.y_diff * height * y_line, line,
-					  linewidth=self.line_width)
+			self.ax.plot3D(self.x_diff * x_line, self.y_diff * height * y_line, line)
 
 	def show2D(self):
 		self.plot2D()
@@ -133,8 +139,13 @@ if __name__ == "__main__":
 
 	# Loading the Vignette
 	loadedVignette = loadFromFile(args.filename, folder=args.directory)
+	# Closing previously plotted figures
 	plt.close()
 	# Showing the 2D plot
 	loadedVignette.show2D()
-	# Showing the 3D plot
+	# Processing the 3D plot
+	loadedVignette.plot3D()
+	# 	Saving the 3D in different angles
+	loadedVignette.save3D("Vignette_output/test.png", angles = [0,25,50])
+	# 	Showing the 3D plot
 	loadedVignette.show3D()

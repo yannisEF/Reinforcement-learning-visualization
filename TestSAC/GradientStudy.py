@@ -16,10 +16,11 @@ import colorTest
 
 from vector_util import *
 from slowBar import SlowBar
+from savedGradient import SavedGradient
 
 
 # To test (~5 minutes computing time)
-# python3 GradientStudy.py --directory Ex_Sauvegarde/Saves --basename save --min_iter 1 --max_iter 5 --eval_maxiter 1
+# python3 GradientStudy.py --min_iter 1000 --max_iter 5000 --step_iter 1000 --eval_maxiter 1
 
 if __name__ == "__main__":
 
@@ -41,20 +42,27 @@ if __name__ == "__main__":
 	parser.add_argument('--maxalpha', default=10, type=float)# end value for alpha, good value : large 100, around model 10
 	parser.add_argument('--stepalpha', default=0.25, type=float)# step for alpha in the loop, good value : precise 0.5 or 1, less precise 2 or 3
 	parser.add_argument('--eval_maxiter', default=1000, type=float)# number of steps for the evaluation.
+	#	Drawing parameters
 	parser.add_argument('--pixelWidth', default=20, type=int)# width of each pixel
 	parser.add_argument('--pixelHeight', default=10, type=int)# height of each pixel
 	parser.add_argument('--maxValue', default=360, type=int)# max score value for colormap used (dependent of benchmark used)
+	parser.add_argument('--line_height', default=3, type=int) # The height in number of pixel for each result
 	#	Dot product parameters
 	parser.add_argument('--dotWidth', default=150, type=int)# max width of the dot product (added on the side)
 	parser.add_argument('--dotText', default=True, type=str)# true if want to show value of the dot product
+	parser.add_argument('--xMargin', default=10, type=int) # xMargin for the side panel
 
 	# File management
 	parser.add_argument('--directory', default="Models", type=str)# name of the directory containing the models to load
-	parser.add_argument('--basename', default="model_sac_step_1_", type=str)# file prefix for the loaded model
+	parser.add_argument('--basename', default="rl_model_", type=str)# file prefix for the loaded model
 	parser.add_argument('--min_iter', default=1, type=int)# iteration (file suffix) of the first model
 	parser.add_argument('--max_iter', default=10, type=int)# iteration (file suffix) of the last model
 	parser.add_argument('--step_iter', default=1, type=int)# iteration step between two consecutive models
-	parser.add_argument('--image_filename', default="gradient_output", type=str)# name of the output file to create
+	#	Output parameters
+	parser.add_argument('--saveFile', default=True, type=bool) # True if want to save the Gradient as SavedGradient
+	parser.add_argument('--saveImage', default=True, type=bool) # True if want to save the Image of the Gradient
+	parser.add_argument('--directoryFile', default="SavedGradient", type=str) # name of the directory where SavedGradient is saved
+	parser.add_argument('--directoryImage', default="Gradient_output", type=str) # name of the output directory that will contain the image
 	args = parser.parse_args()
 
 
@@ -81,15 +89,15 @@ if __name__ == "__main__":
 	D = order_all_by_proximity(D)
 
 	# Name of the model files to analyse consecutively with the same set of directions: 
-	filename_list = [args.basename+str(i) for i in range(args.min_iter,
+	filename_list = [args.basename+str(i)+'_steps' for i in range(args.min_iter,
 														args.max_iter+args.step_iter,
 														args.step_iter)]
 
 	# Compute fitness over these directions :
 	previous_theta = None # Stores theta
-	directions = [] # Stores the directions taken
-	red_markers, green_markers = [], [] # Stores the previous and current models' positions at each step
-	results = [] # Stores each line
+	newGradient = SavedGradient(directions=[], results=[], red_markers=[], green_markers=[],
+								nbLines=args.line_height, pixelWidth=args.pixelWidth, pixelHeight=args.pixelHeight, maxValue=args.maxValue,
+								dotText=args.dotText, dotWidth=args.dotWidth, xMargin=args.xMargin, yMargin=int(args.pixelHeight/2)) # Storing new SavedGradient
 	for indice_file in range(len(filename_list)):
 
 		# Change which model to load
@@ -106,6 +114,7 @@ if __name__ == "__main__":
 		print("Loaded parameters from file")
 
 		# Evaluate the Model : mean, std
+		print("Evaluating the model...")
 		init_score = evaluate_policy(model, env, n_eval_episodes=args.eval_maxiter, warn=False)[0]
 		print("Model initial fitness : "+str(init_score))
 
@@ -115,13 +124,13 @@ if __name__ == "__main__":
 		length_dist = euclidienne(base_vect, np.zeros(np.shape(base_vect)))
 		# 		Direction taken by the model (normalized)
 		d = np.zeros(np.shape(base_vect)) if length_dist ==0 else base_vect / length_dist
-		directions.append(d)
+		newGradient.directions.append(d)
 		#		New parameters following the direction
 		theta_plus, theta_minus = getPointsDirection(theta0, num_params, args.minalpha, args.maxalpha, args.stepalpha, d)
 
 		# Evaluate using new parameters
 		scores_plus, scores_minus = [], []
-		with SlowBar("Evaluating along the model's direction", max=len(theta_plus)) as bar:
+		with SlowBar("Evaluating along its direction", max=len(theta_plus)) as bar:
 			for param_i in range(len(theta_plus)):
 				# 	Go forward in the direction
 				model.policy.load_from_vector(theta_plus[param_i])
@@ -144,52 +153,14 @@ if __name__ == "__main__":
 		marker_actor = int((len(line)-1)/2)
 		marker_last = max(marker_actor-last_params_marker, 0)
 		#		A list of the markers, previous will be shown in red and current in green
-		red_markers.append(marker_last)
-		green_markers.append(marker_actor)
+		newGradient.red_markers.append(marker_last)
+		newGradient.green_markers.append(marker_actor)
 		# 	Putting it all together
-		results.append(line)
+		newGradient.results.append(line)
 	
-	# Assembling the image
-	nbLines = 3 # The height in number of pixels for each result
-	width, height = args.pixelWidth * len(line), args.pixelHeight * len(results) * (nbLines+1)
-	newIm = Image.new("RGB",(width+args.dotWidth, height))
-	newDraw = ImageDraw.Draw(newIm)
-	
-	#	Putting the results and markers
-	color1, color2 = colorTest.color1, colorTest.color2
-	for l in range(len(results)):
-		#	Separating lines containing the model's markers
-		x0, y0 = red_markers[l] * args.pixelWidth, l * (nbLines+1) * args.pixelHeight
-		x1, y1 = x0 + args.pixelWidth, y0 + args.pixelHeight
-		newDraw.rectangle([x0, y0, x1, y1], fill=(255,0,0))
+	# Assembling the image, saving it if asked
+	newGradient.computeImage(saveImage=args.saveImage, filename=args.basename+'_gradient', directory=args.directoryImage)
+	# Saving the SavedGradient if asked
+	if args.saveFile is True: newGradient.saveGradient(args.basename, args.directoryFile)
 
-		x0 = green_markers[l] * args.pixelWidth
-		x1 = x0 + args.pixelWidth
-		newDraw.rectangle([x0, y0, x1, y1], fill=(0,255,0))
-
-		# 	Drawing the results
-		y0 += args.pixelHeight
-		y1 = y0 + nbLines * args.pixelHeight
-		for c in range(len(results[l])):
-			x0 = c * args.pixelWidth
-			x1 = x0 + args.pixelWidth
-			color = valueToRGB(results[l][c], color1, color2, pureNorm=args.maxValue)
-			newDraw.rectangle([x0, y0, x1, y1], fill=color)
-		
-		#	Processing the dot product,
-		if l < len(results)-1:
-			dot_product = np.dot(directions[l], directions[l+1])
-			color = valueToRGB(dot_product, (255,0,0), (0,255,0), pureNorm=1)
-
-			# Putting in on the side with a small margin
-			xMargin, yMargin = 10, args.pixelHeight
-			x0, y0Dot = xMargin + width, y1 - yMargin
-			x1, y1Dot = x0 + min(abs(dot_product), args.dotWidth-xMargin), y1 + args.pixelHeight + yMargin
-			newDraw.rectangle([x0, y0Dot, x1, y1Dot], fill=color)
-
-			# Showing the value of the dot product if asked
-			if args.dotText is True: newDraw.text((x0,y1), "{:.2f}".format(dot_product), fill=invertColor(color))
-
-	newIm.save("Gradient_output/"+args.image_filename+'.png', format='png')
 	env.close()
-	

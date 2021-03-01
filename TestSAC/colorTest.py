@@ -15,13 +15,15 @@ from stable_baselines3.common.evaluation import evaluate_policy
 from vector_util import *
 from slowBar import SlowBar
 
-# Draws the gradient of color between color1 and color2
-image_filename = "color_palette"
-pixelHeight, pixelWidth = 360, 10
-length = 80
-
+# Chosen color palette
 color1, color2 = (50,0,200), (150,100,0)
-if __name__ == "__main__":
+
+def createPalette(image_filename="color_palette",
+				  pixelHeight=360, pixelWidth=10, length = 80,
+				  color1=(50,0,200), color2=(150,100,0)):
+	"""
+	Draws the gradient of color between color1 and color2
+	"""
 	colors = np.linspace(-1,1,length)
 
 	output = Image.new("RGB",(length * pixelWidth, pixelHeight))
@@ -35,4 +37,6 @@ if __name__ == "__main__":
 
 	output.save(image_filename+'.png', format='png')
 
-	
+if __name__ == "__main__":
+	color1, color2 = (50,0,200), (150,100,0)
+	createPalette(color1=color1, color2=color2)

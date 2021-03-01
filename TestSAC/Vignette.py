@@ -15,8 +15,10 @@ from slowBar import SlowBar
 from vector_util import *
 
 # To test (~8 minutes computing time)
-# python3 Vignette.py --inputDir Ex_Sauvegarde/Saves --basename save --min_iter 1 --max_iter 1 --eval_maxiter 1 --nb_lines 10
-	
+# python3 Vignette.py --min_iter 1000 --max_iter 1000 --step_maxiter 1000 --eval_maxiter 1 --nb_lines 10
+# /!\ Should be used with caution as savedVignette can be very heavy /!\
+# (+30mb in the above example)
+
 if __name__ == "__main__":
 
 	print("Parsing arguments")
@@ -49,7 +51,7 @@ if __name__ == "__main__":
 	# File management
 	#	Input parameters
 	parser.add_argument('--inputDir', default="Models", type=str)# name of the directory containing the models to load
-	parser.add_argument('--basename', default="model", type=str)# file prefix for the loaded model
+	parser.add_argument('--basename', default="rl_model_", type=str)# file prefix for the loaded model
 	parser.add_argument('--min_iter', default=1, type=int)# iteration (file suffix) of the first model
 	parser.add_argument('--max_iter', default=10, type=int)# iteration (file suffix) of the last model
 	parser.add_argument('--step_iter', default=1, type=int)# iteration step between two consecutive models
@@ -90,7 +92,7 @@ if __name__ == "__main__":
 	D = order_all_by_proximity(D)
 
 	# Name of the model files to analyse consecutively with the same set of directions: 
-	filename_list = [args.basename+str(i) for i in range(args.min_iter,
+	filename_list = [args.basename+str(i)+'_steps' for i in range(args.min_iter,
 														args.max_iter+args.step_iter,
 														args.step_iter)]
 
@@ -112,6 +114,7 @@ if __name__ == "__main__":
 		print("Loaded parameters from file")
 
 		# Evaluate the Model : mean, std
+		print("Evaluating the model...")
 		init_score = evaluate_policy(model, env, n_eval_episodes=args.eval_maxiter, warn=False)[0]
 		print("Model initial fitness : "+str(init_score))
 
@@ -130,7 +133,7 @@ if __name__ == "__main__":
 									v_min_fit=v_min_fit, v_max_fit=v_max_fit, stepalpha=args.stepalpha, resolution=args.resolution,
 									x_diff=args.x_diff, y_diff=args.y_diff, line_width=args.line_width)
 		for step in range(-1,len(D)):
-			print("\nDirection ", step, "/", len(D))
+			print("\nDirection ", step, "/", len(D)-1)
 			# New parameters following the direction
 			theta_plus, theta_minus = getPointsDirection(theta0, num_params, args.minalpha, args.maxalpha, args.stepalpha, d)
 			# Get the next direction
@@ -165,8 +168,10 @@ if __name__ == "__main__":
 		if args.save3D is True: newVignette.plot3D() 
 		
 		# Saving the Vignette
+		angles3D = [0,45,90] # angles at which to save the plot3D
 		newVignette.saveAll(filename, saveInFile=args.saveInFile, save2D=args.save2D, save3D=args.save3D,
-							directoryFile=args.directoryFile, directory2D=args.directory2D, directory3D=args.directory3D)
+							directoryFile=args.directoryFile, directory2D=args.directory2D, directory3D=args.directory3D,
+							angles3D=angles3D)
 	
 
 	env.close()
