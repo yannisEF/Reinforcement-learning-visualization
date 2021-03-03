@@ -13,7 +13,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--env', default='Swimmer-v2', type=str)# the environment to load
 parser.add_argument('--policy', default = 'MlpPolicy', type=str) # Policy of the model
 parser.add_argument('--tau', default=0.005, type=float) # the soft update coefficient (“Polyak update”, between 0 and 1)
-parser.add_argument('--gamma', default=0.99, type=float) # the discount model
+parser.add_argument('--gamma', default=1, type=float) # the discount model
 parser.add_argument('--learning_rate', default=0.0003, type=float) #learning rate for adam optimizer, the same learning rate will be used
 															 # for all networks (Q-Values, model and Value function) it can be a function
 															 #  of the current progress remaining (from 1 to 0)

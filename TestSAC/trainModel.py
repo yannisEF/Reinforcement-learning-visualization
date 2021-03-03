@@ -10,14 +10,14 @@ if __name__ == "__main__":
     print("Parsing arguments")
     parser = argparse.ArgumentParser()
 
-	# Model parameters
-	parser.add_argument('--env', default='Swimmer-v2', type=str)
-	parser.add_argument('--policy', default = 'MlpPolicy', type=str) # Policy of the model
-	parser.add_argument('--tau', default=0.005, type=float) # the soft update coefficient (“Polyak update”, between 0 and 1)
-	parser.add_argument('--gamma', default=0.99, type=float) # the discount fmodel
-	parser.add_argument('--learning_rate', default=0.0003, type=float) #learning rate for adam optimizer, the same learning rate will be used
-																 # for all networks (Q-Values, model and Value function) it can be a function
-																 #  of the current progress remaining (from 1 to 0)
+    # Model parameters
+    parser.add_argument('--env', default='Swimmer-v2', type=str)
+    parser.add_argument('--policy', default = 'MlpPolicy', type=str) # Policy of the model
+    parser.add_argument('--tau', default=0.005, type=float) # the soft update coefficient (“Polyak update”, between 0 and 1)
+    parser.add_argument('--gamma', default=1, type=float) # the discount fmodel
+    parser.add_argument('--learning_rate', default=0.0003, type=float) #learning rate for adam optimizer, the same learning rate will be used
+    															 # for all networks (Q-Values, model and Value function) it can be a function
+    															 #  of the current progress remaining (from 1 to 0)
     
     # Save parameters
     parser.add_argument('--save_path', default='Models', type=str) # path to save
@@ -29,10 +29,10 @@ if __name__ == "__main__":
     # Creating environment and initialising model and parameters
     print("Creating environment\n")
     eval_env = gym.make(args.env)
-	model = SAC(args.policy, args.env,
-				learning_rate=args.learning_rate,
-				tau=args.tau,
-				gamma=args.gamma)
+    model = SAC(args.policy, args.env,
+    			learning_rate=args.learning_rate,
+    			tau=args.tau,
+    			gamma=args.gamma)
 
     # Use deterministic actions for evaluation
     checkpoint_callback = CheckpointCallback(save_freq=args.save_freq, save_path=args.save_path,

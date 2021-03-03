@@ -16,7 +16,7 @@ from vector_util import *
 from slowBar import SlowBar
 
 # Chosen color palette
-color1, color2 = (50,0,200), (150,100,0)
+color1, color2 = (80,0,160), (160,80,0)
 
 def createPalette(image_filename="color_palette",
 				  pixelHeight=360, pixelWidth=10, length = 80,
@@ -38,5 +38,4 @@ def createPalette(image_filename="color_palette",
 	output.save(image_filename+'.png', format='png')
 
 if __name__ == "__main__":
-	color1, color2 = (50,0,200), (150,100,0)
 	createPalette(color1=color1, color2=color2)

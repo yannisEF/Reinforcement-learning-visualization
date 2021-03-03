@@ -78,7 +78,7 @@ class SavedGradient:
             for c in range(len(self.results[l])):
                 x0 = c * self.pixelWidth
                 x1 = x0 + self.pixelWidth
-                color = valueToRGB(self.results[l][c], color1, color2, pureNorm=self.maxValue)
+                color = valueToRGB(self.results[l][c], color1, color2, pureNorm=np.max(self.results))
                 newDraw.rectangle([x0, y0, x1, y1], fill=color)
 
             #	Processing the dot product,
@@ -109,13 +109,16 @@ if __name__ == "__main__":
 
     parser.add_argument('--directory', default="SavedGradient", type=str) # directory containing the savedModel
     parser.add_argument('--filename', default="rl_model_", type=str) # name of the file to load
+    
+    parser.add_argument('--outputDir', default="Gradient_output", type=str) # output directory
+    parser.add_argument('--outputName', default="test_palette", type=str) # output name
 
     args = parser.parse_args()
 
     # Loading the gradient
     loadedGradient = loadFromFile(args.filename, folder=args.directory)
     # Changing the color palette
-    color1, color2 = (120,0,120), (40,170,30)
+    color1, color2 = (60,60,120), (120,60,60)
     loadedGradient.changeColor(color1=color1, color2=color2)
     # Computing the new image and saving the results
-    loadedGradient.computeImage(filename="test_palette")
+    loadedGradient.computeImage(filename=args.outputName, directory=args.outputDir)
