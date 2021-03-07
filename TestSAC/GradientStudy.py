@@ -20,7 +20,7 @@ from savedGradient import SavedGradient
 
 
 # To test (~5 minutes computing time)
-# python3 GradientStudy.py --min_iter 1000 --max_iter 5000 --step_iter 1000 --eval_maxiter 1
+# python3 GradientStudy.py --env Pendulum-v0 --directory Models/Pendulum --min_iter 500 --max_iter 10000 --step_iter 500 --eval_maxiter 5
 
 if __name__ == "__main__":
 
@@ -31,7 +31,7 @@ if __name__ == "__main__":
 	parser.add_argument('--env', default='Swimmer-v2', type=str)
 	parser.add_argument('--policy', default = 'MlpPolicy', type=str) # Policy of the model
 	parser.add_argument('--tau', default=0.005, type=float) # the soft update coefficient (“Polyak update”, between 0 and 1)
-	parser.add_argument('--gamma', default=0.99, type=float) # the discount fmodel
+	parser.add_argument('--gamma', default=1, type=float) # the discount fmodel
 	parser.add_argument('--learning_rate', default=0.0003, type=float) #learning rate for adam optimizer, the same learning rate will be used
 																 # for all networks (Q-Values, model and Value function) it can be a function
 																 #  of the current progress remaining (from 1 to 0)
@@ -41,7 +41,7 @@ if __name__ == "__main__":
 	parser.add_argument('--minalpha', default=0.0, type=float)# start value for alpha, good value : 0.0
 	parser.add_argument('--maxalpha', default=10, type=float)# end value for alpha, good value : large 100, around model 10
 	parser.add_argument('--stepalpha', default=0.25, type=float)# step for alpha in the loop, good value : precise 0.5 or 1, less precise 2 or 3
-	parser.add_argument('--eval_maxiter', default=1000, type=float)# number of steps for the evaluation.
+	parser.add_argument('--eval_maxiter', default=5, type=float)# number of steps for the evaluation.
 	#	Drawing parameters
 	parser.add_argument('--pixelWidth', default=20, type=int)# width of each pixel
 	parser.add_argument('--pixelHeight', default=10, type=int)# height of each pixel
@@ -105,7 +105,7 @@ if __name__ == "__main__":
 
 		# Load the model
 		print("\nSTARTING : "+str(filename))
-		model.load("{}/{}".format(args.directory, filename))
+		model = SAC.load("{}/{}".format(args.directory, filename))
 		
 		# Get the new parameters
 		theta0 = model.policy.parameters_to_vector()
@@ -115,8 +115,8 @@ if __name__ == "__main__":
 
 		# Evaluate the Model : mean, std
 		print("Evaluating the model...")
-		init_score = evaluate_policy(model, env, n_eval_episodes=args.eval_maxiter, warn=False)[0]
-		print("Model initial fitness : "+str(init_score))
+		init_score, score_std = evaluate_policy(model, env, n_eval_episodes=args.eval_maxiter, warn=False)
+		print("Model initial fitness : ", (init_score, score_std))
 
 		# Study the geometry around the model
 		print("Starting study around the model...")

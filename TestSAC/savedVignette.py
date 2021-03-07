@@ -76,13 +76,13 @@ class SavedVignette:
 	
 	def saveAll(self, filename, saveInFile=False, save2D=False, save3D=False,
 								directoryFile="SavedVignette", directory2D="Vignette_output", directory3D="Vignette_output",
-								angles3D=[0]):
+								angles3D=[0], elevs=[0]):
 		"""
 		Centralises the saving process
 		"""
 		if saveInFile is True: self.saveInFile(directoryFile+'/'+filename+'.xz')
 		if save2D is True: self.save2D(directory2D+'/'+filename+'_2D'+'.png')
-		if save3D is True: self.save3D(directory3D+'/'+filename+'_3D'+'.png', elevs=[30], angles=angles3D)
+		if save3D is True: self.save3D(directory3D+'/'+filename+'_3D'+'.png', elevs=elevs, angles=angles3D)
 
 	def plot2D(self):
 		"""
@@ -90,10 +90,6 @@ class SavedVignette:
 		"""
 		width = len(self.baseLines[0])
 		separating_line = np.zeros(width)
-		last_params_marker = int(self.length_dist/self.stepalpha)
-
-		marker_pixel = int((width-1)/2 - last_params_marker)
-		separating_line[marker_pixel] = self.v_max_fit
 
 		self.final_image = np.concatenate((self.lines, [separating_line], self.baseLines), axis=0)
 		self.final_image = np.repeat(self.final_image, self.resolution, axis=0)
@@ -146,6 +142,6 @@ if __name__ == "__main__":
 	# Processing the 3D plot
 	loadedVignette.plot3D()
 	# 	Saving the 3D in different angles
-	loadedVignette.save3D("Vignette_output/test.png", angles = [0,25,50])
+	loadedVignette.save3D("Vignette_output/test.png", angles = [45], elevs = [0, 90])
 	# 	Showing the 3D plot
 	loadedVignette.show3D()
