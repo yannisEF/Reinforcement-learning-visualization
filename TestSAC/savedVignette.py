@@ -90,10 +90,6 @@ class SavedVignette:
 		"""
 		width = len(self.baseLines[0])
 		separating_line = np.zeros(width)
-		last_params_marker = int(self.length_dist/self.stepalpha)
-
-		marker_pixel = int((width-1)/2 - last_params_marker)
-		separating_line[marker_pixel] = self.v_max_fit
 
 		self.final_image = np.concatenate((self.lines, [separating_line], self.baseLines), axis=0)
 		self.final_image = np.repeat(self.final_image, self.resolution, axis=0)

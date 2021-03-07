@@ -160,11 +160,15 @@ if __name__ == "__main__":
 			if step == -1:	newVignette.baseLines.append(line)
 			else:	newVignette.lines.append(line)
 
+		try:
+			# Computing the 2D Vignette
+			if args.save2D is True:	newVignette.plot2D()
+			# Computing the 3D Vignette
+			if args.save3D is True: newVignette.plot3D()
+		except Exception as e:
+			newVignette.saveInFile("{}/temp/{}.xz".format(args.directoryFile, filename))
+			e.print_exc()
 
-		# Computing the 2D Vignette
-		if args.save2D is True:	newVignette.plot2D()
-		# Computing the 3D Vignette
-		if args.save3D is True: newVignette.plot3D() 
 		
 		# Saving the Vignette
 		angles3D = [20,45,50,65] # angles at which to save the plot3D
