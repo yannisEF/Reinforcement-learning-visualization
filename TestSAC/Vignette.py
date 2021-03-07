@@ -15,9 +15,8 @@ from slowBar import SlowBar
 from vector_util import *
 
 # To test (~8 minutes computing time)
-# python3 Vignette.py --min_iter 1000 --max_iter 1000 --step_maxiter 1000 --eval_maxiter 1 --nb_lines 10
+# python3 Vignette.py --env Pendulum-v0 --inputDir Models/Pendulum --min_iter 8000 --max_iter 8000 --step_maxiter 500 --eval_maxiter 5 --nb_lines 10
 # /!\ Should be used with caution as savedVignette can be very heavy /!\
-# (+30mb in the above example)
 
 if __name__ == "__main__":
 
@@ -38,7 +37,7 @@ if __name__ == "__main__":
 	parser.add_argument('--minalpha', default=0.0, type=float)# start value for alpha, good value : 0.0
 	parser.add_argument('--maxalpha', default=10, type=float)# end value for alpha, good value : large 100, around model 10
 	parser.add_argument('--stepalpha', default=0.25, type=float)# step for alpha in the loop, good value : precise 0.5 or 1, less precise 2 or 3
-	parser.add_argument('--eval_maxiter', default=1000, type=float)# number of steps for the evaluation. Depends on environment.
+	parser.add_argument('--eval_maxiter', default=5, type=float)# number of steps for the evaluation. Depends on environment.
 	#	2D plot parameters
 	parser.add_argument('--min_colormap', default=-10, type=int)# min score value for colormap used (depend of benchmark used)
 	parser.add_argument('--max_colormap', default=360, type=int)# max score value for colormap used (depend of benchmark used)
@@ -105,7 +104,7 @@ if __name__ == "__main__":
 
 		# Load the model
 		print("\nSTARTING : "+str(filename))
-		model.load("{}/{}".format(args.inputDir, filename))
+		model = SAC.load("{}/{}".format(args.inputDir, filename))
 		
 		# Get the new parameters
 		theta0 = model.policy.parameters_to_vector()
@@ -168,10 +167,11 @@ if __name__ == "__main__":
 		if args.save3D is True: newVignette.plot3D() 
 		
 		# Saving the Vignette
-		angles3D = [0,45,90] # angles at which to save the plot3D
+		angles3D = [20,45,50,65] # angles at which to save the plot3D
+		elevs= [0, 30, 60]
 		newVignette.saveAll(filename, saveInFile=args.saveInFile, save2D=args.save2D, save3D=args.save3D,
 							directoryFile=args.directoryFile, directory2D=args.directory2D, directory3D=args.directory3D,
-							angles3D=angles3D)
+							angles3D=angles3D, elevs=elevs)
 	
 
 	env.close()

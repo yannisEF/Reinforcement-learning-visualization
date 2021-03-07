@@ -2,7 +2,7 @@ import gym
 import argparse
 
 from stable_baselines3 import SAC
-from stable_baselines3.common.callbacks import CheckpointCallback
+from stable_baselines3.common.callbacks import CheckpointCallback, EvalCallback, CallbackList
 
 # Saves a model's training process
 
@@ -23,7 +23,7 @@ if __name__ == "__main__":
     parser.add_argument('--save_path', default='Models', type=str) # path to save
     parser.add_argument('--name_prefix', default='rl_model', type=str) # prefix of saves' name
     parser.add_argument('--save_freq', default=1000, type=int) # frequency of the save
-    parser.add_argument('--max_learn', default=50000, type=int) # Number of steps to learning process
+    parser.add_argument('--max_learn', default=10000, type=int) # Number of steps to learning process
     args = parser.parse_args()
 
     # Creating environment and initialising model and parameters
@@ -36,7 +36,9 @@ if __name__ == "__main__":
 
     # Use deterministic actions for evaluation
     checkpoint_callback = CheckpointCallback(save_freq=args.save_freq, save_path=args.save_path,
-                                            name_prefix=args.name_prefix)
+                                            name_prefix=args.name_prefix, verbose=2)
+    eval_callback = EvalCallback(eval_env, eval_freq=args.save_freq, best_model_save_path=args.save_path)
+    list_callback = CallbackList([checkpoint_callback, eval_callback])
 
     # Starting the learning process
-    model.learn(args.max_learn, callback=checkpoint_callback)
+    model.learn(args.max_learn, callback=list_callback)

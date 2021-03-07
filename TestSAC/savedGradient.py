@@ -61,6 +61,7 @@ class SavedGradient:
         newIm = Image.new("RGB",(width+self.dotWidth, height))
         newDraw = ImageDraw.Draw(newIm)
 
+        maxColor = np.max(np.abs(self.results),axis=1)
         #	Putting the results and markers
         for l in range(len(self.results)):
             #	Separating lines containing the model's markers
@@ -78,7 +79,7 @@ class SavedGradient:
             for c in range(len(self.results[l])):
                 x0 = c * self.pixelWidth
                 x1 = x0 + self.pixelWidth
-                color = valueToRGB(self.results[l][c], color1, color2, pureNorm=np.max(self.results))
+                color = valueToRGB(self.results[l][c], color1, color2, pureNorm=maxColor[l])
                 newDraw.rectangle([x0, y0, x1, y1], fill=color)
 
             #	Processing the dot product,
@@ -88,11 +89,11 @@ class SavedGradient:
 
                 # Putting in on the side with a small margin
                 x0, y0Dot = self.xMargin + width, y1 - self.yMargin
-                x1, y1Dot = x0 + min(abs(dot_product), self.dotWidth-self.xMargin), y1 + self.pixelHeight + self.yMargin
+                x1, y1Dot = x0 + min(self.dotWidth * abs(dot_product), self.dotWidth-self.xMargin), y1 + self.pixelHeight + self.yMargin
                 newDraw.rectangle([x0, y0Dot, x1, y1Dot], fill=color)
 
                 # Showing the value of the dot product if asked
-                if self.dotText is True:    newDraw.text((x0,y1), "{:.2f}".format(dot_product), fill=invertColor(color))
+                if self.dotText is True:    newDraw.text((x0 + self.xMargin,y1), "{:.2f}".format(dot_product), fill=invertColor(color))
 
         # Saving image if asked
         if saveImage is True:   newIm.save(directory+'/'+filename+'.png', format='png')

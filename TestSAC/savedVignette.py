@@ -76,13 +76,13 @@ class SavedVignette:
 	
 	def saveAll(self, filename, saveInFile=False, save2D=False, save3D=False,
 								directoryFile="SavedVignette", directory2D="Vignette_output", directory3D="Vignette_output",
-								angles3D=[0]):
+								angles3D=[0], elevs=[0]):
 		"""
 		Centralises the saving process
 		"""
 		if saveInFile is True: self.saveInFile(directoryFile+'/'+filename+'.xz')
 		if save2D is True: self.save2D(directory2D+'/'+filename+'_2D'+'.png')
-		if save3D is True: self.save3D(directory3D+'/'+filename+'_3D'+'.png', elevs=[30], angles=angles3D)
+		if save3D is True: self.save3D(directory3D+'/'+filename+'_3D'+'.png', elevs=elevs, angles=angles3D)
 
 	def plot2D(self):
 		"""
