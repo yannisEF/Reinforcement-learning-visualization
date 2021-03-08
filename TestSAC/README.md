@@ -11,6 +11,7 @@ Test des outils en utilisant l'algorithme SAC
 
 **Input de Vignette :**
 * Models doit contenir un fichier .zip d'un modèle entrainé (pour la K-ième sauvegarde : modelNameK.zip)
+* See https://drive.google.com/file/d/183-1Im429j5b1UadVArY5YV-shol7lCj/view?usp=drive_web to download a SavedVignette example, trained on Pendulum-v0 (should be put in TestSAC/SavedVignette
 
 **Code source de Vignette :**
 * savedVignette.py contient la class SavedVignette contenant une Vignette et des outils de visualisation

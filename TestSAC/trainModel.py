@@ -34,7 +34,7 @@ if __name__ == "__main__":
     			tau=args.tau,
     			gamma=args.gamma)
 
-    # Use deterministic actions for evaluation
+    # Creating the Callbacks
     checkpoint_callback = CheckpointCallback(save_freq=args.save_freq, save_path=args.save_path,
                                             name_prefix=args.name_prefix, verbose=2)
     eval_callback = EvalCallback(eval_env, eval_freq=args.save_freq, best_model_save_path=args.save_path)
