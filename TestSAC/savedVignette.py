@@ -117,15 +117,15 @@ class SavedVignette:
 
 			self.ax.plot3D(self.x_diff * x_line, self.y_diff * height * y_line, line)
 
-	def show2D(self):
+	def show2D(self, cmap='binary'):
 		self.plot2D()
-		plt.imshow(self.final_image, vmin=self.v_min_fit, vmax=self.v_max_fit)		
+		plt.imshow(self.final_image, vmin=self.v_min_fit, vmax=self.v_max_fit, cmap=cmap)		
 	def show3D(self):
 		self.plot3D()
 		plt.show()
 		
 if __name__ == "__main__":
-	print("Parsing arguments")
+	print("Parsing arguments...")
 	parser = argparse.ArgumentParser()
 
 	parser.add_argument('--directory', default="SavedVignette", type=str) # directory containing the savedModel
@@ -134,14 +134,19 @@ if __name__ == "__main__":
 	args = parser.parse_args()
 
 	# Loading the Vignette
+	print("Loading the Vignette...")
 	loadedVignette = loadFromFile(args.filename, folder=args.directory)
 	# Closing previously plotted figures
 	plt.close()
+
 	# Showing the 2D plot
+	print("Processing 2D plot...")
+	loadedVignette.v_min_fit, loadedVignette.v_max_fit = -2000, 0
 	loadedVignette.show2D()
+	
 	# Processing the 3D plot
+	print("Processing 3D plot...")
+	loadedVignette.y_diff = 5.
 	loadedVignette.plot3D()
-	# 	Saving the 3D in different angles
-	loadedVignette.save3D("Vignette_output/test.png", angles = [45], elevs = [0, 90])
 	# 	Showing the 3D plot
 	loadedVignette.show3D()

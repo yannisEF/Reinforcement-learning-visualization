@@ -24,7 +24,7 @@ if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
 
 	# Model parameters
-	parser.add_argument('--env', default='Swimmer-v2', type=str)# the environment to load
+	parser.add_argument('--env', default='Pendulum-v0', type=str)# the environment to load
 	parser.add_argument('--policy', default = 'MlpPolicy', type=str) # Policy of the model
 	parser.add_argument('--tau', default=0.005, type=float) # the soft update coefficient (“Polyak update”, between 0 and 1)
 	parser.add_argument('--gamma', default=1, type=float) # the discount model
@@ -39,8 +39,8 @@ if __name__ == "__main__":
 	parser.add_argument('--stepalpha', default=0.25, type=float)# step for alpha in the loop, good value : precise 0.5 or 1, less precise 2 or 3
 	parser.add_argument('--eval_maxiter', default=5, type=float)# number of steps for the evaluation. Depends on environment.
 	#	2D plot parameters
-	parser.add_argument('--min_colormap', default=-10, type=int)# min score value for colormap used (depend of benchmark used)
-	parser.add_argument('--max_colormap', default=360, type=int)# max score value for colormap used (depend of benchmark used)
+	parser.add_argument('--min_colormap', default=-1000, type=int)# min score value for colormap used (depend of benchmark used)
+	parser.add_argument('--max_colormap', default=0, type=int)# max score value for colormap used (depend of benchmark used)
 	parser.add_argument('--resolution', default=10, type=int)# the size of each pixel in 2D Vignette
 	#	3D plot parameters
 	parser.add_argument('--x_diff', default=2., type=float)# the space between each point along the x-axis
