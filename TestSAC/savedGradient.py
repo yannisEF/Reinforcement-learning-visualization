@@ -119,7 +119,7 @@ if __name__ == "__main__":
     # Loading the gradient
     loadedGradient = loadFromFile(args.filename, folder=args.directory)
     # Changing the color palette
-    color1, color2 = (60,60,120), (120,60,60)
+    color1, color2 = (40,0,200), (120,120,0)
     loadedGradient.changeColor(color1=color1, color2=color2)
     # Computing the new image and saving the results
     loadedGradient.computeImage(filename=args.outputName, directory=args.outputDir)
