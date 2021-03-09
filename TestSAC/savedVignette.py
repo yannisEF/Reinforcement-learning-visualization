@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import argparse
 
-
 def loadFromFile(filename, folder="SavedVignette"):
 	"""
 	Returns a saved plot
@@ -95,7 +94,7 @@ class SavedVignette:
 		self.final_image = np.repeat(self.final_image, self.resolution, axis=0)
 		self.final_image = np.repeat(self.final_image, self.resolution, axis=1)
 
-	def plot3D(self, figsize=(12,8)):
+	def plot3D(self, function=lambda x:x, figsize=(12,8)):
 		"""
 		Compute the 3D image of the Vignette
 		"""
@@ -115,7 +114,37 @@ class SavedVignette:
 			x_line = np.linspace(-len(line)/2, len(line)/2, len(line))
 			y_line = np.ones(len(line))
 
-			self.ax.plot3D(self.x_diff * x_line, self.y_diff * height * y_line, line)
+			self.ax.plot3D(self.x_diff * x_line, self.y_diff * height * y_line, function(line))
+
+	def plot3DBand(self, function=lambda x:x,
+				   figsize=(12,8), width=5, linewidth=.01, cmap='coolwarm'):
+		"""
+		Compute the 3D image of the Vignette
+		"""
+		self.fig, self.ax = plt.figure(figsize=figsize), plt.axes(projection='3d')
+		# Iterate over all lines
+		for step in range(-1, len(self.directions)):
+			# Check if current lines is a baseLine
+			if step == -1:
+				# baseLines are at the bottom of the image
+				height = -len(self.directions)-1
+				line = self.baseLines[0]
+			else:
+				# Vignette reads from top to bottom
+				height = -step
+				line = self.lines[step]
+			
+			x_line = np.linspace(-len(line)/2, len(line)/2, len(line))
+			y_line = height * width * np.ones(len(line))
+
+			X = np.array([x_line, x_line])
+			Y = np.array([y_line, y_line + width])
+
+			newLine = function(line)
+			Z = np.array([newLine, newLine])
+
+			self.ax.plot_surface(self.x_diff * X, self.y_diff * Y, Z, cmap=cmap, linewidth=linewidth)
+			
 
 	def show2D(self, cmap='binary'):
 		self.plot2D()
@@ -146,7 +175,11 @@ if __name__ == "__main__":
 	
 	# Processing the 3D plot
 	print("Processing 3D plot...")
-	loadedVignette.y_diff = 5.
-	loadedVignette.plot3D()
+	def f(x):
+		x = (np.array(x) - np.max(x))
+		y = np.sinc(x)
+		invR = 1 / np.sqrt(x**2 + y**2)
+		return invR
+	loadedVignette.plot3DBand(width=10)
 	# 	Showing the 3D plot
 	loadedVignette.show3D()
