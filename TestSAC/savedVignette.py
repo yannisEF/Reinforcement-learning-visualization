@@ -71,7 +71,7 @@ class SavedVignette:
 			for angle in angles:
 				self.ax.view_init(elev, angle)
 				plt.draw()
-				plt.savefig(filename+'_e{}_a{}'.format(elev,angle), format='png')
+				plt.savefig(filename+'_e{}_a{}.png'.format(elev,angle), format='png')
 	
 	def saveAll(self, filename, saveInFile=False, save2D=False, save3D=False,
 								directoryFile="SavedVignette", directory2D="Vignette_output", directory3D="Vignette_output",
@@ -94,11 +94,11 @@ class SavedVignette:
 		self.final_image = np.repeat(self.final_image, self.resolution, axis=0)
 		self.final_image = np.repeat(self.final_image, self.resolution, axis=1)
 
-	def plot3D(self, function=lambda x:x, figsize=(12,8)):
+	def plot3D(self, function=lambda x:x, figsize=(12,8), title="Vignette ligne"):
 		"""
 		Compute the 3D image of the Vignette
 		"""
-		self.fig, self.ax = plt.figure(figsize=figsize), plt.axes(projection='3d')
+		self.fig, self.ax = plt.figure(title,figsize=figsize), plt.axes(projection='3d')
 		# Iterate over all lines
 		for step in range(-1, len(self.directions)):
 			# Check if current lines is a baseLine
@@ -117,11 +117,11 @@ class SavedVignette:
 			self.ax.plot3D(self.x_diff * x_line, self.y_diff * height * y_line, function(line))
 
 	def plot3DBand(self, function=lambda x:x,
-				   figsize=(12,8), width=5, linewidth=.01, cmap='coolwarm'):
+				   figsize=(12,8), title="Vignette surface", width=5, linewidth=.01, cmap='coolwarm'):
 		"""
 		Compute the 3D image of the Vignette
 		"""
-		self.fig, self.ax = plt.figure(figsize=figsize), plt.axes(projection='3d')
+		self.fig, self.ax = plt.figure(title,figsize=figsize), plt.axes(projection='3d')
 		# Iterate over all lines
 		for step in range(-1, len(self.directions)):
 			# Check if current lines is a baseLine
@@ -150,7 +150,6 @@ class SavedVignette:
 		self.plot2D()
 		plt.imshow(self.final_image, vmin=self.v_min_fit, vmax=self.v_max_fit, cmap=cmap)		
 	def show3D(self):
-		self.plot3D()
 		plt.show()
 		
 if __name__ == "__main__":
@@ -175,11 +174,16 @@ if __name__ == "__main__":
 	
 	# Processing the 3D plot
 	print("Processing 3D plot...")
-	def f(x):
-		x = (np.array(x) - np.max(x))
+	def f(x, ecart=1):
+		x = (np.array(x) - np.max(x)) / ecart
 		y = np.sinc(x)
 		invR = 1 / np.sqrt(x**2 + y**2)
 		return invR
-	loadedVignette.plot3DBand(width=10)
+	
+	angles, elevs = [45, 80, 85, 90], [0, 30, 89, 90]	
+	loadedVignette.plot3DBand(width=10, title="Surface sans transformation")
+	#loadedVignette.save3D(filename="Vignette_output/no_tranform", angles=angles, elevs=elevs)
+	loadedVignette.plot3DBand(function=f, width=10, title="Surface isolant les maxs")
+	#loadedVignette.save3D(filename="Vignette_output/max_isolated", angles=angles, elevs=elevs)
 	# 	Showing the 3D plot
 	loadedVignette.show3D()
