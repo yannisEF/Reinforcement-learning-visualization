@@ -21,7 +21,7 @@ class SavedVignette:
 	Class storing a Vignette, able to draw it in 3D and 2D
 	Useful to serialize in order to be able to change drawing parameters
 	"""
-	def __init__(self, d, D, length_dist,
+	def __init__(self, d, D, length_dist, policyDistance=None,
 				 v_min_fit=-10, v_max_fit=360, stepalpha=.25, resolution=10,
 				 x_diff=2., y_diff=2., line_width=1.):
 
@@ -30,6 +30,7 @@ class SavedVignette:
 		self.lines = []	# Upper lines
 		self.model_direction = d
 		self.directions = D	# All sampled directions
+		self.policyDistance = policyDistance # unordered dict, direction_relative_to_model:distance_to_model
 
 		# Image
 		self.final_image = None
@@ -90,6 +91,15 @@ class SavedVignette:
 		width = len(self.baseLines[0])
 		separating_line = np.zeros(width)
 
+		# Putting in the input policies' markers
+		if self.policyDistance is not None:
+			for d in range(len(self.directions)):
+				try:
+					distance = self.policyDistance[self.directions[d]]
+					self.lines[round(distance/self.stepalpha)] = self.v_max_fit
+				except KeyError: pass
+
+		# Assembling it all together
 		self.final_image = np.concatenate((self.lines, [separating_line], self.baseLines), axis=0)
 		self.final_image = np.repeat(self.final_image, self.resolution, axis=0)
 		self.final_image = np.repeat(self.final_image, self.resolution, axis=1)
@@ -146,7 +156,7 @@ class SavedVignette:
 			self.ax.plot_surface(self.x_diff * X, self.y_diff * Y, Z, cmap=cmap, linewidth=linewidth)
 			
 
-	def show2D(self, cmap='binary'):
+	def show2D(self, cmap='plasma'):
 		self.plot2D()
 		plt.imshow(self.final_image, vmin=self.v_min_fit, vmax=self.v_max_fit, cmap=cmap)		
 	def show3D(self):

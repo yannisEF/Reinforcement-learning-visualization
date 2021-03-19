@@ -14,6 +14,9 @@ from savedVignette import SavedVignette
 from slowBar import SlowBar
 from vector_util import *
 
+import multiprocessing
+from testThread import multiprocessing_func
+
 # To test (~8 minutes computing time)
 # python3 Vignette.py --env Pendulum-v0 --inputDir Models/Pendulum --min_iter 8000 --max_iter 8000 --step_maxiter 500 --eval_maxiter 5 --nb_lines 10
 # /!\ Should be used with caution as savedVignette can be very heavy /!\
@@ -54,8 +57,6 @@ if __name__ == "__main__":
 	parser.add_argument('--min_iter', default=1, type=int)# iteration (file suffix) of the first model
 	parser.add_argument('--max_iter', default=10, type=int)# iteration (file suffix) of the last model
 	parser.add_argument('--step_iter', default=1, type=int)# iteration step between two consecutive models
-	# 		Input policies parameters
-	parser.add_argument('--policiesPath', default=None, type=str) # path to a list of policies to be included in Vignette
 	#	Output parameters
 	parser.add_argument('--saveInFile', default=True, type=bool)# true if want to save the savedVignette
 	parser.add_argument('--save2D', default=True, type=bool)# true if want to save the 2D Vignette
@@ -81,11 +82,6 @@ if __name__ == "__main__":
 	theta0 = model.policy.parameters_to_vector()
 	num_params = len(theta0)
 	
-	# Retrieving the provided policies
-	if args.policiesPath is not None:
-		with open(args.policiesPath, 'rb') as handle:
-			policies = pickle.load(handle)
-
 	print('\n')
 	
 	# Plotting parameters
@@ -94,6 +90,8 @@ if __name__ == "__main__":
 
 	# Choosing directions to follow
 	D = getDirectionsMuller(args.nb_lines,num_params)
+	# 	Ordering the directions :
+	D = order_all_by_proximity(D)
 
 	# Name of the model files to analyse consecutively with the same set of directions: 
 	filename_list = [args.basename+str(i)+'_steps' for i in range(args.min_iter,
@@ -117,24 +115,6 @@ if __name__ == "__main__":
 		previous_theta = theta0
 		print("Loaded parameters from file")
 
-		# Processing the provided policies
-		policyDistance, policyDirection = {}, [] # policyDistance has to be unordered as the directions will be shuffled
-		if args.policiesPath is not None:
-			with SlowBar('Computing the directions to input policies', max=len(policies)) as bar:
-				for p in policies:
-					distance = euclidienne(base_vect, p);	direction = (p - base_vect) / distance
-					# Storing the directions to remove them from those already sampled
-					policyDirection.append(direction)	
-					# Storing the distances to the model in order to find a max alpha range
-					policyDistance[direction] = distance
-					# 	Remove the closest direction in those sampled
-					del D[np.argmin([euclidienne(direction, dirK) for dirK in D])]
-
-		# 	Adding the provided policies
-		D += policyDirection
-		# 	Ordering the directions
-		D = order_all_by_proximity(D)
-
 		# Evaluate the Model : mean, std
 		print("Evaluating the model...")
 		init_score = evaluate_policy(model, env, n_eval_episodes=args.eval_maxiter, warn=False)[0]
@@ -151,43 +131,28 @@ if __name__ == "__main__":
 		d = np.zeros(np.shape(base_vect)) if length_dist ==0 else base_vect / length_dist
 
 		# Iterating over all directions, -1 is the direction that was initially taken by the model
-		newVignette = SavedVignette(d, D, length_dist, policyDistance=policyDistance,
+		newVignette = SavedVignette(d, D, length_dist,
 									v_min_fit=v_min_fit, v_max_fit=v_max_fit, stepalpha=args.stepalpha, resolution=args.resolution,
 									x_diff=args.x_diff, y_diff=args.y_diff, line_width=args.line_width)
-		for step in range(-1,len(D)):
-			print("\nDirection ", step, "/", len(D)-1)
-			# New parameters following the direction
-			#	Changing the range and step of the Vignette if the optional input policies are beyond that range
-			min_dist, max_dist = (args.minalpha, args.maxalpha) if args.policiesPath is None \
-							else (args.minalpha, max(max(policyDistance.values()), args.maxalpha))
-			step_dist = args.stepalpha * (max_dist - min_dist) / (args.maxalpha - args.minalpha)
-			# 	Sampling new models' parameters following the direction
-			theta_plus, theta_minus = getPointsDirection(theta0, num_params, min_dist, max_dist, step_dist, d)
+		
 
-			# Get the next direction
-			if step != -1:	d = D[step]
+		lines = {}
+		processes = []
+		for k in range(4):
+			multi_args = ((args.inputDir, filename), env, args.eval_maxiter, init_score,
+						D, d, -1 if k == 0 else k * len(D)//4, (k+1) * len(D)//4,
+						theta0, num_params, args.minalpha, args.maxalpha, args.stepalpha)
 
-			# Evaluate using new parameters
-			scores_plus, scores_minus = [], []
-			with SlowBar('Evaluating along the direction', max=len(theta_plus)) as bar:
-				for param_i in range(len(theta_plus)):
-					# 	Go forward in the direction
-					model.policy.load_from_vector(theta_plus[param_i])
-					#		Get the new performance
-					scores_plus.append(evaluate_policy(model, env, n_eval_episodes=args.eval_maxiter, warn=False)[0])
-					# 	Go backward in the direction
-					model.policy.load_from_vector(theta_minus[param_i])
-					#		Get the new performance
-					scores_minus.append(evaluate_policy(model, env, n_eval_episodes=args.eval_maxiter, warn=False)[0])
-					
-					bar.next()
+			
+			p = multiprocessing.Process(target=multiprocessing_func, args=multi_args)
+			processes.append(p)
+			p.start()
 
-			# Inverting scores for a symetrical Vignette (theta_minus going left, theta_plus going right)
-			scores_minus = scores_minus[::-1]
-			line = scores_minus + [init_score] + scores_plus
-			# 	Adding the line to the image
-			if step == -1:	newVignette.baseLines.append(line)
-			else:	newVignette.lines.append(line)
+		for p in processes:
+			p.join()
+		
+
+
 
 		try:
 			# Computing the 2D Vignette
