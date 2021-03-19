@@ -126,6 +126,7 @@ if __name__ == "__main__":
 					# Storing the directions to remove them from those already sampled
 					policyDirection.append(direction)	
 					# Storing the distances to the model in order to find a max alpha range
+					# List not hashable
 					policyDistance[direction] = distance
 					# 	Remove the closest direction in those sampled
 					del D[np.argmin([euclidienne(direction, dirK) for dirK in D])]

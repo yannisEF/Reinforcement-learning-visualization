@@ -92,11 +92,13 @@ class SavedVignette:
 		separating_line = np.zeros(width)
 
 		# Putting in the input policies' markers
+		# Create underline
 		if self.policyDistance is not None:
 			for d in range(len(self.directions)):
 				try:
 					distance = self.policyDistance[self.directions[d]]
-					self.lines[round(distance/self.stepalpha)] = self.v_max_fit
+					# create underline
+					self.lines[d][round(distance/self.stepalpha)] = self.v_max_fit
 				except KeyError: pass
 
 		# Assembling it all together
