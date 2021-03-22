@@ -39,13 +39,11 @@ if __name__ == "__main__":
 	parser.add_argument('--stepalpha', default=0.25, type=float)# step for alpha in the loop, good value : precise 0.5 or 1, less precise 2 or 3
 	parser.add_argument('--eval_maxiter', default=5, type=float)# number of steps for the evaluation. Depends on environment.
 	#	2D plot parameters
-	parser.add_argument('--min_colormap', default=-1000, type=int)# min score value for colormap used (depend of benchmark used)
-	parser.add_argument('--max_colormap', default=0, type=int)# max score value for colormap used (depend of benchmark used)
-	parser.add_argument('--resolution', default=10, type=int)# the size of each pixel in 2D Vignette
+	parser.add_argument('--pixelWidth', default=10, type=int)# width of each pixel in 2D Vignette
+	parser.add_argument('--pixelHeight', default=10, type=int)# height of each pixel in 2D Vignette
 	#	3D plot parameters
 	parser.add_argument('--x_diff', default=2., type=float)# the space between each point along the x-axis
 	parser.add_argument('--y_diff', default=2., type=float)# the space between each point along the y-axis
-	parser.add_argument('--line_width', default=1., type=float)# the width of each line
 	
 	# File management
 	#	Input parameters
@@ -87,10 +85,6 @@ if __name__ == "__main__":
 			policies = pickle.load(handle)
 
 	print('\n')
-	
-	# Plotting parameters
-	v_min_fit = args.min_colormap
-	v_max_fit = args.max_colormap
 
 	# Choosing directions to follow
 	D = getDirectionsMuller(args.nb_lines,num_params)
@@ -118,16 +112,16 @@ if __name__ == "__main__":
 		print("Loaded parameters from file")
 
 		# Processing the provided policies
-		policyDistance, policyDirection = {}, [] # policyDistance has to be unordered as the directions will be shuffled
+		# 	Distance of each policy along their directions, directions taken by the policies
+		policyDistance, policyDirection = [], []
 		if args.policiesPath is not None:
 			with SlowBar('Computing the directions to input policies', max=len(policies)) as bar:
 				for p in policies:
 					distance = euclidienne(base_vect, p);	direction = (p - base_vect) / distance
 					# Storing the directions to remove them from those already sampled
 					policyDirection.append(direction)	
-					# Storing the distances to the model in order to find a max alpha range
-					# List not hashable
-					policyDistance[direction] = distance
+					# Storing the distances to the model
+					policyDistance.append(distance)
 					# 	Remove the closest direction in those sampled
 					del D[np.argmin([euclidienne(direction, dirK) for dirK in D])]
 
@@ -135,6 +129,8 @@ if __name__ == "__main__":
 		D += policyDirection
 		# 	Ordering the directions
 		D = order_all_by_proximity(D)
+		#	Keeping track of which directions stem from a policy
+		indicesPolicies = [D.index(direction) for direction in policyDirection]
 
 		# Evaluate the Model : mean, std
 		print("Evaluating the model...")
@@ -152,16 +148,17 @@ if __name__ == "__main__":
 		d = np.zeros(np.shape(base_vect)) if length_dist ==0 else base_vect / length_dist
 
 		# Iterating over all directions, -1 is the direction that was initially taken by the model
-		newVignette = SavedVignette(d, D, length_dist, policyDistance=policyDistance,
-									v_min_fit=v_min_fit, v_max_fit=v_max_fit, stepalpha=args.stepalpha, resolution=args.resolution,
-									x_diff=args.x_diff, y_diff=args.y_diff, line_width=args.line_width)
+		newVignette = SavedVignette(D, policyDistance=policyDistance, indicesPolicies=indicesPolicies,
+									stepalpha=args.stepalpha, pixelWidth=args.resolution, pixelHeight=args.resolution,
+									x_diff=args.x_diff, y_diff=args.y_diff)
 		for step in range(-1,len(D)):
 			print("\nDirection ", step, "/", len(D)-1)
 			# New parameters following the direction
 			#	Changing the range and step of the Vignette if the optional input policies are beyond that range
 			min_dist, max_dist = (args.minalpha, args.maxalpha) if args.policiesPath is None \
-							else (args.minalpha, max(max(policyDistance.values()), args.maxalpha))
+							else (args.minalpha, max(max(policyDistance), args.maxalpha))
 			step_dist = args.stepalpha * (max_dist - min_dist) / (args.maxalpha - args.minalpha)
+			newVignette.stepalpha = step_dist
 			# 	Sampling new models' parameters following the direction
 			theta_plus, theta_minus = getPointsDirection(theta0, num_params, min_dist, max_dist, step_dist, d)
 
