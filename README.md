@@ -14,7 +14,8 @@ Our tools were applied to the classic **Swimmer** control environment and **Open
 
 
 
-**Installation**
+## Installation installation of dependencies**
+
 ```
  pip install -r requirements.txt
 
