@@ -205,7 +205,9 @@ if __name__ == "__main__":
 	# Closing previously plotted figures
 	plt.close()
 
-
+	# Processing the 2D plot
+	print("Processing the 2D plot...")
+	loadedVignette.show2D()
 	
 	# Processing the 3D plot
 	print("Processing 3D plot...")
