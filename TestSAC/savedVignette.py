@@ -88,38 +88,38 @@ class SavedVignette:
 		Cannot store it as PIL images are non serializable
 		"""
 
-        width, height = self.pixelWidth * len(self.lines[-1]), self.pixelHeight * (len(self.lines) + len(self.policyDistance) + len(self.baseLines) + 1)
-        newIm = Image.new("RGB",(width, height))
-        newDraw = ImageDraw.Draw(newIm)
+		width, height = self.pixelWidth * len(self.lines[-1]), self.pixelHeight * (len(self.lines) + len(self.policyDistance) + len(self.baseLines) + 1)
+		newIm = Image.new("RGB",(width, height))
+		newDraw = ImageDraw.Draw(newIm)
 
-        maxColor = np.max(np.abs(self.lines+self.baseLines),axis=1)
-        #	Adding the results
+		maxColor = np.max(np.abs(self.lines+self.baseLines),axis=1)
+		#	Adding the results
 		y0 = 0
-        for l in range(len(self.lines)):
-            # 	Drawing the results
-            y0 += self.pixelHeight
-            y1 = y0 + self.pixelHeight
-            for c in range(len(self.lines[l])):
-                x0 = c * self.pixelWidth
-                x1 = x0 + self.pixelWidth
-                color = valueToRGB(self.lines[l][c], color1, color2, pureNorm=maxColor[l])
-                newDraw.rectangle([x0, y0, x1, y1], fill=color)
+		for l in range(len(self.lines)):
+			# 	Drawing the results
+			y0 += self.pixelHeight
+			y1 = y0 + self.pixelHeight
+			for c in range(len(self.lines[l])):
+				x0 = c * self.pixelWidth
+				x1 = x0 + self.pixelWidth
+				color = valueToRGB(self.lines[l][c], color1, color2, pureNorm=maxColor[l])
+				newDraw.rectangle([x0, y0, x1, y1], fill=color)
 		
 		# 	Adding the separating line
 		y0 += self.pixelHeight
-        y1 = y0 + self.pixelHeight
+		y1 = y0 + self.pixelHeight
 		color = valueToRGB(0, color1, color2, pureNorm=maxColor[l])
 		newDraw.rectangle([0, y0, width, y1], fill=color)
 
 		#	Adding the baseLines (bottom lines)
 		for l in range(len(self.baseLines)):
 			y0 += self.pixelHeight
-            y1 = y0 + self.pixelHeight
-            for c in range(len(self.lines[l])):
-                x0 = c * self.pixelWidth
-                x1 = x0 + self.pixelWidth
-                color = valueToRGB(self.baseLines[l][c], color1, color2, pureNorm=maxColor[l])
-                newDraw.rectangle([x0, y0, x1, y1], fill=color)
+			y1 = y0 + self.pixelHeight
+			for c in range(len(self.lines[l])):
+				x0 = c * self.pixelWidth
+				x1 = x0 + self.pixelWidth
+				color = valueToRGB(self.baseLines[l][c], color1, color2, pureNorm=maxColor[l])
+				newDraw.rectangle([x0, y0, x1, y1], fill=color)
 		
 		# 	Adding the policies
 		if self.indicesPolicies is not None:
