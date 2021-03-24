@@ -8,13 +8,14 @@ import numpy as np
 from PIL import Image
 from PIL import ImageDraw
 
-from vector_util import valueToRGB, invertColor
+from vector_util import valueToRGB, invertColor, checkFormat
 
+saveFormat = '.xz'
+@checkFormat(saveFormat)
 def loadFromFile(filename, folder="SavedGradient"):
 	"""
 	Returns a saved plot
 	"""
-	if filename[-3:] != ".xz": filename = filename+'.xz'
 	with lzma.open(folder+"/"+filename, 'rb') as handle:
 		content = pickle.load(handle)
 	return content
@@ -42,12 +43,13 @@ class SavedGradient:
         self.dotText = dotText # True if we want to show the value of the dot product
         self.dotWidth = dotWidth # Width of the side panel containing the dot product
         self.xMargin, self.yMargin = xMargin, yMargin # Margin for the dot product's bar
-
+	
+    @checkFormat(saveFormat)
     def saveGradient(self, filename, directory="SavedGradient"):
         """
         Serializes the gradient into a .xz file
         """
-        with lzma.open(directory+'/'+filename+'.xz', 'wb') as handle:
+        with lzma.open(directory+'/'+filename, 'wb') as handle:
             pickle.dump(self, handle)
 
     def computeImage(self, color1=None, color2=None,

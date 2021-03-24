@@ -3,10 +3,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import argparse
-from progress.bar import Bar
-
+import pickle
+import lzma
 import gym
 
+from progress.bar import Bar
 from stable_baselines3 import SAC
 from stable_baselines3.common.evaluation import evaluate_policy
 
@@ -15,7 +16,7 @@ from slowBar import SlowBar
 from vector_util import *
 
 # To test (~8 minutes computing time)
-# python3 Vignette.py --env Pendulum-v0 --inputDir Models/Pendulum --min_iter 8000 --max_iter 8000 --step_maxiter 500 --eval_maxiter 5 --nb_lines 10
+# python3 Vignette.py --env Pendulum-v0 --inputDir Models/Pendulum --min_iter 8000 --max_iter 8000 --step_iter 500 --eval_maxiter 5 --nb_lines 10
 # /!\ Should be used with caution as savedVignette can be very heavy /!\
 
 if __name__ == "__main__":
@@ -81,7 +82,7 @@ if __name__ == "__main__":
 	
 	# Retrieving the provided policies
 	if args.policiesPath is not None:
-		with open(args.policiesPath, 'rb') as handle:
+		with lzma.open(args.policiesPath, 'rb') as handle:
 			policies = pickle.load(handle)
 
 	print('\n')
@@ -124,13 +125,16 @@ if __name__ == "__main__":
 					policyDistance.append(distance)
 					# 	Remove the closest direction in those sampled
 					del D[np.argmin([euclidienne(direction, dirK) for dirK in D])]
+					bar.next()
 
 		# 	Adding the provided policies
 		D += policyDirection
 		# 	Ordering the directions
 		D = order_all_by_proximity(D)
 		#	Keeping track of which directions stem from a policy
-		indicesPolicies = [D.index(direction) for direction in policyDirection]
+		copyD = [list(direction) for direction in D]
+		indicesPolicies = [copyD.index(list(direction)) for direction in policyDirection]
+		del copyD
 
 		# Evaluate the Model : mean, std
 		print("Evaluating the model...")
@@ -149,7 +153,7 @@ if __name__ == "__main__":
 
 		# Iterating over all directions, -1 is the direction that was initially taken by the model
 		newVignette = SavedVignette(D, policyDistance=policyDistance, indicesPolicies=indicesPolicies,
-									stepalpha=args.stepalpha, pixelWidth=args.resolution, pixelHeight=args.resolution,
+									stepalpha=args.stepalpha, pixelWidth=args.pixelWidth, pixelHeight=args.pixelHeight,
 									x_diff=args.x_diff, y_diff=args.y_diff)
 		for step in range(-1,len(D)):
 			print("\nDirection ", step, "/", len(D)-1)
@@ -186,23 +190,23 @@ if __name__ == "__main__":
 			# 	Adding the line to the image
 			if step == -1:	newVignette.baseLines.append(line)
 			else:	newVignette.lines.append(line)
-
+		
+		computedImg = None
 		try:
 			# Computing the 2D Vignette
-			if args.save2D is True:	newVignette.plot2D()
+			if args.save2D is True:	computedImg = newVignette.plot2D()
 			# Computing the 3D Vignette
 			if args.save3D is True: newVignette.plot3D()
 		except Exception as e:
-			newVignette.saveInFile("{}/temp/{}.xz".format(args.directoryFile, filename))
+			newVignette.saveInFile("{}/temp/{}".format(args.directoryFile, filename))
 			e.print_exc()
-
 		
 		# Saving the Vignette
 		angles3D = [20,45,50,65] # angles at which to save the plot3D
 		elevs= [0, 30, 60]
 		newVignette.saveAll(filename, saveInFile=args.saveInFile, save2D=args.save2D, save3D=args.save3D,
 							directoryFile=args.directoryFile, directory2D=args.directory2D, directory3D=args.directory3D,
-							angles3D=angles3D, elevs=elevs)
+							computedImg=computedImg, angles3D=angles3D, elevs=elevs)
 	
 
 	env.close()

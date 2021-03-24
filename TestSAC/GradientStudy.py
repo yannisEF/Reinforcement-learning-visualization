@@ -158,8 +158,12 @@ if __name__ == "__main__":
 		# 	Putting it all together
 		newGradient.results.append(line)
 	
-	# Assembling the image, saving it if asked
-	newGradient.computeImage(saveImage=args.saveImage, filename=args.basename+'_gradient', directory=args.directoryImage)
+	try:
+		# Assembling the image, saving it if asked
+		newGradient.computeImage(saveImage=args.saveImage, filename=args.basename+'_gradient', directory=args.directoryImage)
+	except Exception as e:
+		newGradient.saveGradient(args.basename, args.directoryFile+'/temp')
+		
 	# Saving the SavedGradient if asked
 	if args.saveFile is True: newGradient.saveGradient(args.basename, args.directoryFile)
 

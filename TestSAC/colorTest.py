@@ -16,9 +16,10 @@ from vector_util import *
 from slowBar import SlowBar
 
 # Chosen color palette
-color1, color2 = (40,0,200), (120,120,0)
+color1, color2 = (20,0,230), (230,230,0)
 
-def createPalette(image_filename="color_palette",
+@checkFormat('.png')
+def createPalette(filename="color_palette",
 				  pixelHeight=360, pixelWidth=10, length = 80,
 				  color1=(50,0,200), color2=(150,100,0)):
 	"""
@@ -35,7 +36,7 @@ def createPalette(image_filename="color_palette",
 	textContent = "Color 1: " + str(color1) + "\nColor 2: " + str(color2)
 	outputDraw.text((0,0), textContent, fill=invertColor(color1))
 
-	output.save(image_filename+'.png', format='png')
+	output.save(filename, format='png')
 
 if __name__ == "__main__":
-	createPalette(color1=color1, color2=color2)
+	createPalette(filename="color_palette", color1=color1, color2=color2)
