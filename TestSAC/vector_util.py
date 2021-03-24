@@ -5,6 +5,35 @@ import matplotlib.pyplot as plt
 
 from progress.bar import Bar
 
+def checkFormat(fileExt):
+	"""
+	Checks the format of the input name, modifies it if need be
+	"""
+	def decorator(function):
+		def wrapper(*args, **kwargs):
+			# Check if names in args or kwargs
+			indexNames, inputNames = None, None
+			try:
+				inputNames = kwargs['filename']
+				indexNames = 'dic'
+			except KeyError:
+				for i in range(len(args)):
+					if type(args[i]) in [list, str]: indexNames = i;	inputNames = args[i];	break
+			if indexNames is None:	raise NameError("No file as parameters")
+			
+			# Add the desired file extension to the filenames
+			if type(inputNames) is not list:	changedInput = [inputNames]
+			else:	changedInput = inputNames[:]
+			changedInput = [f+fileExt if f[-len(fileExt):] != fileExt else f for f in changedInput]
+			if type(inputNames) is not list:	changedInput = changedInput[0]
+			
+			# Change the function's parameters
+			if indexNames == 'dic':	kwargs['filename'] = changedInput
+			else:	args = list(args[:indexNames]) + [changedInput] + list(args[indexNames+1:])
+			return function(*args, **kwargs)
+		return wrapper
+	return decorator	
+
 def valueToRGB(value, color1=(255,0,0), color2=(0,255,0), pureNorm=1):
 	"""
 	Converts a value to an RGB color, between color1 and color2
@@ -14,7 +43,7 @@ def valueToRGB(value, color1=(255,0,0), color2=(0,255,0), pureNorm=1):
 	if value**2 > pureNorm**2:
 		value = pureNorm if value > 0 else -pureNorm
 	weight = value/pureNorm
-	return tuple(int(color1[k] * (1-weight)/2) + int(color2[k]* (1+weight)/2) for k in range(len(color1)))
+	return tuple(int(color1[k] * (1-weight)/2) + int(color2[k] * (1+weight)/2) for k in range(len(color1)))
 
 def invertColor(color):
 	"""

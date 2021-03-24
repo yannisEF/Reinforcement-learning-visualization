@@ -7,11 +7,18 @@ import matplotlib.pyplot as plt
 import numpy as np
 import argparse
 
+from PIL import Image, ImageDraw
+
+import colorTest
+from vector_util import valueToRGB, invertColor, checkFormat
+
+
+saveFormat = '.xz'
+@checkFormat(saveFormat)
 def loadFromFile(filename, folder="SavedVignette"):
 	"""
 	Returns a saved plot
 	"""
-	if filename[-3:] != ".xz": filename = filename+'.xz'
 	with lzma.open(folder+"/"+filename, 'rb') as handle:
 		content = pickle.load(handle)
 	return content
@@ -21,33 +28,29 @@ class SavedVignette:
 	Class storing a Vignette, able to draw it in 3D and 2D
 	Useful to serialize in order to be able to change drawing parameters
 	"""
-	def __init__(self, d, D, length_dist,
-				 v_min_fit=-10, v_max_fit=360, stepalpha=.25, resolution=10,
-				 x_diff=2., y_diff=2., line_width=1.):
+	def __init__(self, D, indicesPolicies=None, policyDistance=None,
+				 stepalpha=.25, color1=colorTest.color1, color2=colorTest.color2,
+				 pixelWidth=10, pixelHeight=10,
+				 x_diff=2., y_diff=2.):
 
 		# Content of the Vignette
 		self.baseLines = []	# Bottom lines
 		self.lines = []	# Upper lines
-		self.model_direction = d
 		self.directions = D	# All sampled directions
-
-		# Image
-		self.final_image = None
-		#	Drawing parameters
-		self.v_max_fit = v_max_fit
-		self.v_min_fit = v_min_fit
-		self.stepalpha = stepalpha
-		self.length_dist = length_dist
-		#		Size of each pixel
-		self.resolution = resolution
+		self.indicesPolicies = indicesPolicies # Index of directions that go through a policy
+		self.policyDistance = policyDistance # Distance of each policy along its direction
+		
+		# 2D plot
+		self.stepalpha = stepalpha # Distance between each model along a direction
+		self.color1, self.color2 = color1, color2 # Min color and max color
+		self.pixelWidth, self.pixelHeight = pixelWidth, pixelHeight # Pixels' dimensions
 
 		# 3D plot
 		self.fig, self.ax = None, None
-		# Drawing parameters
-		self.x_diff = x_diff
-		self.y_diff = y_diff
-		self.line_width = line_width
-
+		self.x_diff = x_diff #	Distance between each model along a direction
+		self.y_diff = y_diff #  Distance between each direction
+		
+	@checkFormat(saveFormat)
 	def saveInFile(self, filename):
 		"""
 		Save the Vignette in a file
@@ -55,14 +58,14 @@ class SavedVignette:
 		with lzma.open(filename, 'wb') as handle:
 			pickle.dump(self, handle)
 	
-	def save2D(self, filename):
+	@checkFormat('.png')
+	def save2D(self, filename, img=None):
 		"""
 		Save the Vignette as 2D image
 		"""
-		plt.imsave(filename, self.final_image,
-					vmin=self.v_min_fit, vmax=self.v_max_fit,
-					format='png')
-
+		img = self.plot2D() if img is None else img
+		img.save(filename, format='png')
+	
 	def save3D(self, filename, elevs=[30], angles=[0]):
 		"""
 		Save the Vignette as a 3D image
@@ -75,24 +78,67 @@ class SavedVignette:
 	
 	def saveAll(self, filename, saveInFile=False, save2D=False, save3D=False,
 								directoryFile="SavedVignette", directory2D="Vignette_output", directory3D="Vignette_output",
-								angles3D=[0], elevs=[0]):
+								computedImg=None, angles3D=[0], elevs=[0]):
 		"""
 		Centralises the saving process
 		"""
-		if saveInFile is True: self.saveInFile(directoryFile+'/'+filename+'.xz')
-		if save2D is True: self.save2D(directory2D+'/'+filename+'_2D'+'.png')
-		if save3D is True: self.save3D(directory3D+'/'+filename+'_3D'+'.png', elevs=elevs, angles=angles3D)
+		if saveInFile is True: self.saveInFile(directoryFile+'/'+filename)
+		if save2D is True: self.save2D(directory2D+'/'+filename+'_2D', img=computedImg)
+		if save3D is True: self.save3D(directory3D+'/'+filename+'_3D', elevs=elevs, angles=angles3D)
 
-	def plot2D(self):
+	def plot2D(self, color1=None, color2=None):
 		"""
 		Compute the 2D image of the Vignette
-		"""
-		width = len(self.baseLines[0])
-		separating_line = np.zeros(width)
 
-		self.final_image = np.concatenate((self.lines, [separating_line], self.baseLines), axis=0)
-		self.final_image = np.repeat(self.final_image, self.resolution, axis=0)
-		self.final_image = np.repeat(self.final_image, self.resolution, axis=1)
+		Cannot store it as PIL images are non serializable
+		"""
+		color1, color2 = self.color1 if color1 is None else color1, self.color2 if color2 is None else color2
+		
+		width, height = self.pixelWidth * len(self.lines[-1]), self.pixelHeight * (len(self.lines) + len(self.policyDistance) + len(self.baseLines) + 1)
+		newIm = Image.new("RGB",(width, height))
+		newDraw = ImageDraw.Draw(newIm)
+
+		maxColor = np.max(np.abs(self.lines+self.baseLines),axis=1)
+		#	Adding the results
+		y0 = 0
+		for l in range(len(self.lines)):
+			# 	Drawing the results
+			y0 += self.pixelHeight
+			y1 = y0 + self.pixelHeight
+			for c in range(len(self.lines[l])):
+				x0 = c * self.pixelWidth
+				x1 = x0 + self.pixelWidth
+				color = valueToRGB(self.lines[l][c], color1, color2, pureNorm=maxColor[l])
+				newDraw.rectangle([x0, y0, x1, y1], fill=color)
+		
+		# 	Adding the separating line
+		y0 += self.pixelHeight
+		y1 = y0 + self.pixelHeight
+		color = valueToRGB(0, color1, color2, pureNorm=maxColor[l])
+		newDraw.rectangle([0, y0, width, y1], fill=color)
+
+		#	Adding the baseLines (bottom lines)
+		for l in range(len(self.baseLines)):
+			y0 += self.pixelHeight
+			y1 = y0 + self.pixelHeight
+			for c in range(len(self.lines[l])):
+				x0 = c * self.pixelWidth
+				x1 = x0 + self.pixelWidth
+				color = valueToRGB(self.baseLines[l][c], color1, color2, pureNorm=maxColor[l])
+				newDraw.rectangle([x0, y0, x1, y1], fill=color)
+		
+		# 	Adding the policies
+		if self.indicesPolicies is not None:
+			marginX, marginY = int(self.pixelWidth/4), int(self.pixelHeight/4)
+			for k in range(len(self.indicesPolicies)):
+				index, distance = self.indicesPolicies[k], round(self.policyDistance[k]/self.stepalpha)
+				x0, y0 = (distance + len(self.lines[0])//2) * self.pixelWidth, index * self.pixelHeight
+				x1, y1 = x0 + self.pixelWidth, y0 + self.pixelHeight
+				color = invertColor(newIm.getpixel((x0,y0)))
+				newDraw.ellipse([x0+marginX, y0+marginY, x1-marginX, y1-marginY], fill=color)
+				newDraw.text((x0+ int(1.5 * marginX), y0), str(k), fill=invertColor(color))
+		
+		return newIm
 
 	def plot3D(self, function=lambda x:x, figsize=(12,8), title="Vignette ligne"):
 		"""
@@ -119,7 +165,7 @@ class SavedVignette:
 	def plot3DBand(self, function=lambda x:x,
 				   figsize=(12,8), title="Vignette surface", width=5, linewidth=.01, cmap='coolwarm'):
 		"""
-		Compute the 3D image of the Vignette
+		Compute the 3D image of the Vignette with surfaces
 		"""
 		self.fig, self.ax = plt.figure(title,figsize=figsize), plt.axes(projection='3d')
 		# Iterate over all lines
@@ -146,11 +192,17 @@ class SavedVignette:
 			self.ax.plot_surface(self.x_diff * X, self.y_diff * Y, Z, cmap=cmap, linewidth=linewidth)
 			
 
-	def show2D(self, cmap='binary'):
-		self.plot2D()
-		plt.imshow(self.final_image, vmin=self.v_min_fit, vmax=self.v_max_fit, cmap=cmap)		
+	def show2D(self, img=None, color1=None, color2=None):
+		color1, color2 = self.color1 if color1 is None else color1, self.color2 if color2 is None else color2
+		img = self.plot2D(color1, color2) if img is None else img
+		img.show()
+
 	def show3D(self):
 		plt.show()
+	
+	def changeColors(self, color1=None, color2=None):
+		self.color1 = color1 if color1 is not None else self.color1
+		self.color2 = color2 if color2 is not None else self.color2
 		
 if __name__ == "__main__":
 	print("Parsing arguments...")
@@ -166,11 +218,15 @@ if __name__ == "__main__":
 	loadedVignette = loadFromFile(args.filename, folder=args.directory)
 	# Closing previously plotted figures
 	plt.close()
-
-	# Showing the 2D plot
-	print("Processing 2D plot...")
-	loadedVignette.v_min_fit, loadedVignette.v_max_fit = -2000, 0
-	loadedVignette.show2D()
+	
+	# Updating the color palette
+	loadedVignette.changeColors(color1=colorTest.color1, color2=colorTest.color2)
+	
+	# Processing the 2D plot
+	print("Processing the 2D plot...")
+	img = loadedVignette.plot2D()
+	loadedVignette.save2D("Vignette_output/"+args.filename+"2D", img=img)
+	loadedVignette.show2D(img=img)
 	
 	# Processing the 3D plot
 	print("Processing 3D plot...")
@@ -179,11 +235,17 @@ if __name__ == "__main__":
 		y = np.sinc(x)
 		invR = 1 / np.sqrt(x**2 + y**2)
 		return invR
-	
+	def g(x, ecart=1):
+		x = np.array(x) - np.mean(x)
+		y1 = np.sinc((x - np.max(x)) / ecart)
+		y2 = np.sinc((x - np.min(x)) / ecart)
+		invR = np.sign(x) / np.sqrt(x**2 + (y1+y2)**2)
+		return invR
+		
 	angles, elevs = [45, 80, 85, 90], [0, 30, 89, 90]	
-	loadedVignette.plot3DBand(width=10, title="Surface sans transformation")
+	#loadedVignette.plot3DBand(width=10, title="Surface sans transformation")
 	#loadedVignette.save3D(filename="Vignette_output/no_tranform", angles=angles, elevs=elevs)
-	loadedVignette.plot3DBand(function=f, width=10, title="Surface isolant les maxs")
+	#loadedVignette.plot3DBand(function=g, width=10, title="Surface isolant les maxs")
 	#loadedVignette.save3D(filename="Vignette_output/max_isolated", angles=angles, elevs=elevs)
 	# 	Showing the 3D plot
-	loadedVignette.show3D()
+	#loadedVignette.show3D()
