@@ -17,6 +17,8 @@ Our tools were applied to the classic **Swimmer** control environment and **Open
 
 
 Input of the tool :  a ".zip"  file of a trained model
+
+
 Output of the tool : you will find in "/TestSAC/Vignette_output" images of 2D and 3D Vignettes
 
 
@@ -31,6 +33,8 @@ python3 Vignette.py --env Pendulum-v0 --inputDir Models/Pendulum --min_iter 8000
 **GradientStudy**
 
 Input of the tool :  a ".zip"  file of a trained model
+
+
 
 Output of the tool :an image showing a gradient study  (look at the example in "/TestSAC/Gradient_output/" )
 
