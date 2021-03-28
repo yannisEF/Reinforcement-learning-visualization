@@ -35,9 +35,12 @@ if __name__ == "__main__":
     			gamma=args.gamma)
 
     # Creating the Callbacks
+    #Permet l'enregistrement périodique du model
     checkpoint_callback = CheckpointCallback(save_freq=args.save_freq, save_path=args.save_path,
                                             name_prefix=args.name_prefix, verbose=2)
+    #Evaluer périodiquement le modèle et enregistrer le meilleur 
     eval_callback = EvalCallback(eval_env, eval_freq=args.save_freq, best_model_save_path=args.save_path)
+    #chaîner les rappels
     list_callback = CallbackList([checkpoint_callback, eval_callback])
 
     # Starting the learning process
