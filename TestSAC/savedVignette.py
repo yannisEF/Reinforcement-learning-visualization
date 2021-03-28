@@ -209,7 +209,7 @@ if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
 
 	parser.add_argument('--directory', default="SavedVignette", type=str) # directory containing the savedModel
-	parser.add_argument('--filename', default="save1", type=str) # name of the file to load
+	parser.add_argument('--filename', default="rl_model_8000_steps", type=str) # name of the file to load
 
 	args = parser.parse_args()
 
