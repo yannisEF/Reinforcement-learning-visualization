@@ -8,6 +8,9 @@ from stable_baselines3.common import base_class
 from stable_baselines3.common.vec_env import VecEnv
 
 
+from stable_baselines3.common.policies import ActorCriticPolicy
+from stable_baselines3.common.distributions import DiagGaussianDistribution
+
 def evaluate_policy(
     model: "base_class.BaseAlgorithm",
     env: Union[gym.Env, VecEnv],
@@ -18,6 +21,7 @@ def evaluate_policy(
     reward_threshold: Optional[float] = None,
     return_episode_rewards: bool = False,
     warn: bool = True,
+    alpha: float = 0.0,
 ) -> Union[Tuple[float, float], Tuple[List[float], List[int]]]:
     """
     Runs policy for ``n_eval_episodes`` episodes and returns average reward.
@@ -45,6 +49,7 @@ def evaluate_policy(
         per episode will be returned instead of the mean.
     :param warn: If True (default), warns user about lack of a Monitor wrapper in the
         evaluation environment.
+    :param alpha: permet de controler l'entropie dans le reward dans la formule r(s,a) - alpha * log(P(A|S)).
     :return: Mean reward per episode, std of reward per episode.
         Returns ([float], [int]) when ``return_episode_rewards`` is True, first
         list containing per-episode rewards and second containing per-episode lengths
@@ -84,6 +89,18 @@ def evaluate_policy(
         while not done:
             action, state = model.predict(obs, state=state, deterministic=deterministic)
             obs, reward, done, info = env.step(action)
+
+            #changement pour integrer l'entropie
+            latent_pi, latent_vf, latent_sde = self._get_latent(obs)
+            distribution = self._get_action_dist_from_latent(latent_pi, latent_sde)
+            #a voir si c'est rellement comme ça j'hesite car ca contredit l'idee du prof 
+            # car ici l'entropy est faite differement https://github.com/dumbldo/P_androide/blob/1ae33268abe51acf5f4f0767624d2ab6d8bc7119/TestSAC/stable_baselines3/common/policies.py#L625
+            #entropy = distribution.entropy()
+            log_prob = distribution.log_prob(actions)
+            #r(s,a) - alpha * log(P(A|S)).
+            reward -= alpha*log_prob
+
+
             episode_reward += reward
             if callback is not None:
                 callback(locals(), globals())
