@@ -11,6 +11,18 @@ Our tools were applied to the classic **Swimmer** control environment and **Open
 -We provide a visualization tools which can be used straightforwardly and helps understanding the gradient landscape in the parameter space and the trajectory of a deep RL algorithm in that space.
 
 
+**To train a model** 
+
+"/TestSAC/trainModel.py"
+
+
+Output of the tool : you will find in "/TestSAC/Models" a ".zip"  file of a trained model
+
+```
+python3 trainModel.py --env Pendulum-v0 --tau 0.005 --learning_rate 0.0003 --save_path Models --save_freq 1000
+
+```
+
 **Vignette**   
 
 "/TestSAC/Vignette.py"  calculates the Vignettes of a set of files
