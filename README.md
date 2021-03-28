@@ -62,7 +62,8 @@ python3 GradientStudy.py --env Pendulum-v0 --directory Models/Pendulum --min_ite
 "/TestSAC/savedVignette.py"
 
 
-Output of the tool : you will find in "/TestSAC/SavedVignette" a ".xz"  file of a savedVignette
+Input of the tool : you will find in "/TestSAC/SavedVignette" a ".xz"  file of a Vignette serialized
+
 
 ```
 python3 savedVignette.py --directory cheminVersSavedVignette --filename rl_model_8000_steps
