@@ -6,10 +6,9 @@ import numpy as np
 
 from stable_baselines3.common import base_class
 from stable_baselines3.common.vec_env import VecEnv
+from stable_baselines3.common.preprocessing import get_action_dim
 
-
-from stable_baselines3.common.policies import ActorCriticPolicy
-from stable_baselines3.common.distributions import DiagGaussianDistribution
+from stable_baselines3.common.distributions import SquashedDiagGaussianDistribution
 
 def evaluate_policy(
     model: "base_class.BaseAlgorithm",
@@ -89,14 +88,15 @@ def evaluate_policy(
         while not done:
             action, state = model.predict(obs, state=state, deterministic=deterministic)
             obs, reward, done, info = env.step(action)
+            
+            action_space=model.policy.actor.action_space
+            action_dim= get_action_dim(action_space)
 
-            #changement pour integrer l'entropie
-            latent_pi, latent_vf, latent_sde = self._get_latent(obs)
-            distribution = self._get_action_dist_from_latent(latent_pi, latent_sde)
-            #a voir si c'est rellement comme ça j'hesite car ca contredit l'idee du prof 
-            # car ici l'entropy est faite differement https://github.com/dumbldo/P_androide/blob/1ae33268abe51acf5f4f0767624d2ab6d8bc7119/TestSAC/stable_baselines3/common/policies.py#L625
-            #entropy = distribution.entropy()
-            log_prob = distribution.log_prob(actions)
+            action_dist = model.policy.actor.action_dist
+            #action_dist = SquashedDiagGaussianDistribution(action_dim)
+            actions = action_dist.get_actions(deterministic=deterministic)
+            #actions=model.policy.actor.actions
+            log_prob = model.policy.actor.action_dist.log_prob(actions)
             #r(s,a) - alpha * log(P(A|S)).
             reward -= alpha*log_prob
 
