@@ -138,7 +138,7 @@ if __name__ == "__main__":
 
 		# Evaluate the Model : mean, std
 		print("Evaluating the model...")
-		init_score = evaluate_policy(model, env, n_eval_episodes=args.eval_maxiter, warn=False)[0]
+		init_score = evaluate_policy(model, env, n_eval_episodes=args.eval_maxiter, alpha = 0.2 ,warn=False)[0]
 		print("Model initial fitness : "+str(init_score))
 
 		# Study the geometry around the model
@@ -176,11 +176,11 @@ if __name__ == "__main__":
 					# 	Go forward in the direction
 					model.policy.load_from_vector(theta_plus[param_i])
 					#		Get the new performance
-					scores_plus.append(evaluate_policy(model, env, n_eval_episodes=args.eval_maxiter, warn=False)[0])
+					scores_plus.append(evaluate_policy(model, env, n_eval_episodes=args.eval_maxiter,alpha = 0.2, warn=False)[0])
 					# 	Go backward in the direction
 					model.policy.load_from_vector(theta_minus[param_i])
 					#		Get the new performance
-					scores_minus.append(evaluate_policy(model, env, n_eval_episodes=args.eval_maxiter, warn=False)[0])
+					scores_minus.append(evaluate_policy(model, env, n_eval_episodes=args.eval_maxiter, alpha = 0.2, warn=False)[0])
 					
 					bar.next()
 
