@@ -42,6 +42,24 @@ python3 Vignette.py --env Pendulum-v0 --inputDir Models/Pendulum --min_iter 8000
 
 ```
 
+
+**To plot 2D & 3D savedVignette results** 
+
+"/TestSAC/savedVignette.py"
+
+
+Input of the tool : you will find in "/TestSAC/SavedVignette" a ".xz"  file of a Vignette serialized
+
+
+```
+python3 savedVignette.py --directory cheminVersSavedVignette --filename rl_model_8000_steps
+
+```
+
+
+
+
+
 **GradientStudy**
 
 Input of the tool :  a ".zip"  file of a trained model
@@ -57,18 +75,8 @@ You can run tests from the command-line :(~5 minutes computing time)
 ```
 python3 GradientStudy.py --env Pendulum-v0 --directory Models/Pendulum --min_iter 500 --max_iter 10000 --step_iter 500 --eval_maxiter 5
 ```
-**To plot 2D & 3D savedVignette results** 
-
-"/TestSAC/savedVignette.py"
 
 
-Input of the tool : you will find in "/TestSAC/SavedVignette" a ".xz"  file of a Vignette serialized
-
-
-```
-python3 savedVignette.py --directory cheminVersSavedVignette --filename rl_model_8000_steps
-
-```
 
 ## Installation of dependencies
 
