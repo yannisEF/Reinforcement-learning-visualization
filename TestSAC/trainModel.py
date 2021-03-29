@@ -5,6 +5,7 @@ from stable_baselines3 import SAC
 from stable_baselines3.common.callbacks import CheckpointCallback, EvalCallback, CallbackList
 
 # Saves a model's training process
+# python3 trainModel.py --env "Pendulum-v0" --save_freq 500 --max_learn 10000
 
 if __name__ == "__main__":
     print("Parsing arguments")
