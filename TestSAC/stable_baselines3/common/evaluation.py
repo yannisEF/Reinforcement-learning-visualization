@@ -90,7 +90,7 @@ def evaluate_policy(
             obs, reward, done, info = env.step(action)
             
             action_space=model.policy.actor.action_space
-            action_dim= get_action_dim(action_space)
+            #action_dim= get_action_dim(action_space)
 
             action_dist = model.policy.actor.action_dist
             #action_dist = SquashedDiagGaussianDistribution(action_dim)
