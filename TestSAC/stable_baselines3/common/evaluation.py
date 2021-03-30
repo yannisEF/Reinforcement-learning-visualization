@@ -6,7 +6,9 @@ import numpy as np
 
 from stable_baselines3.common import base_class
 from stable_baselines3.common.vec_env import VecEnv
+from stable_baselines3.common.preprocessing import get_action_dim
 
+from stable_baselines3.common.distributions import SquashedDiagGaussianDistribution
 
 def evaluate_policy(
     model: "base_class.BaseAlgorithm",
@@ -18,6 +20,7 @@ def evaluate_policy(
     reward_threshold: Optional[float] = None,
     return_episode_rewards: bool = False,
     warn: bool = True,
+    alpha: float = 0.0,
 ) -> Union[Tuple[float, float], Tuple[List[float], List[int]]]:
     """
     Runs policy for ``n_eval_episodes`` episodes and returns average reward.
@@ -45,6 +48,7 @@ def evaluate_policy(
         per episode will be returned instead of the mean.
     :param warn: If True (default), warns user about lack of a Monitor wrapper in the
         evaluation environment.
+    :param alpha: permet de controler l'entropie dans le reward dans la formule r(s,a) - alpha * log(P(A|S)).
     :return: Mean reward per episode, std of reward per episode.
         Returns ([float], [int]) when ``return_episode_rewards`` is True, first
         list containing per-episode rewards and second containing per-episode lengths
@@ -84,6 +88,19 @@ def evaluate_policy(
         while not done:
             action, state = model.predict(obs, state=state, deterministic=deterministic)
             obs, reward, done, info = env.step(action)
+            
+            action_space=model.policy.actor.action_space
+            #action_dim= get_action_dim(action_space)
+
+            action_dist = model.policy.actor.action_dist
+            #action_dist = SquashedDiagGaussianDistribution(action_dim)
+            actions = action_dist.get_actions(deterministic=deterministic)
+            #actions=model.policy.actor.actions
+            log_prob = model.policy.actor.action_dist.log_prob(actions)
+            #r(s,a) - alpha * log(P(A|S)).
+            reward -= alpha*log_prob
+
+
             episode_reward += reward
             if callback is not None:
                 callback(locals(), globals())
