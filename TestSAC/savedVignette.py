@@ -98,7 +98,8 @@ class SavedVignette:
 		newIm = Image.new("RGB",(width, height))
 		newDraw = ImageDraw.Draw(newIm)
 		
-		maxColor = np.std(np.array(self.lines+self.baseLines))
+		meanValue, stdValue = np.mean(self.lines+self.baseLines), np.std(self.lines+self.baseLines)
+		minColor, maxColor = meanValue - stdValue, np.max(self.lines+self.baseLines)
 		#	Adding the results
 		y0 = 0
 		for l in range(len(self.lines)):
@@ -107,14 +108,14 @@ class SavedVignette:
 			for c in range(len(self.lines[l])):
 				x0 = c * self.pixelWidth
 				x1 = x0 + self.pixelWidth
-				color = valueToRGB(self.lines[l][c], color1, color2, pureNorm=maxColor)
+				color = valueToRGB(self.lines[l][c], color1, color2, minNorm=minColor, maxNorm=maxColor)
 				newDraw.rectangle([x0, y0, x1, y1], fill=color)
 			y0 += self.pixelHeight
 			
 		# 	Adding the separating line
 		y0 += self.pixelHeight
 		y1 = y0 + self.pixelHeight
-		color = valueToRGB(0, color1, color2, pureNorm=maxColor)
+		color = valueToRGB(0, color1, color2, minNorm=minColor, maxNorm=maxColor)
 		newDraw.rectangle([0, y0, width, y1], fill=color)
 
 		#	Adding the baseLines (bottom lines)
@@ -124,7 +125,7 @@ class SavedVignette:
 			for c in range(len(self.lines[l])):
 				x0 = c * self.pixelWidth
 				x1 = x0 + self.pixelWidth
-				color = valueToRGB(self.baseLines[l][c], color1, color2, pureNorm=maxColor)
+				color = valueToRGB(self.baseLines[l][c], color1, color2, minNorm=minColor, maxNorm=maxColor)
 				newDraw.rectangle([x0, y0, x1, y1], fill=color)
 		
 		# 	Adding the policies
