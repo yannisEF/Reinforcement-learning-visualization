@@ -226,8 +226,8 @@ if __name__ == "__main__":
 	# Processing the 2D plot
 	print("Processing the 2D plot...")
 	img = loadedVignette.plot2D()
-	loadedVignette.save2D("Vignette_output/"+args.filename+"2D", img=img)
-	loadedVignette.show2D(img=img)
+	#loadedVignette.save2D("Vignette_output/"+args.filename+"2D", img=img)
+	#loadedVignette.show2D(img=img)
 	
 	# Processing the 3D plot
 	print("Processing 3D plot...")
@@ -244,9 +244,9 @@ if __name__ == "__main__":
 		return invR
 		
 	angles, elevs = [45, 80, 85, 90], [0, 30, 89, 90]	
-	#loadedVignette.plot3DBand(width=10, title="Surface sans transformation")
+	loadedVignette.plot3DBand(width=10, title="Surface sans transformation")
 	#loadedVignette.save3D(filename="Vignette_output/no_tranform", angles=angles, elevs=elevs)
 	#loadedVignette.plot3DBand(function=g, width=10, title="Surface isolant les maxs")
 	#loadedVignette.save3D(filename="Vignette_output/max_isolated", angles=angles, elevs=elevs)
 	# 	Showing the 3D plot
-	#loadedVignette.show3D()
+	loadedVignette.show3D()
