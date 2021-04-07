@@ -32,6 +32,7 @@ if __name__ == "__main__":
 	parser.add_argument('--learning_rate', default=0.0003, type=float) #learning rate for adam optimizer, the same learning rate will be used
 																 # for all networks (Q-Values, model and Value function) it can be a function
 																 #  of the current progress remaining (from 1 to 0)
+	parser.add_argument('--alpha', default=0.0, type=float) #alpha who controle the entropy in the evaluatepolicy
 	
 	# Tools parameters
 	parser.add_argument('--nb_lines', default=60, type=int)# number of directions generated,good value : precise 100, fast 60, ultrafast 50
@@ -59,9 +60,9 @@ if __name__ == "__main__":
 	parser.add_argument('--saveInFile', default=True, type=bool)# true if want to save the savedVignette
 	parser.add_argument('--save2D', default=True, type=bool)# true if want to save the 2D Vignette
 	parser.add_argument('--save3D', default=True, type=bool)# true if want to save the 3D Vignette
-	parser.add_argument('--directoryFile', default="SavedVignette", type=str)# name of the directory that will contain the vignettes
-	parser.add_argument('--directory2D', default="Vignette_output", type=str)# name of the directory that will contain the 2D vignette
-	parser.add_argument('--directory3D', default="Vignette_output", type=str)# name of the directory that will contain the 3D vignette
+	parser.add_argument('--directoryFile', default="SavedVignetteEntropy", type=str)# name of the directory that will contain the vignettes
+	parser.add_argument('--directory2D', default="Vignette_entropy_output", type=str)# name of the directory that will contain the 2D vignette
+	parser.add_argument('--directory3D', default="Vignette_entropy_output", type=str)# name of the directory that will contain the 3D vignette
 	args = parser.parse_args()
 
 
@@ -138,7 +139,7 @@ if __name__ == "__main__":
 
 		# Evaluate the Model : mean, std
 		print("Evaluating the model...")
-		init_score = evaluate_policy(model, env, n_eval_episodes=args.eval_maxiter, alpha = 0.2 ,warn=False)[0]
+		init_score = evaluate_policy(model, env, n_eval_episodes=args.eval_maxiter, alpha = args.alpha ,warn=False)[0]
 		print("Model initial fitness : "+str(init_score))
 
 		# Study the geometry around the model
@@ -210,3 +211,4 @@ if __name__ == "__main__":
 	
 
 	env.close()
+
