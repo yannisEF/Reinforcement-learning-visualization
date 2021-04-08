@@ -34,7 +34,6 @@ def checkFormat(fileExt):
 		return wrapper
 	return decorator	
 
-
 def valueToRGB(value, color1=(255,0,0), color2=(0,255,0), pureNorm=None, minNorm=-1, maxNorm=1):
 	"""
 	Converts a value to an RGB color, between color1 and color2

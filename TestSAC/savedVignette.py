@@ -100,7 +100,6 @@ class SavedVignette:
 		width, height = self.pixelWidth * len(self.lines[-1]), self.pixelHeight * (len(self.lines) + len(self.policyDistance) + len(self.baseLines) + 1)
 		newIm = Image.new("RGB",(width, height))
 		newDraw = ImageDraw.Draw(newIm)
-
 		meanValue, stdValue = np.mean(self.lines+self.baseLines), np.std(self.lines+self.baseLines)
 		minColor, maxColor = meanValue - stdValue, np.max(self.lines+self.baseLines)
 		#	Adding the results
@@ -111,8 +110,10 @@ class SavedVignette:
 			for c in range(len(self.lines[l])):
 				x0 = c * self.pixelWidth
 				x1 = x0 + self.pixelWidth
+
 				value = self.lines[l][c] - alpha * self.linesLogProb[l][c]
 				color = valueToRGB(value, color1, color2, minNorm=minColor, maxNorm=maxColor)
+				color = valueToRGB(self.lines[l][c], color1, color2, minNorm=minColor, maxNorm=maxColor)
 				newDraw.rectangle([x0, y0, x1, y1], fill=color)
 			y0 += self.pixelHeight
 			
@@ -131,6 +132,7 @@ class SavedVignette:
 				x1 = x0 + self.pixelWidth
 				value = self.baseLines[l][c] - alpha * self.baseLinesLogProb[l][c]
 				color = valueToRGB(value, color1, color2, minNorm=minColor, maxNorm=maxColor)
+				color = valueToRGB(self.baseLines[l][c], color1, color2, minNorm=minColor, maxNorm=maxColor)
 				newDraw.rectangle([x0, y0, x1, y1], fill=color)
 		
 		# 	Adding the policies
@@ -265,9 +267,13 @@ if __name__ == "__main__":
 	
 	# Processing the 2D plot
 	print("Processing the 2D plot...")
+
 	for alpha in (0, .5, 1, 2):
 		img = loadedVignette.plot2D(alpha=alpha)
 		loadedVignette.save2D("Vignette_output/Entropy"+args.filename+"_" + str(alpha) + "_2D", img=img)
+
+	#loadedVignette.show2D(img=img)
+
 	
 	# Processing the 3D plot
 	print("Processing 3D plot...")
@@ -282,6 +288,7 @@ if __name__ == "__main__":
 		y2 = np.sinc((x - np.min(x)) / ecart)
 		invR = np.sign(x) / np.sqrt(x**2 + (y1+y2)**2)
 		return invR
+
 	
 	#angles, elevs = [45, 80, 85, 90], [0, 30, 89, 90]	
 	#loadedVignette.plot3D(title="Surface sans transformation")
