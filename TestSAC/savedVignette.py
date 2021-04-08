@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import argparse
 
+from matplotlib.widgets import Slider
 from PIL import Image, ImageDraw
 
 import colorTest
@@ -150,6 +151,24 @@ class SavedVignette:
 		Compute the 3D image of the Vignette
 		"""
 		self.fig, self.ax = plt.figure(title,figsize=figsize), plt.axes(projection='3d')
+		
+		# Computing the intial 3D Vignette
+		self.compute3D(function, width, linewidth, cmap, alpha)
+			
+		# Making a slider to allow to change alpha
+		axEntropy = plt.axes([0.2, 0.1, 0.65, 0.03])
+		self.slider = Slider(ax=axEntropy, label="Alpha", valmin=.0, valmax=5, valinit=alpha)
+		def update(val):
+			self.ax.clear()
+			self.compute3D(function, self.slider.val)
+			self.fig.canvas.draw_idle()
+		self.slider.on_changed(update)
+		
+	def compute3D(self, function, alpha):
+		"""
+		Function called by the slider
+		"""
+		
 		# Iterate over all lines
 		for step in range(-1, len(self.directions)):
 			# Check if current lines is a baseLine
@@ -173,6 +192,23 @@ class SavedVignette:
 		Compute the 3D image of the Vignette with surfaces
 		"""
 		self.fig, self.ax = plt.figure(title,figsize=figsize), plt.axes(projection='3d')
+		
+		# Computing the intial 3D Vignette
+		self.compute3DBand(function, width, linewidth, cmap, alpha)
+			
+		# Making a slider to allow to change alpha
+		axEntropy = plt.axes([0.2, 0.1, 0.65, 0.03])
+		self.slider = Slider(ax=axEntropy, label="Alpha", valmin=.0, valmax=5, valinit=alpha)
+		def update(val):
+			self.ax.clear()
+			self.compute3DBand(function, width, linewidth, cmap, self.slider.val)
+			self.fig.canvas.draw_idle()
+		self.slider.on_changed(update)
+		
+	def compute3DBand(self, function, width, linewidth, cmap, alpha):
+		"""
+		Function called by the slider
+		"""
 		# Iterate over all lines
 		for step in range(-1, len(self.directions)):
 			# Check if current lines is a baseLine
@@ -194,14 +230,13 @@ class SavedVignette:
 			newLine = function(line)
 			Z = np.array([newLine, newLine])
 
-			self.ax.plot_surface(self.x_diff * X, self.y_diff * Y, Z, cmap=cmap, linewidth=linewidth)
+			self.ax.plot_surface(self.x_diff * X, self.y_diff * Y, Z, cmap=cmap, linewidth=linewidth)		
 			
-
 	def show2D(self, img=None, color1=None, color2=None):
 		color1, color2 = self.color1 if color1 is None else color1, self.color2 if color2 is None else color2
 		img = self.plot2D(color1, color2) if img is None else img
 		img.show()
-
+	
 	def show3D(self):
 		plt.show()
 	
@@ -247,11 +282,10 @@ if __name__ == "__main__":
 		invR = np.sign(x) / np.sqrt(x**2 + (y1+y2)**2)
 		return invR
 	
-	for alpha in (0, .5, 1, 2):
-		#angles, elevs = [45, 80, 85, 90], [0, 30, 89, 90]	
-		loadedVignette.plot3DBand(width=10, title="Surface sans transformation", alpha=alpha)
-		#loadedVignette.save3D(filename="Vignette_output/no_tranform", angles=angles, elevs=elevs)
-		#loadedVignette.plot3DBand(function=g, width=10, title="Surface isolant les maxs")
-		#loadedVignette.save3D(filename="Vignette_output/max_isolated", angles=angles, elevs=elevs)
-		# 	Showing the 3D plot
-		loadedVignette.show3D()
+	#angles, elevs = [45, 80, 85, 90], [0, 30, 89, 90]	
+	loadedVignette.plot3DBand(width=10, title="Surface sans transformation")
+	#loadedVignette.save3D(filename="Vignette_output/no_tranform", angles=angles, elevs=elevs)
+	#loadedVignette.plot3DBand(function=g, width=10, title="Surface isolant les maxs")
+	#loadedVignette.save3D(filename="Vignette_output/max_isolated", angles=angles, elevs=elevs)
+	# 	Showing the 3D plot
+	loadedVignette.show3D()
