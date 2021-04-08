@@ -37,7 +37,6 @@ def checkFormat(fileExt):
 def valueToRGB(value, color1=(255,0,0), color2=(0,255,0), pureNorm=None, minNorm=-1, maxNorm=1):
 	"""
 	Converts a value to an RGB color, between color1 and color2
-
 	Pure colors for values of norm >= pureNorm
 	"""
 	if pureNorm is not None:
