@@ -60,6 +60,7 @@ if __name__ == "__main__":
 	parser.add_argument('--saveInFile', default=True, type=bool)# true if want to save the savedVignette
 	parser.add_argument('--save2D', default=True, type=bool)# true if want to save the 2D Vignette
 	parser.add_argument('--save3D', default=True, type=bool)# true if want to save the 3D Vignette
+	parser.add_argument('--outputName', default=None, type=str)# name of the output, uses basename if not given
 	parser.add_argument('--directoryFile', default="SavedVignette", type=str)# name of the directory that will contain the vignettes
 	parser.add_argument('--directory2D', default="Vignette_output", type=str)# name of the directory that will contain the 2D vignette
 	parser.add_argument('--directory3D', default="Vignette_output", type=str)# name of the directory that will contain the 3D vignette
@@ -139,7 +140,8 @@ if __name__ == "__main__":
 
 		# Evaluate the Model : mean, std
 		print("Evaluating the model...")
-		init_score = evaluate_policy(model, env, n_eval_episodes=args.eval_maxiter, alpha = 0.2 ,warn=False)[0]
+		init_score, std_score, init_log = evaluate_policy(model, env, n_eval_episodes=args.eval_maxiter, entropy=True, warn=False)
+		print(init_log)
 		print("Model initial fitness : "+str(init_score))
 
 		# Study the geometry around the model
@@ -172,27 +174,40 @@ if __name__ == "__main__":
 
 			# Evaluate using new parameters
 			scores_plus, scores_minus = [], []
+			log_plus, log_minus = [], []
 			with SlowBar('Evaluating along the direction', max=len(theta_plus)) as bar:
 				for param_i in range(len(theta_plus)):
 					# 	Go forward in the direction
 					model.policy.load_from_vector(theta_plus[param_i])
 					#		Get the new performance
-					scores_plus.append(evaluate_policy(model, env, n_eval_episodes=args.eval_maxiter,alpha = 0.2, warn=False)[0])
+					score, std, log_prob = evaluate_policy(model, env, n_eval_episodes=args.eval_maxiter, entropy=True, warn=False)
+					scores_plus.append(score)
+					log_plus.append(log_prob)
 					# 	Go backward in the direction
 					model.policy.load_from_vector(theta_minus[param_i])
 					#		Get the new performance
-					scores_minus.append(evaluate_policy(model, env, n_eval_episodes=args.eval_maxiter, alpha = 0.2, warn=False)[0])
+					score, std, log_prob = evaluate_policy(model, env, n_eval_episodes=args.eval_maxiter, entropy=True, warn=False)
+					scores_minus.append(score)
+					log_minus.append(log_prob)
 					
 					bar.next()
 
 			# Inverting scores for a symetrical Vignette (theta_minus going left, theta_plus going right)
 			scores_minus = scores_minus[::-1]
+			log_minus = log_minus[::-1]
+			
 			line = scores_minus + [init_score] + scores_plus
+			log_line = log_minus + [init_log] + log_plus
 			# 	Adding the line to the image
-			if step == -1:	newVignette.baseLines.append(line)
-			else:	newVignette.lines.append(line)
+			if step == -1:
+				newVignette.baseLines.append(line)
+				newVignette.baseLinesLogProb.append(log_line)
+			else:
+				newVignette.lines.append(line)
+				newVignette.linesLogProb.append(log_line)
 		
 		computedImg = None
+		filename = "{}_{}".format(args.outputName,indice_file) if args.outputName is not None else filename
 		try:
 			# Computing the 2D Vignette
 			if args.save2D is True:	computedImg = newVignette.plot2D()
@@ -200,12 +215,13 @@ if __name__ == "__main__":
 			if args.save3D is True: newVignette.plot3D()
 		except Exception as e:
 			newVignette.saveInFile("{}/temp/{}".format(args.directoryFile, filename))
-			e.print_exc()
+			print(e)
 		
 		# Saving the Vignette
 		angles3D = [20,45,50,65] # angles at which to save the plot3D
 		elevs= [0, 30, 60]
-		newVignette.saveAll(filename, saveInFile=args.saveInFile, save2D=args.save2D, save3D=args.save3D,
+		newVignette.saveAll(filename,
+							saveInFile=args.saveInFile,save2D=args.save2D, save3D=args.save3D,
 							directoryFile=args.directoryFile, directory2D=args.directory2D, directory3D=args.directory3D,
 							computedImg=computedImg, angles3D=angles3D, elevs=elevs)
 	

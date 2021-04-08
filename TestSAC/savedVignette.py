@@ -35,7 +35,9 @@ class SavedVignette:
 
 		# Content of the Vignette
 		self.baseLines = []	# Bottom lines
+		self.baseLinesLogProb = [] # log(P(A|S)) for bottom lines
 		self.lines = []	# Upper lines
+		self.linesLogProb = [] # log(P(A\S)) for upper lines
 		self.directions = D	# All sampled directions
 		self.indicesPolicies = indicesPolicies # Index of directions that go through a policy
 		self.policyDistance = policyDistance # Distance of each policy along its direction
@@ -86,7 +88,7 @@ class SavedVignette:
 		if save2D is True: self.save2D(directory2D+'/'+filename+'_2D', img=computedImg)
 		if save3D is True: self.save3D(directory3D+'/'+filename+'_3D', elevs=elevs, angles=angles3D)
 
-	def plot2D(self, color1=None, color2=None):
+	def plot2D(self, color1=None, color2=None, alpha=0):
 		"""
 		Compute the 2D image of the Vignette
 
@@ -98,23 +100,25 @@ class SavedVignette:
 		newIm = Image.new("RGB",(width, height))
 		newDraw = ImageDraw.Draw(newIm)
 
-		maxColor = np.max(np.abs(self.lines+self.baseLines),axis=1)
+		meanValue, stdValue = np.mean(self.lines+self.baseLines), np.std(self.lines+self.baseLines)
+		minColor, maxColor = meanValue - stdValue, np.max(self.lines+self.baseLines)
 		#	Adding the results
 		y0 = 0
 		for l in range(len(self.lines)):
 			# 	Drawing the results
-			y0 += self.pixelHeight
 			y1 = y0 + self.pixelHeight
 			for c in range(len(self.lines[l])):
 				x0 = c * self.pixelWidth
 				x1 = x0 + self.pixelWidth
-				color = valueToRGB(self.lines[l][c], color1, color2, pureNorm=maxColor[l])
+				value = self.lines[l][c] - alpha * self.linesLogProb[l][c]
+				color = valueToRGB(value, color1, color2, minNorm=minColor, maxNorm=maxColor)
 				newDraw.rectangle([x0, y0, x1, y1], fill=color)
-		
+			y0 += self.pixelHeight
+			
 		# 	Adding the separating line
 		y0 += self.pixelHeight
 		y1 = y0 + self.pixelHeight
-		color = valueToRGB(0, color1, color2, pureNorm=maxColor[l])
+		color = valueToRGB(0, color1, color2, minNorm=minColor, maxNorm=maxColor)
 		newDraw.rectangle([0, y0, width, y1], fill=color)
 
 		#	Adding the baseLines (bottom lines)
@@ -124,7 +128,8 @@ class SavedVignette:
 			for c in range(len(self.lines[l])):
 				x0 = c * self.pixelWidth
 				x1 = x0 + self.pixelWidth
-				color = valueToRGB(self.baseLines[l][c], color1, color2, pureNorm=maxColor[l])
+				value = self.baseLines[l][c] - alpha * self.baseLinesLogProb[l][c]
+				color = valueToRGB(value, color1, color2, minNorm=minColor, maxNorm=maxColor)
 				newDraw.rectangle([x0, y0, x1, y1], fill=color)
 		
 		# 	Adding the policies
@@ -140,7 +145,7 @@ class SavedVignette:
 		
 		return newIm
 
-	def plot3D(self, function=lambda x:x, figsize=(12,8), title="Vignette ligne"):
+	def plot3D(self, function=lambda x:x, figsize=(12,8), title="Vignette ligne", alpha=0):
 		"""
 		Compute the 3D image of the Vignette
 		"""
@@ -151,11 +156,11 @@ class SavedVignette:
 			if step == -1:
 				# baseLines are at the bottom of the image
 				height = -len(self.directions)-1
-				line = self.baseLines[0]
+				line = [self.baseLines[0][k] - alpha * self.baseLinesLogProb[0][k] for k in range(len(self.baseLines[0]))]
 			else:
 				# Vignette reads from top to bottom
 				height = -step
-				line = self.lines[step]
+				line = [self.lines[step][k] - alpha * self.linesLogProb[step][k] for k in range(len(self.lines[step]))]
 
 			x_line = np.linspace(-len(line)/2, len(line)/2, len(line))
 			y_line = np.ones(len(line))
@@ -163,7 +168,7 @@ class SavedVignette:
 			self.ax.plot3D(self.x_diff * x_line, self.y_diff * height * y_line, function(line))
 
 	def plot3DBand(self, function=lambda x:x,
-				   figsize=(12,8), title="Vignette surface", width=5, linewidth=.01, cmap='coolwarm'):
+				   figsize=(12,8), title="Vignette surface", width=5, linewidth=.01, cmap='coolwarm', alpha=0):
 		"""
 		Compute the 3D image of the Vignette with surfaces
 		"""
@@ -174,11 +179,11 @@ class SavedVignette:
 			if step == -1:
 				# baseLines are at the bottom of the image
 				height = -len(self.directions)-1
-				line = self.baseLines[0]
+				line = [self.baseLines[0][k] - alpha * self.baseLinesLogProb[0][k] for k in range(len(self.baseLines[0]))]
 			else:
 				# Vignette reads from top to bottom
 				height = -step
-				line = self.lines[step]
+				line = [self.lines[step][k] - alpha * self.linesLogProb[step][k] for k in range(len(self.lines[step]))]
 			
 			x_line = np.linspace(-len(line)/2, len(line)/2, len(line))
 			y_line = height * width * np.ones(len(line))
@@ -224,9 +229,9 @@ if __name__ == "__main__":
 	
 	# Processing the 2D plot
 	print("Processing the 2D plot...")
-	img = loadedVignette.plot2D()
-	loadedVignette.save2D("Vignette_output/"+args.filename+"2D", img=img)
-	loadedVignette.show2D(img=img)
+	for alpha in (0, .5, 1, 2):
+		img = loadedVignette.plot2D(alpha=alpha)
+		loadedVignette.save2D("Vignette_output/Entropy"+args.filename+"_" + str(alpha) + "_2D", img=img)
 	
 	# Processing the 3D plot
 	print("Processing 3D plot...")
@@ -241,11 +246,12 @@ if __name__ == "__main__":
 		y2 = np.sinc((x - np.min(x)) / ecart)
 		invR = np.sign(x) / np.sqrt(x**2 + (y1+y2)**2)
 		return invR
-		
-	angles, elevs = [45, 80, 85, 90], [0, 30, 89, 90]	
-	#loadedVignette.plot3DBand(width=10, title="Surface sans transformation")
-	#loadedVignette.save3D(filename="Vignette_output/no_tranform", angles=angles, elevs=elevs)
-	#loadedVignette.plot3DBand(function=g, width=10, title="Surface isolant les maxs")
-	#loadedVignette.save3D(filename="Vignette_output/max_isolated", angles=angles, elevs=elevs)
-	# 	Showing the 3D plot
-	#loadedVignette.show3D()
+	
+	for alpha in (0, .5, 1, 2):
+		#angles, elevs = [45, 80, 85, 90], [0, 30, 89, 90]	
+		loadedVignette.plot3DBand(width=10, title="Surface sans transformation", alpha=alpha)
+		#loadedVignette.save3D(filename="Vignette_output/no_tranform", angles=angles, elevs=elevs)
+		#loadedVignette.plot3DBand(function=g, width=10, title="Surface isolant les maxs")
+		#loadedVignette.save3D(filename="Vignette_output/max_isolated", angles=angles, elevs=elevs)
+		# 	Showing the 3D plot
+		loadedVignette.show3D()

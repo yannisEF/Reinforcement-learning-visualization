@@ -63,7 +63,8 @@ class SavedGradient:
         newIm = Image.new("RGB",(width+self.dotWidth, height))
         newDraw = ImageDraw.Draw(newIm)
 
-        maxColor = np.max(np.abs(self.results),axis=1)
+        meanValue, stdValue = np.mean(self.results), np.std(self.results)
+        minColor, maxColor = meanValue - stdValue, np.max(self.results)
         #	Putting the results and markers
         for l in range(len(self.results)):
             #	Separating lines containing the model's markers
@@ -81,7 +82,7 @@ class SavedGradient:
             for c in range(len(self.results[l])):
                 x0 = c * self.pixelWidth
                 x1 = x0 + self.pixelWidth
-                color = valueToRGB(self.results[l][c], color1, color2, pureNorm=maxColor[l])
+                color = valueToRGB(self.results[l][c], color1, color2, minNorm=minColor, maxNorm=maxColor)
                 newDraw.rectangle([x0, y0, x1, y1], fill=color)
 
             #	Processing the dot product,

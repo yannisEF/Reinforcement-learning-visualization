@@ -20,7 +20,7 @@ def evaluate_policy(
     reward_threshold: Optional[float] = None,
     return_episode_rewards: bool = False,
     warn: bool = True,
-    alpha: float = 0.0,
+    entropy = False,
 ) -> Union[Tuple[float, float], Tuple[List[float], List[int]]]:
     """
     Runs policy for ``n_eval_episodes`` episodes and returns average reward.
@@ -89,16 +89,13 @@ def evaluate_policy(
             action, state = model.predict(obs, state=state, deterministic=deterministic)
             obs, reward, done, info = env.step(action)
             
-            action_space=model.policy.actor.action_space
-            #action_dim= get_action_dim(action_space)
+            if entropy is True:
+                action_space=model.policy.actor.action_space
 
-            action_dist = model.policy.actor.action_dist
-            #action_dist = SquashedDiagGaussianDistribution(action_dim)
-            actions = action_dist.get_actions(deterministic=deterministic)
-            #actions=model.policy.actor.actions
-            log_prob = model.policy.actor.action_dist.log_prob(actions)
-            #r(s,a) - alpha * log(P(A|S)).
-            reward -= alpha*log_prob
+                action_dist = model.policy.actor.action_dist
+                actions = action_dist.get_actions(deterministic=deterministic)
+                log_prob += model.policy.actor.action_dist.log_prob(actions)
+
 
 
             episode_reward += reward
@@ -128,4 +125,7 @@ def evaluate_policy(
         assert mean_reward > reward_threshold, "Mean reward below threshold: " f"{mean_reward:.2f} < {reward_threshold:.2f}"
     if return_episode_rewards:
         return episode_rewards, episode_lengths
+        
+    if entropy is True:
+    	return mean_reward, std_reward, log_prob
     return mean_reward, std_reward

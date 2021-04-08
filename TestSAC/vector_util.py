@@ -34,16 +34,23 @@ def checkFormat(fileExt):
 		return wrapper
 	return decorator	
 
-def valueToRGB(value, color1=(255,0,0), color2=(0,255,0), pureNorm=1):
+
+def valueToRGB(value, color1=(255,0,0), color2=(0,255,0), pureNorm=None, minNorm=-1, maxNorm=1):
 	"""
 	Converts a value to an RGB color, between color1 and color2
-
 	Pure colors for values of norm >= pureNorm
 	"""
-	if value**2 > pureNorm**2:
-		value = pureNorm if value > 0 else -pureNorm
-	weight = value/pureNorm
-	return tuple(int(color1[k] * (1-weight)/2) + int(color2[k] * (1+weight)/2) for k in range(len(color1)))
+	if pureNorm is not None:
+		if value**2 > pureNorm**2:
+			value = pureNorm if value > 0 else -pureNorm
+		weight = value/pureNorm
+		return tuple(int(color1[k] * (1-weight)/2) + int(color2[k] * (1+weight)/2) for k in range(len(color1)))
+	
+	value = minNorm if value <= minNorm else value
+	value = maxNorm if value >= maxNorm else value
+	
+	weight1, weight2 = abs((maxNorm - value)/(maxNorm - minNorm)), abs((minNorm - value)/(maxNorm - minNorm))
+	return tuple(int(color1[k] * weight1) + int(color2[k] * weight2) for k in range(len(color1)))
 
 def invertColor(color):
 	"""
