@@ -141,7 +141,6 @@ if __name__ == "__main__":
 		# Evaluate the Model : mean, std
 		print("Evaluating the model...")
 		init_score, std_score, init_log = evaluate_policy(model, env, n_eval_episodes=args.eval_maxiter, entropy=True, warn=False)
-		print(init_log)
 		print("Model initial fitness : "+str(init_score))
 
 		# Study the geometry around the model

@@ -146,18 +146,19 @@ class SavedVignette:
 		
 		return newIm
 
-	def plot3D(self, function=lambda x:x, figsize=(12,8), title="Vignette ligne", alpha=0):
+	def plot3D(self, function=lambda x:x, figsize=(12,8), title="Vignette ligne",
+				alpha=0, minAlpha=0, maxAlpha=5):
 		"""
 		Compute the 3D image of the Vignette
 		"""
 		self.fig, self.ax = plt.figure(title,figsize=figsize), plt.axes(projection='3d')
 		
 		# Computing the intial 3D Vignette
-		self.compute3D(function, width, linewidth, cmap, alpha)
+		self.compute3D(function, alpha)
 			
 		# Making a slider to allow to change alpha
 		axEntropy = plt.axes([0.2, 0.1, 0.65, 0.03])
-		self.slider = Slider(ax=axEntropy, label="Alpha", valmin=.0, valmax=5, valinit=alpha)
+		self.slider = Slider(ax=axEntropy, label="Alpha", valmin=minAlpha, valmax=maxAlpha, valinit=alpha)
 		def update(val):
 			self.ax.clear()
 			self.compute3D(function, self.slider.val)
@@ -168,7 +169,6 @@ class SavedVignette:
 		"""
 		Function called by the slider
 		"""
-		
 		# Iterate over all lines
 		for step in range(-1, len(self.directions)):
 			# Check if current lines is a baseLine
@@ -187,7 +187,8 @@ class SavedVignette:
 			self.ax.plot3D(self.x_diff * x_line, self.y_diff * height * y_line, function(line))
 
 	def plot3DBand(self, function=lambda x:x,
-				   figsize=(12,8), title="Vignette surface", width=5, linewidth=.01, cmap='coolwarm', alpha=0):
+				   figsize=(12,8), title="Vignette surface", width=5, linewidth=.01, cmap='coolwarm',
+				   alpha=0, minAlpha=.0, maxAlpha=5):
 		"""
 		Compute the 3D image of the Vignette with surfaces
 		"""
@@ -198,7 +199,7 @@ class SavedVignette:
 			
 		# Making a slider to allow to change alpha
 		axEntropy = plt.axes([0.2, 0.1, 0.65, 0.03])
-		self.slider = Slider(ax=axEntropy, label="Alpha", valmin=.0, valmax=5, valinit=alpha)
+		self.slider = Slider(ax=axEntropy, label="Alpha", valmin=minAlpha, valmax=maxAlpha, valinit=alpha)
 		def update(val):
 			self.ax.clear()
 			self.compute3DBand(function, width, linewidth, cmap, self.slider.val)
@@ -283,6 +284,7 @@ if __name__ == "__main__":
 		return invR
 	
 	#angles, elevs = [45, 80, 85, 90], [0, 30, 89, 90]	
+	#loadedVignette.plot3D(title="Surface sans transformation")
 	loadedVignette.plot3DBand(width=10, title="Surface sans transformation")
 	#loadedVignette.save3D(filename="Vignette_output/no_tranform", angles=angles, elevs=elevs)
 	#loadedVignette.plot3DBand(function=g, width=10, title="Surface isolant les maxs")
