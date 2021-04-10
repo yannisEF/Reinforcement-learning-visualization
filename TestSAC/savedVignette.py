@@ -22,8 +22,8 @@ def loadFromFile(filename, folder="SavedVignette"):
 	"""
 	with lzma.open(folder+"/"+filename, 'rb') as handle:
 		content = pickle.load(handle)
-	return content
-
+	return content		
+		
 class SavedVignette:
 	"""
 	Class storing a Vignette, able to draw it in 3D and 2D
@@ -113,7 +113,6 @@ class SavedVignette:
 
 				value = self.lines[l][c] - alpha * self.linesLogProb[l][c]
 				color = valueToRGB(value, color1, color2, minNorm=minColor, maxNorm=maxColor)
-				color = valueToRGB(self.lines[l][c], color1, color2, minNorm=minColor, maxNorm=maxColor)
 				newDraw.rectangle([x0, y0, x1, y1], fill=color)
 			y0 += self.pixelHeight
 			
@@ -132,7 +131,6 @@ class SavedVignette:
 				x1 = x0 + self.pixelWidth
 				value = self.baseLines[l][c] - alpha * self.baseLinesLogProb[l][c]
 				color = valueToRGB(value, color1, color2, minNorm=minColor, maxNorm=maxColor)
-				color = valueToRGB(self.baseLines[l][c], color1, color2, minNorm=minColor, maxNorm=maxColor)
 				newDraw.rectangle([x0, y0, x1, y1], fill=color)
 		
 		# 	Adding the policies
@@ -147,11 +145,23 @@ class SavedVignette:
 				newDraw.text((x0+ int(1.5 * marginX), y0), str(k), fill=invertColor(color))
 		
 		return newIm
-
+	
+	def makePolicy3D(self, index, height, line, width=0, linewidth=0, textMargin=(.02,.02,.02)):
+		"""
+		Plot policies input points on the savedVignette's 3D plot
+		"""
+		distance = round(self.policyDistance[index]/self.stepalpha) # Rounding point error ?
+		x, y, z = self.x_diff * distance, self.y_diff * (height * width + round(width/2)), line[distance] + linewidth
+		self.ax.scatter(x, y, z, marker='x')
+		
+		mX, mY, mZ = textMargin
+		self.ax.text(x + mX, y + mY, z + mZ, s = str(index))
+		
+		
 	def plot3D(self, function=lambda x:x, figsize=(12,8), title="Vignette ligne",
 				alpha=0, minAlpha=0, maxAlpha=5):
 		"""
-		Compute the 3D image of the Vignette
+		Compute the 3D image of the Vignette, can be shaped by an input function
 		"""
 		self.fig, self.ax = plt.figure(title,figsize=figsize), plt.axes(projection='3d')
 		
@@ -182,33 +192,55 @@ class SavedVignette:
 				# Vignette reads from top to bottom
 				height = -step
 				line = [self.lines[step][k] - alpha * self.linesLogProb[step][k] for k in range(len(self.lines[step]))]
-
+			
+			transformedLine = function(line)
+			
+			# We have to iterate over all input policies at each step for an easier retrieval of parameters
+			if self.indicesPolicies is not None:
+				for k in range(len(self.indicesPolicies)):
+					if self.indicesPolicies[k] == step:
+						self.makePolicy3D(k, height, transformedLine)
+			
 			x_line = np.linspace(-len(line)/2, len(line)/2, len(line))
 			y_line = np.ones(len(line))
 
-			self.ax.plot3D(self.x_diff * x_line, self.y_diff * height * y_line, function(line))
+			self.ax.plot3D(self.x_diff * x_line, self.y_diff * height * y_line, transformedLine)
 
 	def plot3DBand(self, function=lambda x:x,
 				   figsize=(12,8), title="Vignette surface", width=5, linewidth=.01, cmap='coolwarm',
-				   alpha=0, minAlpha=.0, maxAlpha=5):
+				   alpha=0, minAlpha=.0, maxAlpha=5, transparency=1):
 		"""
-		Compute the 3D image of the Vignette with surfaces
+		Compute the 3D image of the Vignette with surfaces, can be shaped by an input function
 		"""
 		self.fig, self.ax = plt.figure(title,figsize=figsize), plt.axes(projection='3d')
-		
+
 		# Computing the intial 3D Vignette
 		self.compute3DBand(function, width, linewidth, cmap, alpha)
 			
 		# Making a slider to allow to change alpha
 		axEntropy = plt.axes([0.2, 0.1, 0.65, 0.03])
-		self.slider = Slider(ax=axEntropy, label="Alpha", valmin=minAlpha, valmax=maxAlpha, valinit=alpha)
-		def update(val):
-			self.ax.clear()
-			self.compute3DBand(function, width, linewidth, cmap, self.slider.val)
-			self.fig.canvas.draw_idle()
-		self.slider.on_changed(update)
+		self.entropySlider = Slider(ax=axEntropy, label="Alpha", valmin=minAlpha, valmax=maxAlpha, valinit=alpha)
 		
-	def compute3DBand(self, function, width, linewidth, cmap, alpha):
+		# Making a slider to change the transparency of the surfaces
+		axTrans = plt.axes([0.2, 0.06, 0.65, 0.03])
+		self.transSlider = Slider(ax=axTrans, label="Transparency", valmin=0, valmax=1, valinit=transparency)
+		
+		# Update functions
+		#	Entropy
+		def updateEntropy(val):
+			self.ax.clear()
+			self.compute3DBand(function, width, linewidth, cmap, self.entropySlider.val, transparency=self.transSlider.val)
+			self.fig.canvas.draw_idle()
+		self.entropySlider.on_changed(updateEntropy)
+		
+		#	Transparency
+		def updateTrans(val):
+			self.ax.clear()
+			self.compute3DBand(function, width, linewidth, cmap, self.entropySlider.val, transparency=self.transSlider.val)
+			self.fig.canvas.draw_idle()
+		self.transSlider.on_changed(updateTrans)
+		
+	def compute3DBand(self, function, width, linewidth, cmap, alpha, transparency=1):
 		"""
 		Function called by the slider
 		"""
@@ -224,16 +256,44 @@ class SavedVignette:
 				height = -step
 				line = [self.lines[step][k] - alpha * self.linesLogProb[step][k] for k in range(len(self.lines[step]))]
 			
+			transformedLine = function(line)
+			# We have to iterate over all input policies at each step for an easier retrieval of parameters
+			if self.indicesPolicies is not None:
+				for k in range(len(self.indicesPolicies)):
+					if self.indicesPolicies[k] == step:
+						self.makePolicy3D(k, height, transformedLine, width=width, linewidth=linewidth)
+						
 			x_line = np.linspace(-len(line)/2, len(line)/2, len(line))
 			y_line = height * width * np.ones(len(line))
 
 			X = np.array([x_line, x_line])
 			Y = np.array([y_line, y_line + width])
 
-			newLine = function(line)
-			Z = np.array([newLine, newLine])
+			Z = np.array([transformedLine, transformedLine])
 
-			self.ax.plot_surface(self.x_diff * X, self.y_diff * Y, Z, cmap=cmap, linewidth=linewidth)		
+			self.ax.plot_surface(self.x_diff * X, self.y_diff * Y, Z, cmap=cmap, linewidth=linewidth, alpha=transparency)
+			
+		# Plotting user information
+		#	Sampled policies
+		self.ax.set_xlabel("Sampled policies")
+		posits = [self.x_diff * step for step in range(-len(self.lines[0])//2+1, 0, 5)] \
+			   + [self.x_diff * step for step in range(0, len(self.lines[0])//2+1, 5)]
+		values = list(range(-len(self.lines[0])//2+1, 0, 5)) \
+			   + list(range(0, len(self.lines[0])//2+1, 5))
+		self.ax.set_xticks(posits)
+		self.ax.set_xticklabels(values)
+		
+		#	Sampled directions
+		self.ax.set_ylabel("Sampled directions")
+		posits = [self.y_diff * (round(width/2) - step * width) for step in range(len(self.directions))] \
+			   + [self.y_diff * (round(width/2) - (len(self.directions) + step + 1) * width) for step in range(len(self.baseLines))]
+		values = list(range(1, len(self.lines)+1)) \
+			   + list(range(1, len(self.baseLines)+1))
+		self.ax.set_yticks(posits)
+		self.ax.set_yticklabels(values)
+		
+		# 	Reward
+		self.ax.set_zlabel("Reward")
 			
 	def show2D(self, img=None, color1=None, color2=None):
 		color1, color2 = self.color1 if color1 is None else color1, self.color2 if color2 is None else color2
@@ -268,9 +328,9 @@ if __name__ == "__main__":
 	# Processing the 2D plot
 	print("Processing the 2D plot...")
 
-	for alpha in (0, .5, 1, 2):
+	for alpha in (0,):
 		img = loadedVignette.plot2D(alpha=alpha)
-		loadedVignette.save2D("Vignette_output/Entropy"+args.filename+"_" + str(alpha) + "_2D", img=img)
+		#loadedVignette.save2D("Vignette_output/Entropy"+args.filename+"_" + str(alpha) + "_2D", img=img)
 
 	#loadedVignette.show2D(img=img)
 
