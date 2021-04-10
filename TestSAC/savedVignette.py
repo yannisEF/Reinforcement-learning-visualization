@@ -11,6 +11,7 @@ from matplotlib.widgets import Slider
 from PIL import Image, ImageDraw
 
 import colorTest
+import transformFunction
 from vector_util import valueToRGB, invertColor, checkFormat
 
 
@@ -146,7 +147,7 @@ class SavedVignette:
 		
 		return newIm
 
-	def plot3D(self, function=lambda x:x,
+	def plot3D(self, function=transformFunction.transformIdentity,
 			   figsize=(12,8), title="Vignette 3D", surfaces=True,
 			   alpha=0, minAlpha=.0, maxAlpha=5, transparency=1,
 			   **kwargs):
@@ -165,33 +166,51 @@ class SavedVignette:
 			if "cmap" not in kwargs.keys():	kwargs["cmap"] = "coolwarm"
 		else:
 			args = [function]
-				
+
 		self.computeFunction(*args, alpha=alpha, transparency=transparency, surfaces=surfaces, **kwargs)
 			
 		# Making a slider to allow to change alpha
 		axEntropy = plt.axes([0.2, 0.1, 0.65, 0.03])
 		self.entropySlider = Slider(ax=axEntropy, label="Alpha", valmin=minAlpha, valmax=maxAlpha, valinit=alpha)
 		
-		# Making a slider to change the transparency of the surfaces
-		axTrans = plt.axes([0.2, 0.06, 0.65, 0.03])
-		self.transSlider = Slider(ax=axTrans, label="Transparency", valmin=0, valmax=1, valinit=transparency)
-		
-		# Update functions
+		# Update functions --> need to put them in their own method "update", not good practice to instantiate them all the time
 		#	Entropy
 		def updateEntropy(val):
 			self.ax.clear()
-			self.computeFunction(*args, self.entropySlider.val, transparency=self.transSlider.val, surfaces=surfaces, **kwargs)
+			if surfaces is True:	kwargs["transparency"] = self.transSlider.val
+			self.computeFunction(*args, alpha=val, surfaces=surfaces, **kwargs)
 			self.fig.canvas.draw_idle()
 		self.entropySlider.on_changed(updateEntropy)
 		
 		#	Transparency
 		if surfaces is True:
+			# Making a slider to change the transparency of the surfaces
+			axTrans = plt.axes([0.2, 0.06, 0.65, 0.03])
+			self.transSlider = Slider(ax=axTrans, label="Transparency", valmin=0, valmax=1, valinit=transparency)
+			
 			def updateTrans(val):
 				self.ax.clear()
-				self.computeFunction(*args, self.entropySlider.val, transparency=self.transSlider.val, surfaces=surfaces, **kwargs)
+				self.computeFunction(*args, self.entropySlider.val, transparency=val, surfaces=surfaces, **kwargs)
 				self.fig.canvas.draw_idle()
 			self.transSlider.on_changed(updateTrans)
+		
+		#	Transform functions --> Only last one changes ?? Can't understand where reference go wrong
+		def updateTransform(name, val):
+				function.changeValue(name, val)
+				updateEntropy(self.entropySlider.val)
 				
+		keys = list(function.parameters.keys())
+		self.transformSliders = []
+		for k in range(len(keys)):
+			param = function.parameters[keys[k]]
+			
+			axTransform = plt.axes([0.05 + k * (0.0225 + 0.0075), 0.25, 0.0225, 0.63])
+			newSlider = Slider(ax=axTransform, label=keys[k], orientation="vertical",
+							   valmin=param["minValue"], valmax=param["maxValue"], valinit=param["value"])
+			newSlider.on_changed(lambda val: updateTransform(keys[k], val))
+			# What goes wrong here ??
+			self.transformSliders.append(newSlider)
+			
 	def computeFunction(self, function, alpha=1, transparency=1, surfaces=True,
 					    width=0, linewidth=0, cmap="coolwarm"):
 		"""
@@ -209,7 +228,7 @@ class SavedVignette:
 				height = -step
 				line = [self.lines[step][k] - alpha * self.linesLogProb[step][k] for k in range(len(self.lines[step]))]
 			
-			transformedLine = function(line)
+			transformedLine = function.transform(line)
 			
 			# We have to iterate over all input policies at each step for an easier retrieval of parameters
 			if self.indicesPolicies is not None:
@@ -316,22 +335,9 @@ if __name__ == "__main__":
 	
 	# Processing the 3D plot
 	print("Processing 3D plot...")
-	def f(x, ecart=1):
-		x = (np.array(x) - np.max(x)) / ecart
-		y = np.sinc(x)
-		invR = 1 / np.sqrt(x**2 + y**2)
-		return invR
-	def g(x, ecart=1):
-		x = np.array(x) - np.mean(x)
-		y1 = np.sinc((x - np.max(x)) / ecart)
-		y2 = np.sinc((x - np.min(x)) / ecart)
-		invR = np.sign(x) / np.sqrt(x**2 + (y1+y2)**2)
-		return invR
-
-	
 	#angles, elevs = [45, 80, 85, 90], [0, 30, 89, 90]	
 	#loadedVignette.plot3D(title="Surface sans transformation")
-	loadedVignette.plot3D(surfaces=False, title="Surface sans transformation")
+	loadedVignette.plot3D(function=transformFunction.transformIsolate, surfaces=False, title="Surface sans transformation")
 	#loadedVignette.save3D(filename="Vignette_output/no_tranform", angles=angles, elevs=elevs)
 	#loadedVignette.plot3DBand(function=g, width=10, title="Surface isolant les maxs")
 	#loadedVignette.save3D(filename="Vignette_output/max_isolated", angles=angles, elevs=elevs)
