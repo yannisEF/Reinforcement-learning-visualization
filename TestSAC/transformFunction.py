@@ -36,6 +36,7 @@ def isolateExtrema(x, amp=1, spread=1):
 	invR = np.sign(x) / np.sqrt(x**2 + (y1+y2)**2)
 	return amp * invR
 
+# Enter all modifiable parameters
 parameters = {"amp":{"value":1, "minValue":0, "maxValue":5},
 			  "spread":{"value":1, "minValue":0.01, "maxValue":10}}
 transformIsolate = transformFunction(isolateExtrema, parameters)

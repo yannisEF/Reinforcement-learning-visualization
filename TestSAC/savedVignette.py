@@ -325,21 +325,22 @@ if __name__ == "__main__":
 	
 	# Processing the 2D plot
 	print("Processing the 2D plot...")
-
-	for alpha in (0,):
-		img = loadedVignette.plot2D(alpha=alpha)
+	# 	Iterate over all desired alphas
+	#for alpha in (0,):
+		#img = loadedVignette.plot2D(alpha=alpha)
 		#loadedVignette.save2D("Vignette_output/Entropy"+args.filename+"_" + str(alpha) + "_2D", img=img)
-
-	#loadedVignette.show2D(img=img)
+		#loadedVignette.show2D(img=img)
 
 	
 	# Processing the 3D plot
 	print("Processing 3D plot...")
-	#angles, elevs = [45, 80, 85, 90], [0, 30, 89, 90]	
-	#loadedVignette.plot3D(title="Surface sans transformation")
-	loadedVignette.plot3D(function=transformFunction.transformIsolate, surfaces=False, title="Surface sans transformation")
+	# 	Compute the 3D plot with desired parameters
+	#		function is of type transformFunction (see transformFunction.py)
+	loadedVignette.plot3D(function=transformFunction.transformIsolate, surfaces=True)
+	
+	# 	Save over all desired angles and elevation
+	#angles, elevs = [45, 80, 85, 90], [0, 30, 89, 90]
 	#loadedVignette.save3D(filename="Vignette_output/no_tranform", angles=angles, elevs=elevs)
-	#loadedVignette.plot3DBand(function=g, width=10, title="Surface isolant les maxs")
-	#loadedVignette.save3D(filename="Vignette_output/max_isolated", angles=angles, elevs=elevs)
-	# 	Showing the 3D plot
+	
+	# 	Show the 3D plot
 	loadedVignette.show3D()
