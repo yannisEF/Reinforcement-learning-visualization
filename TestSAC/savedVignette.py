@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import argparse
 
-from matplotlib.widgets import Slider
+from matplotlib.widgets import Slider, Button
 from PIL import Image, ImageDraw
 
 import colorTest
@@ -155,17 +155,18 @@ class SavedVignette:
 		Compute the 3D image of the Vignette with surfaces or not, can be shaped by an input function
 		"""
 		self.fig, self.ax = plt.figure(title,figsize=figsize), plt.axes(projection='3d')
-
+				
 		# Computing the intial 3D Vignette
 		if surfaces is True:
-			args = [function]
+			args = [transformFunction.transformIdentity]
 			
 			# Default key word arguments
-			if "width" not in kwargs.keys():	kwargs["width"] = 5
-			if "linewidth" not in kwargs.keys():	kwargs["linewidth"] = .01
-			if "cmap" not in kwargs.keys():	kwargs["cmap"] = "coolwarm"
+			defaultWidth, defaultLineWidth, defaultCmap = 5, .01, "coolwarm"
+			if "width" not in kwargs.keys():	kwargs["width"] = defaultWidth
+			if "linewidth" not in kwargs.keys():	kwargs["linewidth"] = defaultLineWidth
+			if "cmap" not in kwargs.keys():	kwargs["cmap"] = defaultCmap
 		else:
-			args = [function]
+			args = [transformFunction.transformIdentity]
 
 		self.computeFunction(*args, alpha=alpha, transparency=transparency, surfaces=surfaces, **kwargs)
 			
@@ -190,26 +191,65 @@ class SavedVignette:
 			
 			def updateTrans(val):
 				self.ax.clear()
-				self.computeFunction(*args, self.entropySlider.val, transparency=val, surfaces=surfaces, **kwargs)
+				kwargs["transparency"] = val
+				self.computeFunction(*args, self.entropySlider.val, surfaces=surfaces, **kwargs)
 				self.fig.canvas.draw_idle()
 			self.transSlider.on_changed(updateTrans)
 		
 		#	Transform functions --> Only last one changes ?? Can't understand where reference go wrong
 		def updateTransform(name, val):
-				function.changeValue(name, val)
-				updateEntropy(self.entropySlider.val)
+			function.changeValue(name, val)
+			updateEntropy(self.entropySlider.val)
 				
 		keys = list(function.parameters.keys())
 		self.transformSliders = []
 		for k in range(len(keys)):
 			param = function.parameters[keys[k]]
 			
-			axTransform = plt.axes([0.05 + k * (0.0225 + 0.0075), 0.25, 0.0225, 0.63])
+			axTransform = plt.axes([0.07225 + k * (0.0225 + 0.0075), 0.25, 0.0225, 0.63])
 			newSlider = Slider(ax=axTransform, label=keys[k], orientation="vertical",
 							   valmin=param["minValue"], valmax=param["maxValue"], valinit=param["value"])
 			newSlider.on_changed(lambda val: updateTransform(keys[k], val))
-			# What goes wrong here ??
+			# What goes wrong here ?? Maybe gargabe collector -> store function somewhere
 			self.transformSliders.append(newSlider)
+		
+		# Buttons
+		#	Toggles the plot of of the function
+		if function != transformFunction.transformIdentity:
+			def toggleFunction(event):
+				self.ax.clear()
+				args[0] = transformFunction.transformIdentity if args[0] != transformFunction.transformIdentity else function
+				self.computeFunction(*args, self.entropySlider.val, surfaces=surfaces, **kwargs)
+				self.fig.canvas.draw_idle()
+			
+			axFunction = plt.axes([0.01125, 0.77, 0.05, 0.05])
+			self.functionButton = Button(axFunction, 'Toggle')
+			self.functionButton.on_clicked(toggleFunction)
+		
+		# 	Resets everything
+		def updateReset(event):
+			self.ax.clear()
+			
+			self.entropySlider.reset()
+			
+			if surfaces is True:
+				kwargs["transparency"] = transparency
+				kwargs["width"] = defaultWidth
+				kwargs["linewidth"] = defaultLineWidth
+				kwargs["cmap"] = defaultCmap
+				self.transSlider.reset()
+			
+			for slider in self.transformSliders:
+				slider.reset()
+			
+			if function != transformFunction.transformIdentity: args[0] = transformFunction.transformIdentity
+			
+			self.computeFunction(*args, alpha=alpha, surfaces=surfaces, **kwargs)
+			self.fig.canvas.draw_idle()
+			
+		axReset = plt.axes([0.01125, 0.83, 0.05, 0.05])
+		self.resetButton = Button(axReset, 'Reset')
+		self.resetButton.on_clicked(updateReset)
 			
 	def computeFunction(self, function, alpha=1, transparency=1, surfaces=True,
 					    width=0, linewidth=0, cmap="coolwarm"):
