@@ -8,6 +8,7 @@ import pickle
 import lzma
 import gym
 
+from traceback import print_exc
 from progress.bar import Bar
 from stable_baselines3 import SAC
 from stable_baselines3.common.evaluation import evaluate_policy
@@ -21,7 +22,6 @@ from vector_util import *
 # /!\ Should be used with caution as savedVignette can be very heavy /!\
 
 if __name__ == "__main__":
-
 	print("Parsing arguments")
 	parser = argparse.ArgumentParser()
 
@@ -214,7 +214,7 @@ if __name__ == "__main__":
 			if args.save3D is True: newVignette.plot3D()
 		except Exception as e:
 			newVignette.saveInFile("{}/temp/{}".format(args.directoryFile, filename))
-			print(e)
+			raise RuntimeError(str(e) + " error during plotting, saved computed Vignette in SavedVignette/temp folder.")
 		
 		# Saving the Vignette
 		angles3D = [20,45,50,65] # angles at which to save the plot3D
