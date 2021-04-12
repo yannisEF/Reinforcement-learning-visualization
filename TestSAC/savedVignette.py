@@ -326,8 +326,8 @@ class SavedVignette:
 		Plot policies input points on the savedVignette's 3D plot
 		"""
 		distance = round(self.policyDistance[index]/self.stepalpha) # Rounding error ?
-		dy = width + round(width/2) if width != 0 else 1
-		x, y, z = self.x_diff * distance, self.y_diff * (height * dy), line[round(len(line)//2) + distance]
+		dy = width if width != 0 else 1
+		x, y, z = self.x_diff * distance, self.y_diff * ((height * dy) + round(width/2)), line[round(len(line)//2) + distance]
 		self.ax.scatter(x, y, z, marker='x')
 		
 		mX, mY, mZ = textMargin
@@ -366,9 +366,9 @@ if __name__ == "__main__":
 	# Processing the 2D plot
 	print("Processing the 2D plot...")
 	# 	Iterate over all desired alphas
-	#for alpha in (0,):
-		#img = loadedVignette.plot2D(alpha=alpha)
-		#loadedVignette.save2D("Vignette_output/Entropy"+args.filename+"_" + str(alpha) + "_2D", img=img)
+	for alpha in (0,):
+		img = loadedVignette.plot2D(alpha=alpha)
+		loadedVignette.save2D("Vignette_output/Entropy"+args.filename+"_" + str(alpha) + "_2D", img=img)
 		#loadedVignette.show2D(img=img)
 
 	
