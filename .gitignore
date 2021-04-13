@@ -1,5 +1,3 @@
 # .gitignore
 TestSAC/__pycache__
 TestSAC/.vscode
-# SavedVignette are too heavy to push
-TestSAC/SavedVignette
