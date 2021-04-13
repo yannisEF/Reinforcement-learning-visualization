@@ -3,7 +3,7 @@ import numpy as np
 class transformFunction:
 	"""
 	Class containing a function and its parameters.
-	Made to transform a 3D Vignette's in real time with a slider. 
+	Made to transform a 3D Vignette in real time with a slider. 
 	
 	function must return an array only
 	"""
@@ -31,12 +31,12 @@ def isolateExtrema(x, amp=1, spread=1):
 	Function designed to isolate extrema values of an array
 	"""
 	x = np.array(x) - np.mean(x)
-	y1 = np.sinc((x - np.max(x)) / (np.std(x) * spread))
-	y2 = np.sinc((x - np.min(x)) / (np.std(x) * spread))
+	y1 = np.sinc((x - np.max(x)) / (np.std(x) ** spread))
+	y2 = np.sinc((x - np.min(x)) / (np.std(x) ** spread))
 	invR = np.sign(x) / np.sqrt(x**2 + (y1+y2)**2)
 	return amp * invR
 
 # Enter all modifiable parameters
 parameters = {"amp":{"value":1, "minValue":0, "maxValue":5},
-			  "spread":{"value":1, "minValue":0.01, "maxValue":10}}
+			  "spread":{"value":1, "minValue":1, "maxValue":2}}
 transformIsolate = transformFunction(isolateExtrema, parameters)

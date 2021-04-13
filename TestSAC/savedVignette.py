@@ -350,7 +350,7 @@ if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
 
 	parser.add_argument('--directory', default="SavedVignette", type=str) # directory containing the savedModel
-	parser.add_argument('--filename', default="save1", type=str) # name of the file to load
+	parser.add_argument('--filename', default="rl_model_8000_steps", type=str) # name of the file to load
 
 	args = parser.parse_args()
 
@@ -376,11 +376,11 @@ if __name__ == "__main__":
 	print("Processing 3D plot...")
 	# 	Compute the 3D plot with desired parameters
 	#		function is of type transformFunction (see transformFunction.py)
-	loadedVignette.plot3D(function=transformFunction.transformIsolate, surfaces=True)
+	loadedVignette.plot3D(function=transformFunction.transformIsolate, surfaces=True, maxAlpha=15)
 	
 	# 	Save over all desired angles and elevation
 	#angles, elevs = [45, 80, 85, 90], [0, 30, 89, 90]
-	#loadedVignette.save3D(filename="Vignette_output/no_tranform", angles=angles, elevs=elevs)
+	#loadedVignette.save3D(filename="Vignette_output/transform", angles=angles, elevs=elevs)
 	
 	# 	Show the 3D plot
 	loadedVignette.show3D()
