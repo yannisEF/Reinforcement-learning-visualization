@@ -14,3 +14,4 @@ clear
 echo Loading the computed Vignette...
 echo
 python3 savedVignette.py --directory SavedVignette --filename example_pendulum_8000_steps
+clear
