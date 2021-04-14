@@ -94,7 +94,7 @@ if __name__ == "__main__":
 
 	# Name of the model files to analyse consecutively with the same set of directions: 
 	filename_list = [args.basename+str(i)+'_steps' for i in range(args.min_iter,
-														args.max_iter+args.step_iter,
+														args.max_iter,
 														args.step_iter)]
 
 	# Compute fitness over these directions :
@@ -207,22 +207,25 @@ if __name__ == "__main__":
 		
 		computedImg = None
 		filename = "{}_{}".format(args.outputName,indice_file) if args.outputName is not None else filename
-		try:
+		
+		# Currently work in progress
+		#try:
 			# Computing the 2D Vignette
-			if args.save2D is True:	computedImg = newVignette.plot2D()
+		#	if args.save2D is True:	computedImg = newVignette.plot2D()
 			# Computing the 3D Vignette
-			if args.save3D is True: newVignette.plot3D()
-		except Exception as e:
-			newVignette.saveInFile("{}/temp/{}".format(args.directoryFile, filename))
-			raise RuntimeError(str(e) + " error during plotting, saved computed Vignette in SavedVignette/temp folder.")
+		#	if args.save3D is True: newVignette.plot3D(); print('pas de saved3D')
+		#except Exception as e:
+		#	newVignette.saveInFile("{}/temp/{}".format(args.directoryFile, filename))
+		#	raise RuntimeError(str(e) + " error during plotting, saved computed Vignette in SavedVignette/temp folder.")
 		
 		# Saving the Vignette
-		angles3D = [20,45,50,65] # angles at which to save the plot3D
-		elevs= [0, 30, 60]
-		newVignette.saveAll(filename,
-							saveInFile=args.saveInFile,save2D=args.save2D, save3D=args.save3D,
-							directoryFile=args.directoryFile, directory2D=args.directory2D, directory3D=args.directory3D,
-							computedImg=computedImg, angles3D=angles3D, elevs=elevs)
-	
+		#angles3D = [20,45,50,65] # angles at which to save the plot3D
+		#elevs= [0, 30, 60]
+		#newVignette.saveAll(filename,
+		#					saveInFile=args.saveInFile,save2D=args.save2D, save3D=args.save3D,
+		#					directoryFile=args.directoryFile, directory2D=args.directory2D, directory3D=args.directory3D,
+		#					computedImg=computedImg, angles3D=angles3D, elevs=elevs)
+		
+		newVignette.saveInFile("{}/{}".format(args.directoryFile, filename))
 
 	env.close()

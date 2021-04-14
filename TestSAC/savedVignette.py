@@ -53,12 +53,12 @@ class SavedVignette:
 		self.fig, self.ax = None, None
 		self.x_diff = x_diff #	Distance between each model along a direction
 		self.y_diff = y_diff #  Distance between each direction
-		
+	
 	@checkFormat(saveFormat)
 	def saveInFile(self, filename):
 		"""
 		Save the Vignette in a file
-		"""
+		"""	
 		with lzma.open(filename, 'wb') as handle:
 			pickle.dump(self, handle)
 	
@@ -79,17 +79,17 @@ class SavedVignette:
 				self.ax.view_init(elev, angle)
 				plt.draw()
 				plt.savefig(filename+'_e{}_a{}.png'.format(elev,angle), format='png')
-	
+		
 	def saveAll(self, filename, saveInFile=False, save2D=False, save3D=False,
 								directoryFile="SavedVignette", directory2D="Vignette_output", directory3D="Vignette_output",
 								computedImg=None, angles3D=[0], elevs=[0]):
 		"""
 		Centralises the saving process
 		"""
-		if saveInFile is True: self.saveInFile(directoryFile+'/'+filename)
 		if save2D is True: self.save2D(directory2D+'/'+filename+'_2D', img=computedImg)
 		if save3D is True: self.save3D(directory3D+'/'+filename+'_3D', elevs=elevs, angles=angles3D)
-
+		if saveInFile is True: self.saveInFile(directoryFile+'/'+filename)
+		
 	def plot2D(self, color1=None, color2=None, alpha=0):
 		"""
 		Compute the 2D image of the Vignette
@@ -381,6 +381,6 @@ if __name__ == "__main__":
 	# 	Save over all desired angles and elevation
 	#angles, elevs = [45, 80, 85, 90], [0, 30, 89, 90]
 	#loadedVignette.save3D(filename="Vignette_output/transform", angles=angles, elevs=elevs)
-	
+
 	# 	Show the 3D plot
 	loadedVignette.show3D()
