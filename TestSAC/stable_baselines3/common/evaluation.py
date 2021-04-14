@@ -73,7 +73,7 @@ def evaluate_policy(
             "Consider wrapping environment first with ``Monitor`` wrapper.",
             UserWarning,
         )
-    log_prob = 0
+    episode_logprob = []
     episode_rewards, episode_lengths = [], []
     not_reseted = True
     while len(episode_rewards) < n_eval_episodes:
@@ -86,6 +86,7 @@ def evaluate_policy(
         done, state = False, None
         episode_reward = 0.0
         episode_length = 0
+        log_prob = 0
         while not done:
             action, state = model.predict(obs, state=state, deterministic=deterministic)
             obs, reward, done, info = env.step(action)
@@ -112,11 +113,13 @@ def evaluate_policy(
             if "episode" in info.keys():
                 # Monitor wrapper includes "episode" key in info if environment
                 # has been wrapped with it. Use those rewards instead.
+                episode_logprob.append(info["episode"]["e"])
                 episode_rewards.append(info["episode"]["r"])
                 episode_lengths.append(info["episode"]["l"])
         else:
             episode_rewards.append(episode_reward)
             episode_lengths.append(episode_length)
+            episode_logprob.append(log_prob)
 
     mean_reward = np.mean(episode_rewards)
     std_reward = np.std(episode_rewards)
@@ -126,5 +129,5 @@ def evaluate_policy(
         return episode_rewards, episode_lengths
         
     if entropy is True:
-    	return mean_reward, std_reward, log_prob
+    	return mean_reward, std_reward, np.mean(episode_logprob)
     return mean_reward, std_reward
