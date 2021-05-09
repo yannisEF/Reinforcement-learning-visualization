@@ -99,6 +99,8 @@ def evaluate_policy(
                 actions = action_dist.get_actions(deterministic=deterministic)
                 log_episode = -float(model.policy.actor.action_dist.log_prob(actions).mean())
                 log_prob += log_episode
+                
+                # DEBUGGING MAYBE SIGN PROBLEM
                 if log_episode >= 0:	timepos += 1
                 else:	timeNeg += 1
                 
@@ -121,7 +123,6 @@ def evaluate_policy(
                 episode_rewards.append(info["episode"]["r"])
                 episode_lengths.append(info["episode"]["l"])
         else:
-            print(timeNeg, timepos)
             episode_rewards.append(episode_reward)
             episode_lengths.append(episode_length)
             episode_logprob.append(log_prob)
