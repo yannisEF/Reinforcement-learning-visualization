@@ -49,11 +49,8 @@ if __name__ == "__main__":
 	
 	# File management
 	#	Input parameters
-	parser.add_argument('--inputDir', default="Models", type=str)# name of the directory containing the models to load
-	parser.add_argument('--basename', default="rl_model_", type=str)# file prefix for the loaded model
-	parser.add_argument('--min_iter', default=1, type=int)# iteration (file suffix) of the first model
-	parser.add_argument('--max_iter', default=10, type=int)# iteration (file suffix) of the last model
-	parser.add_argument('--step_iter', default=1, type=int)# iteration step between two consecutive models
+	parser.add_argument('--inputFolder', default="Models", type=str)# name of the directory containing the models to load
+	parser.add_argument('--name', default="rl_model", type=str)# file prefix for the loaded model
 	# 		Input policies parameters
 	parser.add_argument('--policiesPath', default=None, type=str) # path to a list of policies to be included in Vignette
 	#	Output parameters
@@ -75,6 +72,7 @@ if __name__ == "__main__":
 	max_action = int(env.action_space.high[0])
 	
 	# Instantiating the model
+	filename = args.inputName
 	model = SAC(args.policy, args.env,
 				learning_rate=args.learning_rate,
 				tau=args.tau,
@@ -92,140 +90,128 @@ if __name__ == "__main__":
 	# Choosing directions to follow
 	D = getDirectionsMuller(args.nb_lines,num_params)
 
-	# Name of the model files to analyse consecutively with the same set of directions: 
-	filename_list = [args.basename+str(i)+'_steps' for i in range(args.min_iter,
-														args.max_iter,
-														args.step_iter)]
+	# Load the model
+	print("\nSTARTING : "+str(filename))
+	model = SAC.load("{}/{}".format(args.inputFolder, filename))
+	
+	# Get the new parameters
+	theta0 = model.policy.parameters_to_vector()
+	base_vect = theta0 if previous_theta is None else theta0 - previous_theta
+	previous_theta = theta0
+	print("Loaded parameters from file")
 
-	# Compute fitness over these directions :
-	previous_theta = None # Remembers theta
-	for indice_file in range(len(filename_list)):
-			
-		# Change which model to load
-		filename = filename_list[indice_file]
+	# Processing the provided policies
+	# 	Distance of each policy along their directions, directions taken by the policies
+	policyDistance, policyDirection = [], []
+	if args.policiesPath is not None:
+		with SlowBar('Computing the directions to input policies', max=len(policies)) as bar:
+			for p in policies:
+				distance = euclidienne(base_vect, p);	direction = (p - base_vect) / distance
+				# Storing the directions to remove them from those already sampled
+				policyDirection.append(direction)	
+				# Storing the distances to the model
+				policyDistance.append(distance)
+				# 	Remove the closest direction in those sampled
+				del D[np.argmin([euclidienne(direction, dirK) for dirK in D])]
+				bar.next()
 
-		# Load the model
-		print("\nSTARTING : "+str(filename))
-		model = SAC.load("{}/{}".format(args.inputDir, filename))
+	# 	Adding the provided policies
+	D += policyDirection
+	# 	Ordering the directions
+	D = order_all_by_proximity(D)
+	#	Keeping track of which directions stem from a policy
+	copyD = [list(direction) for direction in D]
+	indicesPolicies = [copyD.index(list(direction)) for direction in policyDirection]
+	del copyD
+
+	# Evaluate the Model : mean, std
+	print("Evaluating the model...")
+	init_score, std_score, init_log = evaluate_policy(model, env, n_eval_episodes=args.eval_maxiter, entropy=True, warn=False)
+	print("Model initial fitness : "+str(init_score))
+
+	# Study the geometry around the model
+	print("Starting study around the model...")
+	theta_plus_scores, theta_minus_scores = [], []
+	image, base_image = [], []
+
+	#	Norm of the model
+	length_dist = euclidienne(base_vect, np.zeros(np.shape(base_vect)))
+	# 		Direction taken by the model (normalized)
+	d = np.zeros(np.shape(base_vect)) if length_dist ==0 else base_vect / length_dist
+
+	# Iterating over all directions, -1 is the direction that was initially taken by the model
+	newVignette = SavedVignette(D, policyDistance=policyDistance, indicesPolicies=indicesPolicies,
+								stepalpha=args.stepalpha, pixelWidth=args.pixelWidth, pixelHeight=args.pixelHeight,
+								x_diff=args.x_diff, y_diff=args.y_diff)
+	for step in range(-1,len(D)):
+		print("\nDirection ", step, "/", len(D)-1)
+		# New parameters following the direction
+		#	Changing the range and step of the Vignette if the optional input policies are beyond that range
+		min_dist, max_dist = (args.minalpha, args.maxalpha) if args.policiesPath is None \
+						else (args.minalpha, max(max(policyDistance), args.maxalpha))
+		step_dist = args.stepalpha * (max_dist - min_dist) / (args.maxalpha - args.minalpha)
+		newVignette.stepalpha = step_dist
+		# 	Sampling new models' parameters following the direction
+		theta_plus, theta_minus = getPointsDirection(theta0, num_params, min_dist, max_dist, step_dist, d)
+
+		# Get the next direction
+		if step != -1:	d = D[step]
+
+		# Evaluate using new parameters
+		scores_plus, scores_minus = [], []
+		log_plus, log_minus = [], []
+		with SlowBar('Evaluating along the direction', max=len(theta_plus)) as bar:
+			for param_i in range(len(theta_plus)):
+				# 	Go forward in the direction
+				model.policy.load_from_vector(theta_plus[param_i])
+				#		Get the new performance
+				score, std, log_prob = evaluate_policy(model, env, n_eval_episodes=args.eval_maxiter, entropy=True, warn=False)
+				scores_plus.append(score)
+				log_plus.append(log_prob)
+				# 	Go backward in the direction
+				model.policy.load_from_vector(theta_minus[param_i])
+				#		Get the new performance
+				score, std, log_prob = evaluate_policy(model, env, n_eval_episodes=args.eval_maxiter, entropy=True, warn=False)
+				scores_minus.append(score)
+				log_minus.append(log_prob)
+				
+				bar.next()
+
+		# Inverting scores for a symetrical Vignette (theta_minus going left, theta_plus going right)
+		scores_minus = scores_minus[::-1]
+		log_minus = log_minus[::-1]
 		
-		# Get the new parameters
-		theta0 = model.policy.parameters_to_vector()
-		base_vect = theta0 if previous_theta is None else theta0 - previous_theta
-		previous_theta = theta0
-		print("Loaded parameters from file")
-
-		# Processing the provided policies
-		# 	Distance of each policy along their directions, directions taken by the policies
-		policyDistance, policyDirection = [], []
-		if args.policiesPath is not None:
-			with SlowBar('Computing the directions to input policies', max=len(policies)) as bar:
-				for p in policies:
-					distance = euclidienne(base_vect, p);	direction = (p - base_vect) / distance
-					# Storing the directions to remove them from those already sampled
-					policyDirection.append(direction)	
-					# Storing the distances to the model
-					policyDistance.append(distance)
-					# 	Remove the closest direction in those sampled
-					del D[np.argmin([euclidienne(direction, dirK) for dirK in D])]
-					bar.next()
-
-		# 	Adding the provided policies
-		D += policyDirection
-		# 	Ordering the directions
-		D = order_all_by_proximity(D)
-		#	Keeping track of which directions stem from a policy
-		copyD = [list(direction) for direction in D]
-		indicesPolicies = [copyD.index(list(direction)) for direction in policyDirection]
-		del copyD
-
-		# Evaluate the Model : mean, std
-		print("Evaluating the model...")
-		init_score, std_score, init_log = evaluate_policy(model, env, n_eval_episodes=args.eval_maxiter, entropy=True, warn=False)
-		print("Model initial fitness : "+str(init_score))
-
-		# Study the geometry around the model
-		print("Starting study around the model...")
-		theta_plus_scores, theta_minus_scores = [], []
-		image, base_image = [], []
-
-		#	Norm of the model
-		length_dist = euclidienne(base_vect, np.zeros(np.shape(base_vect)))
-		# 		Direction taken by the model (normalized)
-		d = np.zeros(np.shape(base_vect)) if length_dist ==0 else base_vect / length_dist
-
-		# Iterating over all directions, -1 is the direction that was initially taken by the model
-		newVignette = SavedVignette(D, policyDistance=policyDistance, indicesPolicies=indicesPolicies,
-									stepalpha=args.stepalpha, pixelWidth=args.pixelWidth, pixelHeight=args.pixelHeight,
-									x_diff=args.x_diff, y_diff=args.y_diff)
-		for step in range(-1,len(D)):
-			print("\nDirection ", step, "/", len(D)-1)
-			# New parameters following the direction
-			#	Changing the range and step of the Vignette if the optional input policies are beyond that range
-			min_dist, max_dist = (args.minalpha, args.maxalpha) if args.policiesPath is None \
-							else (args.minalpha, max(max(policyDistance), args.maxalpha))
-			step_dist = args.stepalpha * (max_dist - min_dist) / (args.maxalpha - args.minalpha)
-			newVignette.stepalpha = step_dist
-			# 	Sampling new models' parameters following the direction
-			theta_plus, theta_minus = getPointsDirection(theta0, num_params, min_dist, max_dist, step_dist, d)
-
-			# Get the next direction
-			if step != -1:	d = D[step]
-
-			# Evaluate using new parameters
-			scores_plus, scores_minus = [], []
-			log_plus, log_minus = [], []
-			with SlowBar('Evaluating along the direction', max=len(theta_plus)) as bar:
-				for param_i in range(len(theta_plus)):
-					# 	Go forward in the direction
-					model.policy.load_from_vector(theta_plus[param_i])
-					#		Get the new performance
-					score, std, log_prob = evaluate_policy(model, env, n_eval_episodes=args.eval_maxiter, entropy=True, warn=False)
-					scores_plus.append(score)
-					log_plus.append(log_prob)
-					# 	Go backward in the direction
-					model.policy.load_from_vector(theta_minus[param_i])
-					#		Get the new performance
-					score, std, log_prob = evaluate_policy(model, env, n_eval_episodes=args.eval_maxiter, entropy=True, warn=False)
-					scores_minus.append(score)
-					log_minus.append(log_prob)
-					
-					bar.next()
-
-			# Inverting scores for a symetrical Vignette (theta_minus going left, theta_plus going right)
-			scores_minus = scores_minus[::-1]
-			log_minus = log_minus[::-1]
-			
-			line = scores_minus + [init_score] + scores_plus
-			log_line = log_minus + [init_log] + log_plus
-			# 	Adding the line to the image
-			if step == -1:
-				newVignette.baseLines.append(line)
-				newVignette.baseLinesLogProb.append(log_line)
-			else:
-				newVignette.lines.append(line)
-				newVignette.linesLogProb.append(log_line)
-		
-		computedImg = None
-		filename = "{}_{}".format(args.outputName,indice_file) if args.outputName is not None else filename
-		
-		# Currently work in progress
-		#try:
-			# Computing the 2D Vignette
-		#	if args.save2D is True:	computedImg = newVignette.plot2D()
-			# Computing the 3D Vignette
-		#	if args.save3D is True: newVignette.plot3D(); print('pas de saved3D')
-		#except Exception as e:
-		#	newVignette.saveInFile("{}/temp/{}".format(args.directoryFile, filename))
-		#	raise RuntimeError(str(e) + " error during plotting, saved computed Vignette in SavedVignette/temp folder.")
-		
-		# Saving the Vignette
-		#angles3D = [20,45,50,65] # angles at which to save the plot3D
-		#elevs= [0, 30, 60]
-		#newVignette.saveAll(filename,
-		#					saveInFile=args.saveInFile,save2D=args.save2D, save3D=args.save3D,
-		#					directoryFile=args.directoryFile, directory2D=args.directory2D, directory3D=args.directory3D,
-		#					computedImg=computedImg, angles3D=angles3D, elevs=elevs)
-		
-		newVignette.saveInFile("{}/{}".format(args.directoryFile, filename))
+		line = scores_minus + [init_score] + scores_plus
+		log_line = log_minus + [init_log] + log_plus
+		# 	Adding the line to the image
+		if step == -1:
+			newVignette.baseLines.append(line)
+			newVignette.baseLinesLogProb.append(log_line)
+		else:
+			newVignette.lines.append(line)
+			newVignette.linesLogProb.append(log_line)
+	
+	computedImg = None
+	filename = "{}_{}".format(args.outputName,indice_file) if args.outputName is not None else filename
+	
+	# Currently work in progress
+	#try:
+		# Computing the 2D Vignette
+	#	if args.save2D is True:	computedImg = newVignette.plot2D()
+		# Computing the 3D Vignette
+	#	if args.save3D is True: newVignette.plot3D(); print('pas de saved3D')
+	#except Exception as e:
+	#	newVignette.saveInFile("{}/temp/{}".format(args.directoryFile, filename))
+	#	raise RuntimeError(str(e) + " error during plotting, saved computed Vignette in SavedVignette/temp folder.")
+	
+	# Saving the Vignette
+	#angles3D = [20,45,50,65] # angles at which to save the plot3D
+	#elevs= [0, 30, 60]
+	#newVignette.saveAll(filename,
+	#					saveInFile=args.saveInFile,save2D=args.save2D, save3D=args.save3D,
+	#					directoryFile=args.directoryFile, directory2D=args.directory2D, directory3D=args.directory3D,
+	#					computedImg=computedImg, angles3D=angles3D, elevs=elevs)
+	
+	newVignette.saveInFile("{}/{}".format(args.directoryFile, filename))
 
 	env.close()

@@ -9,7 +9,7 @@ python3 preparePolicies.py --inputFolder Models --inputNames "example_pendulum_7
 clear
 echo Computing the Vignette...
 echo
-python3 Vignette.py --env Pendulum-v0 --inputDir Models --basename example_pendulum_ --min_iter 8000 --max_iter 8001 --step_iter 500 --eval_maxiter 1 --nb_lines 10 --policiesPath ComparePolicies/example_around_8000.xz
+python3 Vignette.py --env Pendulum-v0 --inputFolder Models --inputName example_pendulum_8000_steps --eval_maxiter 5 --nb_lines 10 --policiesPath ComparePolicies/example_around_8000.xz
 clear
 echo Loading the computed Vignette...
 echo

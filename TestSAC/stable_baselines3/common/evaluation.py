@@ -87,6 +87,7 @@ def evaluate_policy(
         episode_reward = 0.0
         episode_length = 0
         log_prob = 0
+        timepos, timeNeg = 0, 0
         while not done:
             action, state = model.predict(obs, state=state, deterministic=deterministic)
             obs, reward, done, info = env.step(action)
@@ -96,15 +97,18 @@ def evaluate_policy(
 
                 action_dist = model.policy.actor.action_dist
                 actions = action_dist.get_actions(deterministic=deterministic)
-                log_prob += float(model.policy.actor.action_dist.log_prob(actions))
-
+                log_episode = -float(model.policy.actor.action_dist.log_prob(actions).mean())
+                log_prob += log_episode
+                if log_episode >= 0:	timepos += 1
+                else:	timeNeg += 1
+                
             episode_reward += reward
             if callback is not None:
                 callback(locals(), globals())
             episode_length += 1
             if render:
                 env.render()
-
+		
         if is_monitor_wrapped:
             # Do not trust "done" with episode endings.
             # Remove vecenv stacking (if any)
@@ -117,6 +121,7 @@ def evaluate_policy(
                 episode_rewards.append(info["episode"]["r"])
                 episode_lengths.append(info["episode"]["l"])
         else:
+            print(timeNeg, timepos)
             episode_rewards.append(episode_reward)
             episode_lengths.append(episode_length)
             episode_logprob.append(log_prob)
