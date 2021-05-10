@@ -93,11 +93,10 @@ def evaluate_policy(
             obs, reward, done, info = env.step(action)
             
             if entropy is True:
-                action_space=model.policy.actor.action_space
-
-                action_dist = model.policy.actor.action_dist
-                actions = action_dist.get_actions(deterministic=deterministic)
-                log_episode = -float(model.policy.actor.action_dist.log_prob(actions).mean())
+                replay_data = model.replay_buffer.sample(model.batch_size, env=model._vec_normalize_env)
+                _, log_episode = model.actor.action_log_pob(replay_data.observations)
+                log_episode = log_prob.reshape(-1,1)
+                print(log_episode)
                 log_prob += log_episode
                 
                 # DEBUGGING MAYBE SIGN PROBLEM
@@ -123,6 +122,7 @@ def evaluate_policy(
                 episode_rewards.append(info["episode"]["r"])
                 episode_lengths.append(info["episode"]["l"])
         else:
+            print(timepos, timeNeg)
             episode_rewards.append(episode_reward)
             episode_lengths.append(episode_length)
             episode_logprob.append(log_prob)
