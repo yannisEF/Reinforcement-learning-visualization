@@ -65,9 +65,7 @@ input policies to be included inside of the Vignette, they will be automatically
 One should also enter the desired output information (--directoryFile –outputName).
 To compute the Vignette at the 8000th step, along with the desired input policies :
 
-```python3 Vignette.py --env Pendulum-v0 --inputFolder Models --inputName 
-example_pendulum_8000_steps --eval_maxiter 1 --nb_lines 10 --policiesPath 
-ComparePolicies/example_around_8000.xz
+```python3 Vignette.py --env Pendulum-v0 --inputFolder Models --inputName  example_pendulum_8000_steps --eval_maxiter 1 --nb_lines 10 --policiesPath ComparePolicies/example_around_8000.xz
 ```
 You should now have a .xz containing a SavedVignette object.
 If anything fails during the saving process (not the computing), the output will be saved in the 
@@ -94,22 +92,10 @@ Vignette.
 An example of their use is provided in savedVignette.py’s main.
 Therefore, the results can be visualized by running savedVignette.py :
 ```
-python3 savedVignette.py --directory SavedVignette --filename 
-example_pendulum_8000_steps
+python3 savedVignette.py --directory SavedVignette --filename example_pendulum_8000_steps
 ```
-Once it has been run, apart from the Vignette itself, you should see several sliders and buttons :
-
-    -On the left hand side:
-    
-             - A Reset button
-             - A Toggle button toggling the transformFunction on and off
-             - Sliders allowing the user to change the transformFunction’s parameters, as many as there are arguments
-             
-    -At the bottom:
-    
-             - Alpha slider, changes the amount of entropy
-             - Transparency slider, changes the transparency of the surfaces for better readability
-
+ 
+For more details or features, a user manuel is avaible.
 
 
 ## Installation of dependencies
