@@ -61,9 +61,9 @@ if __name__ == "__main__":
 	parser.add_argument('--directoryFile', default="SavedVignette", type=str)# name of the directory that will contain the vignettes
 	parser.add_argument('--directory2D', default="Vignette_output", type=str)# name of the directory that will contain the 2D vignette
 	parser.add_argument('--directory3D', default="Vignette_output", type=str)# name of the directory that will contain the 3D vignette
+	parser.add_argument('--checkpointFreq', default=25, type=int) # saving the Vignette after a certain number of steps
 	args = parser.parse_args()
-
-
+	
 	# Creating environment and initialising model and parameters
 	print("Creating environment\n")
 	env = gym.make(args.env)
@@ -84,7 +84,9 @@ if __name__ == "__main__":
 	if args.policiesPath is not None:
 		with lzma.open(args.policiesPath, 'rb') as handle:
 			policies = pickle.load(handle)
-
+	
+	# 	Checking if enough directions to start computaion
+	if len(policies) > args.nb_lines:	raise ValueError("More input policies than computed directions.")
 	print('\n')
 
 	# Choosing directions to follow
@@ -113,6 +115,7 @@ if __name__ == "__main__":
 				# 	Remove the closest direction in those sampled
 				del D[np.argmin([euclidienne(direction, dirK) for dirK in D])]
 				bar.next()
+				
 
 	# 	Adding the provided policies
 	D += policyDirection
@@ -189,9 +192,13 @@ if __name__ == "__main__":
 		else:
 			newVignette.lines.append(line)
 			newVignette.linesLogProb.append(log_line)
+		
+		if step != 0 and step % args.checkpointFreq == 0:
+			print("\nSaving a checkpoint..")
+			newVignette.saveInFile("{}/{}_checkpoint_{}".format(args.directoryFile, args.outputName if args.outputName is not None else filename, step))
 	
 	computedImg = None
-	filename = "{}_{}".format(args.outputName,indice_file) if args.outputName is not None else filename
+	filename = arg.outputName if args.outputName is not None else filename
 	
 	# Currently work in progress
 	#try:
