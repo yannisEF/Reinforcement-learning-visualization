@@ -98,7 +98,7 @@ class SavedVignette:
 		"""
 		color1, color2 = self.color1 if color1 is None else color1, self.color2 if color2 is None else color2
 		
-		width, height = self.pixelWidth * len(self.lines[-1]), self.pixelHeight * (len(self.lines) + len(self.policyDistance) + len(self.baseLines) + 1)
+		width, height = self.pixelWidth * len(self.lines[-1]), self.pixelHeight * (len(self.lines) + len(self.baseLines) + 1)
 		newIm = Image.new("RGB",(width, height))
 		newDraw = ImageDraw.Draw(newIm)
 		meanValue, stdValue = np.mean(self.lines+self.baseLines), np.std(self.lines+self.baseLines)
