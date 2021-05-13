@@ -16,7 +16,7 @@ from vector_util import *
 from slowBar import SlowBar
 
 # Chosen color palette
-color1, color2 = (20,0,230), (230,230,0)
+color1, color2 = (0,0,120), (255,151,0)
 
 @checkFormat('.png')
 def createPalette(filename="color_palette",

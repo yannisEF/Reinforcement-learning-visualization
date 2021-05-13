@@ -141,8 +141,9 @@ class SavedVignette:
 				index, distance = self.indicesPolicies[k], round(self.policyDistance[k]/self.stepalpha)
 				x0, y0 = (distance + len(self.lines[0])//2) * self.pixelWidth, index * self.pixelHeight
 				x1, y1 = x0 + self.pixelWidth, y0 + self.pixelHeight
-				color = invertColor(newIm.getpixel((x0,y0)))
-				newDraw.ellipse([x0+marginX, y0+marginY, x1-marginX, y1-marginY], fill=color)
+				color = invertColor(newIm.getpixel((x0,y0)))				
+				# Numbers bigger than 10
+				newDraw.ellipse([x0+ marginX, y0+marginY, x1+(3 * len(str(k)) - 3)*marginX, y1-marginY], fill=color)
 				newDraw.text((x0+ int(1.5 * marginX), y0), str(k), fill=invertColor(color))
 		
 		return newIm
