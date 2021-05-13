@@ -50,7 +50,7 @@ if __name__ == "__main__":
 	# File management
 	#	Input parameters
 	parser.add_argument('--inputFolder', default="Models", type=str)# name of the directory containing the models to load
-	parser.add_argument('--name', default="rl_model", type=str)# file prefix for the loaded model
+	parser.add_argument('--inputName', default="rl_model", type=str)# file prefix for the loaded model
 	# 		Input policies parameters
 	parser.add_argument('--policiesPath', default=None, type=str) # path to a list of policies to be included in Vignette
 	#	Output parameters
@@ -96,8 +96,7 @@ if __name__ == "__main__":
 	
 	# Get the new parameters
 	theta0 = model.policy.parameters_to_vector()
-	base_vect = theta0 if previous_theta is None else theta0 - previous_theta
-	previous_theta = theta0
+	base_vect = theta0
 	print("Loaded parameters from file")
 
 	# Processing the provided policies
