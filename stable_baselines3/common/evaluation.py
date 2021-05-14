@@ -5,10 +5,10 @@ import gym
 import numpy as np
 import torch as th
 
-from stable_baselines3.common import base_class
+from stable_baselines3.common import  *
+#from stable_baselines3.common import base_class
 from stable_baselines3.common.vec_env import VecEnv
 from stable_baselines3.common.preprocessing import get_action_dim
-
 from stable_baselines3.common.distributions import SquashedDiagGaussianDistribution
 
 def evaluate_policy(
@@ -21,7 +21,7 @@ def evaluate_policy(
     reward_threshold: Optional[float] = None,
     return_episode_rewards: bool = False,
     warn: bool = True,
-    entropy = False,
+    entropy = True,
 ) -> Union[Tuple[float, float], Tuple[List[float], List[int]]]:
     """
     Runs policy for ``n_eval_episodes`` episodes and returns average reward.
@@ -88,20 +88,47 @@ def evaluate_policy(
         episode_length = 0
         log_prob = 0
         timepos, timeNeg = 0, 0
+        action_table = {}
+
         while not done:
+
             action, state = model.predict(obs, state=state, deterministic=deterministic)
+          
+            state = env.observation_space
             obs, reward, done, info = env.step(action)
             
-            if entropy is True:
-                replay_data = model.replay_buffer.sample(model.batch_size, env=model._vec_normalize_env)
-                _, log_episode = model.actor.action_log_pob(replay_data.observations)
-                log_episode = log_prob.reshape(-1,1)
-                print(log_episode)
-                log_prob += log_episode
-                
-                # DEBUGGING MAYBE SIGN PROBLEM
-                if log_episode >= 0:	timepos += 1
-                else:	timeNeg += 1
+            
+
+            state_tuple=(tuple(state.low.tolist()), tuple(state.high.tolist()))
+           
+            action_tuple = tuple(action.tolist())
+            
+            episode_rewards.append((action_tuple,state_tuple,reward))
+
+            if state_tuple not in action_table.keys(): 
+                action_table[state_tuple] = {}
+            if action_tuple not in action_table[state_tuple].keys():
+                action_table[state_tuple][action_tuple] = 0
+                action_table[state_tuple][action_tuple] += 1
+
+            state= None
+       
+        for state in action_table.keys():
+            action_table[state] = {action:value/sum(list(action_table[state].values())) for action, value in action_table[state].items()}
+            
+        total_reward = 0
+        entropy_value = 0
+        
+        rewards_hist = []
+
+        for r in episode_rewards:
+            
+            action,state,reward = r
+            entropy_value -= np.log(action_table[state][action])
+            total_reward += reward
+            rewards_hist.append(reward)
+
+
                 
             episode_reward += reward
             if callback is not None:
@@ -127,13 +154,17 @@ def evaluate_policy(
             episode_lengths.append(episode_length)
             episode_logprob.append(log_prob)
 
-    mean_reward = np.mean(episode_rewards)
-    std_reward = np.std(episode_rewards)
+    mean_reward = np.mean(rewards_hist)
+    std_reward = np.std(rewards_hist)
     if reward_threshold is not None:
         assert mean_reward > reward_threshold, "Mean reward below threshold: " f"{mean_reward:.2f} < {reward_threshold:.2f}"
+    
+    
+
     if return_episode_rewards:
         return episode_rewards, episode_lengths
-        
+
+    
     if entropy is True:
     	return mean_reward, std_reward, np.mean(episode_logprob)
     return mean_reward, std_reward
