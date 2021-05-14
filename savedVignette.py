@@ -3,6 +3,7 @@
 import pickle
 import lzma
 
+import matplotlib.colors as matColors
 import matplotlib.pyplot as plt
 import numpy as np
 import argparse
@@ -257,6 +258,10 @@ class SavedVignette:
 		"""
 		Function called by the slider
 		"""
+		# Creating a norm for surfaces (warning not normalized with function and entropy)
+		if surfaces is True:
+			norm = matColors.Normalize(vmin = np.min(self.lines), vmax = np.max(self.lines), clip = False)
+			
 		# Iterate over all lines
 		for step in range(-1, len(self.directions)):
 			# Check if current lines is a baseLine
@@ -287,7 +292,7 @@ class SavedVignette:
 
 				Z = np.array([transformedLine, transformedLine])
 
-				self.ax.plot_surface(self.x_diff * X, self.y_diff * Y, Z, cmap=cmap, linewidth=linewidth, alpha=transparency)
+				self.ax.plot_surface(self.x_diff * X, self.y_diff * Y, Z, norm=norm, cmap=cmap, linewidth=linewidth, alpha=transparency)
 			
 			else:
 				x_line = np.linspace(-len(line)/2, len(line)/2, len(line))
@@ -376,8 +381,9 @@ if __name__ == "__main__":
 	# Processing the 3D plot
 	print("Processing 3D plot...")
 	# 	Compute the 3D plot with desired parameters
-	#		function is of type transformFunction (see transformFunction.py)
-	loadedVignette.plot3D(function=transformFunction.transformIsolate, surfaces=True, maxAlpha=15)
+	#		function is of type transformFunction (see transformFunction.py) 
+	#		loadedVignette.plot3D(function=transformFunction.transformIsolate, surfaces=True, maxAlpha=15, cmap="PuOr_r")
+	loadedVignette.plot3D(surfaces=True, maxAlpha=15, cmap="PuOr_r")
 	
 	# 	Save over all desired angles and elevation
 	#angles, elevs = [45, 80, 85, 90], [0, 30, 89, 90]

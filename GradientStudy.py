@@ -37,7 +37,6 @@ if __name__ == "__main__":
 																 #  of the current progress remaining (from 1 to 0)
 
 	# Tools parameters
-	parser.add_argument('--nb_lines', default=60, type=int)# number of directions generated,good value : precise 100, fast 60, ultrafast 50
 	parser.add_argument('--minalpha', default=0.0, type=float)# start value for alpha, good value : 0.0
 	parser.add_argument('--maxalpha', default=10, type=float)# end value for alpha, good value : large 100, around model 10
 	parser.add_argument('--stepalpha', default=0.25, type=float)# step for alpha in the loop, good value : precise 0.5 or 1, less precise 2 or 3
@@ -83,15 +82,10 @@ if __name__ == "__main__":
 	
 	print('\n')
 
-	# Choosing directions to follow
-	D = getDirectionsMuller(args.nb_lines,num_params)
-	# 	Ordering the directions :
-	D = order_all_by_proximity(D)
-
 	# Name of the model files to analyse consecutively with the same set of directions: 
 	filename_list = [args.basename+str(i)+'_steps' for i in range(args.min_iter,
-														args.max_iter+args.step_iter,
-														args.step_iter)]
+																	args.max_iter,
+																	args.step_iter)]
 
 	# Compute fitness over these directions :
 	previous_theta = None # Stores theta
