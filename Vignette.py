@@ -85,8 +85,8 @@ if __name__ == "__main__":
 		with lzma.open(args.policiesPath, 'rb') as handle:
 			policies = pickle.load(handle)
 	
-	# 	Checking if enough directions to start computaion
-	if len(policies) > args.nb_lines:	raise ValueError("More input policies than computed directions.")
+		# 	Checking if enough directions to start computaion
+		if len(policies) > args.nb_lines:	raise ValueError("More input policies than computed directions.")
 	print('\n')
 
 	# Choosing directions to follow

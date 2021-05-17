@@ -114,14 +114,14 @@ class SavedVignette:
 				x1 = x0 + self.pixelWidth
 
 				value = self.lines[l][c] - alpha * self.linesLogProb[l][c]
-				color = valueToRGB(value, color1, color2, minNorm=minColor, maxNorm=maxColor)
+				color = valueToRGB(value, color1=color1, color3=color2, minNorm=minColor, maxNorm=maxColor)
 				newDraw.rectangle([x0, y0, x1, y1], fill=color)
 			y0 += self.pixelHeight
 			
 		# 	Adding the separating line
 		y0 += self.pixelHeight
 		y1 = y0 + self.pixelHeight
-		color = valueToRGB(0, color1, color2, minNorm=minColor, maxNorm=maxColor)
+		color = valueToRGB(0, color1=color1, color3=color2, minNorm=minColor, maxNorm=maxColor)
 		newDraw.rectangle([0, y0, width, y1], fill=color)
 
 		#	Adding the baseLines (bottom lines)
@@ -132,7 +132,7 @@ class SavedVignette:
 				x0 = c * self.pixelWidth
 				x1 = x0 + self.pixelWidth
 				value = self.baseLines[l][c] - alpha * self.baseLinesLogProb[l][c]
-				color = valueToRGB(value, color1, color2, minNorm=minColor, maxNorm=maxColor)
+				color = valueToRGB(value, color1=color1, color3=color2, minNorm=minColor, maxNorm=maxColor)
 				newDraw.rectangle([x0, y0, x1, y1], fill=color)
 		
 		# 	Adding the policies

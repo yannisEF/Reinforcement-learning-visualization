@@ -128,16 +128,16 @@ Dans certains environnement, cette approche est moins performante que des algori
 
 Cette recherche étant propre à l’environnement, et par construction s’effectuant dans un espace en grande dimension, il est nécessaire de s’intéresser au développement d’outils permettant de mieux comprendre ce processus et d’expliquer ces phénomènes. \\
 
-Lors de notre projet, nous nous sommes intéressé à l’amélioration de deux outils de visualisation mis au point les années précédentes. Ils permettaient d’obtenir des aperçus du paysage de valeur autour d’un agent. \\
+Lors de notre projet, nous nous sommes intéressés à l’amélioration de deux outils de visualisation mis au point les années précédentes. Ils permettaient d’obtenir des aperçus du paysage de valeur autour d’un agent. \\
 
-Lors de nos travaux, nous avons complètement réécrit leur code pour les rendre plus modulables et plus clairs pour l’utilisateur. De plus, nous avons ajouté de nouvelles fonctionnalités de visualisation. \\
+Lors de nos travaux, nous avons complètement réécrit le code des outils précédents pour le rendre plus modulable et plus clair pour l’utilisateur. De plus, nous avons ajouté de nouvelles fonctionnalités de visualisation. \\
 
-Dans ce rapport nous rappelerons le fonctionnement des outils développés, puis détaillerons notre implémentation de ceux-ci en présentant les nouvelles fonctionnalités. Enfin, nous démontrerons l'intérêt de ces derniers grâce à des exemples d'utilisation. \\
+Dans ce rapport nous rappelons le fonctionnement des outils développés, puis détaillons notre implémentation de ceux-ci en présentant les nouvelles fonctionnalités. Enfin, nous démontrons l'intérêt de ces derniers grâce à des exemples d'utilisation. \\
 
 \newpage
 \section{Principe de fonctionnement des outils de visualisation}
 
-Le principe de fonctionnement des outils développés les années précédentes repose sur un méthode d’échantillonnage de l’espace d’apprentissage selon des droites. \\
+Le principe de fonctionnement des outils développés les années précédentes repose sur une méthode d’échantillonnage de l’espace d’apprentissage selon des droites. \\
 
 La sortie de ces outils est constituée d’un ensemble de lignes de pixels. Une ligne correspond à une direction tirée dans l’espace d’apprentissage. \\
 
@@ -155,7 +155,7 @@ La direction est ensuite échantillonnée à une fréquence entrée par l’util
 
 Le premier outil, \emph{étude de gradient}, permet de suivre la descente de gradient d’un modèle. \\
 
-Il consiste à prendre comme lignes les directions prisent par la descente de gradient. \\
+Il consiste à prendre comme lignes les directions prises par la descente de gradient. \\
 
 % IMAGE GradientStudy
 \begin{figure}[htp]
@@ -213,7 +213,6 @@ On observe bien la conservation des structures de l'espace d'apprentissage dans 
 
 Notons que du fait du faible nombre de directions tirées par rapport à la dimension de l'espace, et de la discretisation des droites, cette représentation n’est que partielle. Il est possible que la Vignette passe à côté de structures ou de zones de rebroussement de gradient. \\
 
-\newpage
 \section{Nouvelles fonctionnalités}
 
 Lors de notre projet, nous avons fait le choix d'offrir à l'utilisateur toutes les fonctionnalités nécessaires pour effectuer une analyse complète du paysage de valeurs d'un environnement et d'un algorithme. \\
@@ -230,13 +229,13 @@ Ainsi, nous proposons un ensemble de fonctionnalités permettant d'aller de l'en
 
 L'utilisation des outils s'effectue en trois phases : 
 \begin{itemize}
-	\item préparation des entrée
+	\item préparation des entrées
 	\item calcul de la Vignette ou de l'étude de gradient
 	\item sauvegarde des paysages calculés
 	\item utilisation des sauvegardes pour l'affichage
 \end{itemize}
 
-Dans cette partie, nous détaillerons chacune de ces phases.
+Dans cette partie, nous détaillons chacune de ces phases.
 
 \newpage
 \subsection{Portage à \emph{stable-baselines-3}}
@@ -249,7 +248,7 @@ Nous avons procédé à un portage vers la librairie Stable-baselines-3, comport
 
 Le code de Stable-baselines-3 est accessible sur github et propose une documentation détaillée de ses implémentations. \\
 
-Ainsi, pour chacun des outils il est possible pour l’utilisateur de changer facilement l’algorithme d’apprentissage, ses hyper-paramètres et l’environnement utilisé. \\
+Ainsi, pour chacun des outils, il est possible pour l’utilisateur de changer facilement l’algorithme d’apprentissage, ses hyper-paramètres et l’environnement utilisé. \\
 
 \subsection{Phase de préparation}
 
@@ -259,7 +258,7 @@ Grâce à leur implémentation sous \emph{stable-baselines-3 (SB3)}, les outils 
 
 Nous proposons un exemple d'application de \emph{SB3} dans le fichier \emph{trainModel.py}. L'utilisateur peut alors entraîner un réseau de neurones sous l'environnement souhaité, en sauvegardant les étapes de l'apprentissage à une fréquence choisie. \\
 
-De plus, l'étude portant sur une descente de gradient, il est nécessaire que l'utilisateur puisse fournir en entrée de Vignette une liste de politiques. Il peut alors observer la position relative de chacune des politiques de la liste avec la politique centrale de la Vignette. \\
+De plus, l'étude portant sur une descente de gradient, l'utilisateur peut fournir en entrée de Vignette une liste de politiques. Il peut alors observer la position relative de chacune des politiques de la liste avec la politique centrale de la Vignette. \\
 
 % IMAGE politiques comparaison
 \begin{figure}[htp]
@@ -271,13 +270,13 @@ De plus, l'étude portant sur une descente de gradient, il est nécessaire que l
 
 \newpage
 
-Nous détaillerons comment ces politiques d'entrée sont prises en compte lors du calcul de Vignette dans la partie suivante. \\
+Nous détaillons comment ces politiques d'entrée sont prises en compte lors du calcul de Vignette dans la partie suivante. \\
 
 \subsection{Phase de calcul}
 
 \emph{L'étude de gradient} prend en entrée un ensemble de politiques, correspondant à la progression de la descente de gradient pour le modèle entraîné. \\
 
-Il calcule comme décrit précédemment, un suivi de la descente de gradient effectuée par le modèle. \\
+Comme décrit précédemment, il calcule un suivi de la descente de gradient effectuée par le modèle. \\
 
 % IMAGE gradientStudy Swimmer
 \begin{figure}[htp]
@@ -289,7 +288,7 @@ Il calcule comme décrit précédemment, un suivi de la descente de gradient eff
 
 \newpage
 
-Pour \emph{Vignette} la possibilité d'entrer une liste de politiques à situer sur la Vignette rajoute des étapes de calculs. La prise de celles-ci s'effectue en deux étapes. \\
+Pour \emph{Vignette} la possibilité d'entrer une liste de politiques à situer sur la Vignette rajoute des étapes de calculs. La prise en compte de celles-ci s'effectue en deux étapes. \\
 
 Tout d'abord, rappelons que l'utilisateur donne en argument de Vignette une fréquence d'échantillonnage. Cette fréquence correspond à la résolution de chaque ligne. \\
 
@@ -307,14 +306,14 @@ Nous avons donc fait le choix d'imposer une baisse automatique de la fréquence 
     \label{fig:vignettePortee}
 \end{figure}
 
-Toutes les politiques sont alors présentes dans la boule fermée de la Vignette. \\
+Toutes les politiques sont alors présentes dans la boule de la Vignette. \\
 
 \newpage
 La seconde étape consiste à insérer les directions passant par celles-ci dans le résultat final. \\
 
 Le nombre de lignes tirées (la hauteur de la Vignette) étant un paramètre de l'utilisateur, il convient de remplacer certaines de ces lignes (donc directions) par celles correspondant aux politiques d'entrée. \\
 
-Pour que l'introduction de ces politiques bouleverse le moins possible la Vignette d'origine, on insère les directions correspondentes à la place des directions qui en était les plus proches. \\
+Pour que l'introduction de ces politiques bouleverse le moins possible la Vignette d'origine, on insère les directions correspondantes à la place des directions qui en étaient les plus proches. \\
 
 % IMAGE vignette directions
 \begin{figure}[htp]
@@ -326,7 +325,7 @@ Pour que l'introduction de ces politiques bouleverse le moins possible la Vignet
 
 On constate dans l'exemple du dessin que cette étape a tendance à écarter les directions les unes des autres. Autrement dit, on étale l'espace balayé par la Vignette. \\
 
-Cela a pour inconvénient de provoquer des discontinuités dans la détection de structures. Au contraire, l'utilisateur pourrait préférer concentrer les directions dans des faisceaux, permettant un meilleur niveau détail autour de directions particulières. \\
+Cela a pour inconvénient de provoquer des discontinuités dans la détection de structures. Au contraire, l'utilisateur pourrait préférer concentrer les directions dans des faisceaux, permettant un meilleur niveau de détail autour de directions particulières. \\
 
 Une solution pourrait être de, au lieu de choisir la direction la plus proche, prendre la direction la plus isolée et la remplacer par la direction vers la politique. \\
 
@@ -334,15 +333,15 @@ C'est un problème flagrant dans notre représentation 2D simplifiée de l'espac
 
 \subsection{Phase de sauvegarde}
 
-Une fois les calculs effectués, les données sont sauvegardées (serializées) dans un objet de type \emph{SavedVignette} ou \emph{SavedGradient}. \\
+Une fois les calculs effectués, les données sont sauvegardées (serialisées) dans un objet de type \emph{SavedVignette} ou \emph{SavedGradient}. \\
 
-Chacun de ces objets garde en mémoire les directions ayant servies aux calculs, la valeur des récompenses pour chaque pixel. Permettant un traitement ultérieur des données si l'utilisateur le souhaite. \\
+Chacun de ces objets garde en mémoire les directions ayant servis aux calculs, la valeur des récompenses pour chaque pixel. Cela permet un traitement ultérieur des données si l'utilisateur le souhaite. \\
 
 L'inconvénient de cette approche est qu'elle prend beaucoup de place en mémoire. \\
 
 Nous utilisons une compression au format \emph{.xz} (algorithmes \emph{LZMA/LZMA2}). Bien que ce format soit relativement lent pour la compression, il est très rapide en décompression. \\
 
-Cela le rend idéal pour notre application : la lenteure de compression est négligeable par rapport au temps de calcul des outils (quelques secondes contre quelques heures), mais la rapidité de décompression est parfaite car l'utilisateur sera ammené à fréquemment charger les résultats (pour faire des essais de modification des attributs par exemple). \\
+Cela le rend idéal pour notre application : la lenteur de compression est négligeable par rapport au temps de calcul des outils (quelques secondes contre quelques heures), mais la rapidité de décompression est parfaite car l'utilisateur sera amené à fréquemment charger les résultats (pour faire des essais de modification des attributs par exemple). \\
 
 La taille d'un fichier sauvegardé est de l'ordre de 100Mb. \\
 
@@ -398,7 +397,7 @@ On peut maitenant aperçevoir les politiques d'entrée de Vignette. \\
 \end{figure}
 
 \newpage
-La Vignette ci-dessus correspond à une entraînement de Pendulum sur 10000 pas de temps enregistré tous les 500 pas. \\
+La Vignette ci-dessus correspond à un entraînement de Pendulum sur 10.000 pas de temps enregistré tous les 500 pas. \\
 
 La politique centrale est le pas de temps n°5000, est les politiques d'entrée correspondent aux 19 autres enregistrements du n°500 au n°10000. \\
 
@@ -410,7 +409,7 @@ Dans l'image vue de côté, on observe clairement le processus de montée de gra
 
 \subsection{Accessibilité}
 
-D’autres améliorations ont été apportées, notamment l’ajout de barres de progression pour l’utilisateur. Il a désormais une idée plus précise de la quantité de temps restante pour les calculs. \\
+D’autres améliorations ont été apportées, notamment l’ajout de barres de progression pour l’utilisateur. Il a désormais une idée plus précise de la quantité de temps restant pour les calculs. \\
 
 De plus, le code a été clarifié et largement commenté, il est maintenant facilement compréhensible par l’utilisateur. \\
 
@@ -418,7 +417,7 @@ De plus, le code a été clarifié et largement commenté, il est maintenant fac
 
 Les outils sont à un stade de développement assez avancé pour être utilisés dans d'autres projets. \\
 
-Nous avons d'ailleurs mis à disposition un mode d'emploi détaillant leur utilisation pas à pas. Celui-ci fait office de cahier des charges du projet. \\
+Nous avons d'ailleurs mis à disposition un mode d'emploi détaillant leur utilisation pas à pas. \\
 
 \subsection{Projets utilisant Vignette}
 Lors de nos travaux, nous avons bénéficié des retours d'autres groupes travaillant sur nos outils. \\

@@ -31,7 +31,8 @@ def createPalette(filename="color_palette",
 	outputDraw = ImageDraw.Draw(output)
 	
 	for k in range(len(colors)):
-		outputDraw.rectangle([k*pixelWidth,0,(k+1)*pixelWidth, pixelHeight], fill=valueToRGB(colors[k], color1, color2, minNorm=-1, maxNorm=1))
+		outputDraw.rectangle([k*pixelWidth,0,(k+1)*pixelWidth, pixelHeight], fill=valueToRGB2colors(colors[k], color1, color2, minNorm=-1, maxNorm=1))
+		# outputDraw.rectangle([k*pixelWidth,0,(k+1)*pixelWidth, pixelHeight], fill=valueToRGB3colors(colors[k], color1, color3=color2, minNorm=-1, maxNorm=1))
 	
 	textContent = "Color 1: " + str(color1) + "\nColor 2: " + str(color2)
 	outputDraw.text((0,0), textContent, fill=invertColor(color1))
