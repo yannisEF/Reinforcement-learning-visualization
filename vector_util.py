@@ -35,7 +35,9 @@ def checkFormat(fileExt):
 	return decorator	
 
 def valueToRGB(*args, **kwargs):
-	return valueToRGB3colors(*args,**kwargs)
+	if "color3" in kwargs.keys():
+		return valueToRGB3colors(*args,**kwargs)
+	return valueToRGB2colors(*args, **kwargs)
 	
 def valueToRGB2colors(value, color1=(255,0,0), color2=(0,255,0), pureNorm=None, minNorm=-1, maxNorm=1):
 	"""

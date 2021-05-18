@@ -16,7 +16,7 @@ from vector_util import *
 from slowBar import SlowBar
 
 # Chosen color palette
-color1, color2 = (0,0,120), (255,151,0)
+color1, color2 = (45,0,75), (127,59,8)
 
 @checkFormat('.png')
 def createPalette(filename="color_palette",
@@ -32,7 +32,7 @@ def createPalette(filename="color_palette",
 	
 	for k in range(len(colors)):
 		outputDraw.rectangle([k*pixelWidth,0,(k+1)*pixelWidth, pixelHeight], fill=valueToRGB2colors(colors[k], color1, color2, minNorm=-1, maxNorm=1))
-		# outputDraw.rectangle([k*pixelWidth,0,(k+1)*pixelWidth, pixelHeight], fill=valueToRGB3colors(colors[k], color1, color3=color2, minNorm=-1, maxNorm=1))
+		# outputDraw.rectangle([k*pixelWidth,0,(k+1)*pixelWidth, pixelHeight], fill=valueToRGB3colors(colors[k], color1, color2=(255,255,255), color3=color2, minNorm=-1, maxNorm=1))
 	
 	textContent = "Color 1: " + str(color1) + "\nColor 2: " + str(color2)
 	outputDraw.text((0,0), textContent, fill=invertColor(color1))

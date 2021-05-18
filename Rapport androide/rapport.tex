@@ -19,6 +19,12 @@
 \usepackage{tcolorbox}
 \tcbuselibrary{minted,breakable,xparse,skins}
 
+\usepackage[%  
+    colorlinks=true,
+    pdfborder={0 0 0},
+    linkcolor=blue
+]{hyperref}
+
 \definecolor{bg}{gray}{0.95}
 \DeclareTCBListing{mintedbox}{O{}m!O{}}{%
   breakable=true,
@@ -55,12 +61,14 @@
     \end{tcbclipinterior}},
   #3}
 
+\setlist[itemize,1]{leftmargin=\dimexpr 26pt-.5in}
+
 \title{Rapport de projet}
 % Title
 \author{
-Elrharbi-Fleury Yannis \\
-Kerriche Sarah \\
-Aguini Lydia
+Yannis ELRHARBI-FLEURY \\
+Sarah KERRICHE \\
+Lydia AGUINI
 }						
 % Author
 \date{25/05/2021}
@@ -96,7 +104,7 @@ Aguini Lydia
 	\begin{minipage}{0.4\textwidth}
 		\begin{flushleft} \large
 		\emph{Encadrant :}\\
-		Olivier Sigaud\\
+		Olivier SIGAUD\\
 		\textbf{\Large }
 			\end{flushleft}
 			\end{minipage}~
@@ -139,45 +147,49 @@ Dans ce rapport nous rappelons le fonctionnement des outils développés, puis d
 
 Le principe de fonctionnement des outils développés les années précédentes repose sur une méthode d’échantillonnage de l’espace d’apprentissage selon des droites. \\
 
-La sortie de ces outils est constituée d’un ensemble de lignes de pixels. Une ligne correspond à une direction tirée dans l’espace d’apprentissage. \\
+Les outils développés permettent d'obtenir un aperçu en deux dimensions de l'espace d'apprentissage d'un modèle, alors en grande dimension (de la taille du réseau de neurones). Le premier outil, \emph{étude de gradient}, permet d'observer la trajectoire du modèle lors de son apprentissage. Le second, \emph{Vignette}, permet d'observer le paysage de valeur autour de celui-ci. \\
+
+La sortie de ces outils est constituée d’un ensemble de lignes de pixels. Une ligne correspond à une direction tirée dans l’espace d’apprentissage, le centre de la ligne correspond au modèle à partir duquel elle est tirée. \\
+
+La direction est ensuite échantillonnée à une fréquence entrée par l’utilisateur. La valeur des échantillons, quantifiée par une carte de couleur, correspond à la récompense obtenue en cette position. \\
 
 % IMAGE d'une seule ligne
 \begin{figure}[htp]
     \centering
     \includegraphics[width=10cm]{Images/Ligne}
-    \caption{Un exemple de ligne composant la sortie des outils}
+    \caption{Un exemple de ligne composant la sortie des outils, une droite échantillonnée et coloriée en fonction de la récompense obtenue}
     \label{fig:ligne1}
 \end{figure}
 
-La direction est ensuite échantillonnée à une fréquence entrée par l’utilisateur. La valeur des échantillons, quantifiée par une carte de couleur, correspond à la récompense obtenue en cette position. \\
+Nous présentons maintenant leur principe de fonctionnement, et le format de leur sortie. \\
 
 \subsection{Etude de gradient}
 
 Le premier outil, \emph{étude de gradient}, permet de suivre la descente de gradient d’un modèle. \\
 
-Il consiste à prendre comme lignes les directions prises par la descente de gradient. \\
+% IMAGE GradientStudy from above
+\begin{figure}[htp]
+    \centering
+    \includegraphics[width=10cm]{Images/gradientStudy_dessus}
+    \caption{Descente de gradient en 2D, le modèle se déplace dans l'espace d'apprentissage en marquant un angle $\alpha$ entre deux pas.}
+    \label{fig:gradientStudyAbove}
+\end{figure}
+
+Il consiste à prendre comme lignes les directions prises par la descente de gradient à chaque pas. Pour avoir une idée du déplacement effectué entre deux pas, on indique la position relative des modèles sur les droites : une pastille rouge pour la position au pas précédent, une verte pour la position au pas actuel. \\
+
+De plus, le produit scalaire entre deux directions est représenté sur les côtés de la sortie. L'utilisateur y lit une image du changement d'angle du modèle lors de la descente de gradient. \\
+
+La sortie se lit de haut en bas. \\
 
 % IMAGE GradientStudy
 \begin{figure}[htp]
     \centering
     \includegraphics[width=10cm]{Images/gradientStudy}
-    \caption{Un exemple de sortie de l'étude de gradient, environnement \emph{Pendulum}}
+    \caption{Un exemple de sortie de l'étude de gradient, algorithme SAC, environnement \emph{Pendulum} entraînement enregistré tous les 500 pas de 500 à 10.000. Plus la récompense est grande plus la couleur est claire. De bas en haut, on observe que le modèle se déplace de moins en moins rapidement vers une zone à forte récompense. De plus, l'angle entre chaque direction est faible car le produit scalaire, indiqué sur la droite, est proche de 1. Il pourrait être intéressant d'effectuer une étude de gradient autour des premiers pas, car on observe que le changement de direction est plus le important entre le pas 500 et le pas 1.000.}
     \label{fig:gradientStudy}
 \end{figure}
 
-Pour avoir une idée de la distance parcourue entre chaque pas, on indique la position relative des modèles sur les droites : en rouge la position au pas précédent, en vert la position au pas actuel. \\
-
-De plus, pour avoir une idée du changement d'angle entre chaque pas, on calcule le produit scalaire entre chaque direction. Il est affiché sur le côté de l'image. \\
-
-% IMAGE GradientStudy from above
-\begin{figure}[htp]
-    \centering
-    \includegraphics[width=10cm]{Images/gradientStudy_dessus}
-    \caption{Descente de gradient en 2D, les lignes calculées correspondent aux flèches}
-    \label{fig:gradientStudyAbove}
-\end{figure}
-
-Ainsi, cet outil permet de se représenter la trajectoire prise par un modèle lors de son apprentissage. \\
+Ainsi, cet outil donne un aperçu en deux dimensions de la trajectoire prise par un modèle lors de son apprentissage (en n dimensions, n étant la taille du réseau de neurones). \\
 
 \newpage
 \subsection{Vignette}
@@ -185,33 +197,31 @@ Ainsi, cet outil permet de se représenter la trajectoire prise par un modèle l
 L’outil Vignette permet d’obtenir un aperçu des alentours d’un modèle. \\
 
 % Méthode Muller ?
-Il consiste à échantillonner l’espace d’apprentissage grâce aux droites introduites précédemment. \\
+Il consiste à échantillonner l’espace d’apprentissage grâce aux droites introduites précédemment. On obtient un aperçu de la boule centrée en un modèle en tirant aléatoirement à partir de celui-ci des droites partant dans directions aléatoires.\\
 
-A partir du modèle initial, on obtient un aperçu d'une boule fermée en tirant des droites partant dans des directions aléatoires. \\
+Les directions tirées aléatoirement sont alors triées par ordre de proximité, dans le but de donner un meilleur aperçu des structures. Elles sont ensuite discrétisée à une certaine fréquence, ce qui permet de connaître la valeur du paysage de valeur le long de celles-ci. \\
 
 % IMAGE Vignette principle
 \begin{figure}[htp]
     \centering
-    \includegraphics[width=12cm]{Images/VignetteDessin}
-    \caption{Tirage des directions de Vignette}
+    \includegraphics[width=12cm]{Images/vignetteDessin}
+    \caption{Tirage des lignes de Vignette dans des directions aléatoires, centrée en une politique d'entreé. Elles sont ensuite groupées par proximité et sont échantillonnées pour donner un aperçu de l'espace d'apprentissage.}
     \label{fig:vignetteDessin}
 \end{figure}
-
-Les directions tirées aléatoirement sont alors triées par ordre de proximité, donnant un meilleur aperçu des structures. \\
 
 % IMAGE Vignette real
 \begin{figure}[htp]
     \centering
     \includegraphics[width=12cm]{Images/Vignette_pendulum}
-    \caption{Vignette 2D, 50 directions, environnement \emph{Pendulum}}
-    \label{fig:vignetteDessin}
+    \caption{Un exemple de sortie de \emph{Vignette}, algorithme SAC, environnement \emph{Pendulum} entraîné pendant 5.000 pas, 50 directions tirées aléatoirement. La politique entrée est située au centre de la \emph{Vignette}. Autour du modèle, on observe un environnement bruité, de moyenne récompense. De plus, certaines zones en bordure de la boule observée sont clairement à faible récompense, tandis que deux zones à proximité offrent une meilleur récompense. On en déduit que ce sont deux zones dans lesquelles la descente de gradient est susceptible de converger.}
+    \label{fig:vignettePendulum}
 \end{figure}
 
 On obtient alors une représentation en 2D de l’espace d’apprentissage, qui était alors en grande dimension (de la taille du réseau de neurones). \\
 
-On observe bien la conservation des structures de l'espace d'apprentissage dans la Vignette, avec l'apparition d'ensembles de même récompense. \\
+On observe bien la conservation des structures de l'espace d'apprentissage dans la \emph{Vignette}, avec l'apparition d'ensembles de même récompense. \\
 
-Notons que du fait du faible nombre de directions tirées par rapport à la dimension de l'espace, et de la discretisation des droites, cette représentation n’est que partielle. Il est possible que la Vignette passe à côté de structures ou de zones de rebroussement de gradient. \\
+Notons que du fait du faible nombre de directions tirées par rapport à la dimension de l'espace et de la discretisation des droites, cette représentation n’est que partielle. Il est possible que la \emph{Vignette} passe à côté de structures ou de zones de rebroussement de gradient. \\
 
 \section{Nouvelles fonctionnalités}
 
@@ -230,14 +240,13 @@ Ainsi, nous proposons un ensemble de fonctionnalités permettant d'aller de l'en
 L'utilisation des outils s'effectue en trois phases : 
 \begin{itemize}
 	\item préparation des entrées
-	\item calcul de la Vignette ou de l'étude de gradient
+	\item calcul de la \emph{Vignette} ou de l'étude de gradient
 	\item sauvegarde des paysages calculés
-	\item utilisation des sauvegardes pour l'affichage
+	\item manipulation des sauvegardes pour l'affichage
 \end{itemize}
 
 Dans cette partie, nous détaillons chacune de ces phases.
 
-\newpage
 \subsection{Portage à \emph{stable-baselines-3}}
 
 Lors de nos travaux, nous avons été contraints de réécrire le code des outils. \\
@@ -258,57 +267,52 @@ Grâce à leur implémentation sous \emph{stable-baselines-3 (SB3)}, les outils 
 
 Nous proposons un exemple d'application de \emph{SB3} dans le fichier \emph{trainModel.py}. L'utilisateur peut alors entraîner un réseau de neurones sous l'environnement souhaité, en sauvegardant les étapes de l'apprentissage à une fréquence choisie. \\
 
-De plus, l'étude portant sur une descente de gradient, l'utilisateur peut fournir en entrée de Vignette une liste de politiques. Il peut alors observer la position relative de chacune des politiques de la liste avec la politique centrale de la Vignette. \\
+De plus, l'étude portant sur une descente de gradient, l'utilisateur peut fournir en entrée de \emph{Vignette} une liste de politiques. Il peut alors observer la position relative de chacune des politiques de la liste avec la politique centrale de la \emph{Vignette}. \\
 
 % IMAGE politiques comparaison
 \begin{figure}[htp]
     \centering
     \includegraphics[width=10cm]{Images/politiques_entrees_vignette}
-    \caption{Extrait d'une Vignette en affichant les politiques d'entrée}
+    \caption{Extrait d'une \emph{Vignette} en affichant les politiques d'entrée}
     \label{fig:exempleEntree}
 \end{figure}
 
-\newpage
-
-Nous détaillons comment ces politiques d'entrée sont prises en compte lors du calcul de Vignette dans la partie suivante. \\
+Nous détaillons comment ces politiques d'entrée sont prises en compte lors du calcul de \emph{Vignette} dans la partie suivante. \\
 
 \subsection{Phase de calcul}
 
 \emph{L'étude de gradient} prend en entrée un ensemble de politiques, correspondant à la progression de la descente de gradient pour le modèle entraîné. \\
 
-Comme décrit précédemment, il calcule un suivi de la descente de gradient effectuée par le modèle. \\
+Comme décrit précédemment, il calcule un suivi de la descente de gradient effectuée par le modèle. On notera que la normalisation des couleurs s'effectue sur les valeurs extrèmes observées, ce point sera abordé dans la section \hyperref[sec:affichage]{Phase d'affichage}. \\
 
 % IMAGE gradientStudy Swimmer
 \begin{figure}[htp]
     \centering
-    \includegraphics[width=10cm]{Images/gradientStudy}
-    \caption{Etude de gradient sur Pendulum de 500 à 10000 pas, tous les 500 pas}
+    \includegraphics[width=15cm]{Images/gradientStudy_swimmer}
+    \caption{Etude de gradient sur Swimmer 250 pas à 10.000 pas sauvegardé tous les 250 pas, algorithme SAC. On remarque que le modèle se déplace en tatonnant dans une zone uniforme en suivant globalement la même direction (faible angle entre chaque ligne), il finit même par réduire sa récompense. On en déduit que l'initialisation de Swimmer s'effectue dans une zone à faible récompense, plutôt uniforme, ce qui empêche la descente de gradient de converger.}
     \label{fig:gradientStudy}
-\end{figure}
+\end{figure}d
 
-\newpage
+Pour \emph{Vignette} la possibilité d'entrer une liste de politiques à situer sur celle-ci rajoute des étapes de calculs. La prise en compte de celles-ci s'effectue en deux étapes. \\
 
-Pour \emph{Vignette} la possibilité d'entrer une liste de politiques à situer sur la Vignette rajoute des étapes de calculs. La prise en compte de celles-ci s'effectue en deux étapes. \\
+La première étape consiste à ajuster la fréquence d'echantillonnage des droites. \\
 
-Tout d'abord, rappelons que l'utilisateur donne en argument de Vignette une fréquence d'échantillonnage. Cette fréquence correspond à la résolution de chaque ligne. \\
-
-Par conséquent, Vignette dispose d'une portée limitée. On ne peut observer qu'un aperçu de la boule fermée ayant pour centre le modèle central, et un rayon résultant de la résolution choisie. \\
+En effet, on rappelle que l'utilisateur donne en argument de \emph{Vignette} une fréquence d'échantillonnage. Cette fréquence correspond à la résolution de chaque ligne. Par conséquent, \emph{Vignette} dispose d'une portée limitée. On ne peut observer qu'un aperçu de la boule ayant pour centre le modèle central, et un rayon résultant de la résolution choisie. \\
 
 Il est possible que des politiques d'entrée soient en dehors de cette boule. \\
 
 Nous avons donc fait le choix d'imposer une baisse automatique de la fréquence d'échantillonnage de façon à atteindre toutes les politiques. \\
-
+ 
 % IMAGE vignette portée
 \begin{figure}[htp]
     \centering
-    \includegraphics[width=15cm]{Images/vignette_portee}
+    \includegraphics[width=15cm]{Images/vignette_portee1}
     \caption{Première étape : ajustement de la portée}
     \label{fig:vignettePortee}
 \end{figure}
 
 Toutes les politiques sont alors présentes dans la boule de la Vignette. \\
 
-\newpage
 La seconde étape consiste à insérer les directions passant par celles-ci dans le résultat final. \\
 
 Le nombre de lignes tirées (la hauteur de la Vignette) étant un paramètre de l'utilisateur, il convient de remplacer certaines de ces lignes (donc directions) par celles correspondant aux politiques d'entrée. \\
@@ -323,9 +327,9 @@ Pour que l'introduction de ces politiques bouleverse le moins possible la Vignet
     \label{fig:vignettePortee}
 \end{figure}
 
-On constate dans l'exemple du dessin que cette étape a tendance à écarter les directions les unes des autres. Autrement dit, on étale l'espace balayé par la Vignette. \\
+On constate dans l'exemple du dessin que cette étape a tendance à écarter les directions les unes des autres. Autrement dit, on écarte les directions entre elles. \\
 
-Cela a pour inconvénient de provoquer des discontinuités dans la détection de structures. Au contraire, l'utilisateur pourrait préférer concentrer les directions dans des faisceaux, permettant un meilleur niveau de détail autour de directions particulières. \\
+Cela a pour inconvénient de provoquer des discontinuités dans la détection de structures. Au contraire, l'utilisateur pourrait préférer concentrer les directions dans des faisceaux, permettant un meilleur niveau de détail autour de directions particulières. C'est un point abordé dans la partie \hyperref[sec:future]{Future works} du rapport. \\
 
 Une solution pourrait être de, au lieu de choisir la direction la plus proche, prendre la direction la plus isolée et la remplacer par la direction vers la politique. \\
 
@@ -333,7 +337,7 @@ C'est un problème flagrant dans notre représentation 2D simplifiée de l'espac
 
 \subsection{Phase de sauvegarde}
 
-Une fois les calculs effectués, les données sont sauvegardées (serialisées) dans un objet de type \emph{SavedVignette} ou \emph{SavedGradient}. \\
+Une fois les calculs effectués, les données sont sauvegardées dans un objet de type \emph{SavedVignette} ou \emph{SavedGradient}. \\
 
 Chacun de ces objets garde en mémoire les directions ayant servis aux calculs, la valeur des récompenses pour chaque pixel. Cela permet un traitement ultérieur des données si l'utilisateur le souhaite. \\
 
@@ -347,6 +351,7 @@ La taille d'un fichier sauvegardé est de l'ordre de 100Mb. \\
 
 \newpage
 \subsection{Phase d'affichage}
+\label{sec:affichage}
 
 Tout comme dans la version des années précédentes, nous offrons la possibilité d'afficher les résultats en tant qu'image 2D. \\
 
@@ -354,11 +359,13 @@ De plus, grâce à la fonctionnalité de sauvegarde nous avons pu implémenter u
 
 Nous avons constaté que cette gestion des couleurs était utile. En effet elle permet aux personnes malvoyantes de régler le contraste des couleurs. De plus, certains écrans ont du mal à distinguer les faibles variations d'intensité de couleur entre les pixels. \\
 
+L'utilisateur peut créer ses propres palettes (grâce au fichier \emph{colorTest.py}), ou utiliser des palettes de couleurs préfaites dans \emph{matplotlib}. \\
+
 % IMAGE différentes palettes
 \begin{figure}[htp]
     \centering
-    \includegraphics[width=10cm]{Images/palette}
-    \caption{Différentes palettes de couleur}
+    \includegraphics[width=15cm]{Images/palette}
+    \caption{Différentes palettes de couleur sur la même \hyperref[fig:vignettePendulum]{\emph{Vignette}}.}
     \label{fig:palette}
 \end{figure}
 
@@ -367,44 +374,42 @@ La majeure partie de nos travaux a consisté à développer une visualisation en
 % IMAGE Vignette 3D
 \begin{figure}[htp]
     \centering
-    \includegraphics[width=8cm]{Images/vignette_3D}
-    \caption{Vignette 3D, 50 directions, environnement \emph{Pendulum}}
+    \includegraphics[width=18cm]{Images/vignette_3D}
+    \caption{Vignette 3D, algorithme SAC, environnement \emph{Pendulum} entraîné pendant 5.000 pas, 50 directions tirées aléatoirement. Il est plus facile d'apréhender les structures présentes dans le paysage de valeur. Le caractère bruité du paysage est flagrant.}
     \label{fig:vignette3D}
 \end{figure}
-\newpage
+
 Cette visualisation contient bien les mêmes informations que la version en 2D, cependant elle permet une approche plus intuitive de la structure de l'espace échantillonné. \\
 
-On remarque qu'en vue de dessus on retrouve la Vignette en 2D. \\
+On remarque qu'en vue de dessus on retrouve bien la Vignette en 2D. \\
 
 % IMAGE vue de dessus
 \begin{figure}[htp]
     \centering
     \includegraphics[width=10cm]{Images/vignette_dessus}
-    \caption{Vue de dessus de Vignette 3D, on retrouve la Vignette 2D}
+    \caption{Vue de dessus de la \hyperref[fig:vignette3D]{Vignette 3D}, on retrouve la \hyperref[fig:vignettePendulum]{Vignette 2D}}
     \label{fig:vignetteDessus}
 \end{figure}
 
 Nous avons ajouté un curseur permettant de changer l'opacité des surfaces par soucis de visibilité. \\
 
-On peut maitenant aperçevoir les politiques d'entrée de Vignette. \\
+On peut alors plus facilement aperçevoir les politiques d'entrée de Vignette. \\
 
 % IMAGE politique descente gradient + autre point de vue
 \begin{figure}[htp]
     \centering
     \includegraphics[width=15cm]{Images/vignette_cote}
-    \caption{Vue de côté de la Vignette3D, on observe la descente de gradient}
+    \caption{Vue de côté de la \hyperref[fig:vignette3D]{Vignette3D}. Les politiques en entrée de la \emph{correspondent} aux sauvegardes effectuées tous les 500 pas. On observe le processus de descente de gradient : le déplacement progressif du modèle vers une zone à forte récompense.}
     \label{fig:vignetteCote}
 \end{figure}
 
-\newpage
 La Vignette ci-dessus correspond à un entraînement de Pendulum sur 10.000 pas de temps enregistré tous les 500 pas. \\
 
 La politique centrale est le pas de temps n°5000, est les politiques d'entrée correspondent aux 19 autres enregistrements du n°500 au n°10000. \\
 
-Dans l'image vue de côté, on observe clairement le processus de montée de gradient : \emph{Pendulum} se déplace vers des zones de plus en plus hautes (amélioration de la récompense). \\
+Dans l'image vue de côté, on observe clairement le processus de montée de gradient : \emph{Pendulum} se déplace vers des zones de plus en plus hautes (amélioration de la récompense). Cela nous donne un argument pour confirmer le bon fonctionnement de notre réécriture de \emph{Vignette} et du portage en 3D.\\
 
-\subsection{Notes sur les fonctions de transformation : \emph{transformFunction}}
-
+%% \subsection{Notes sur les fonctions de transformation : \emph{transformFunction}}
 %% Peut être pas la place
 
 \subsection{Accessibilité}
@@ -415,22 +420,96 @@ De plus, le code a été clarifié et largement commenté, il est maintenant fac
 
 \section{Exemples d'utilisation des outils}
 
-Les outils sont à un stade de développement assez avancé pour être utilisés dans d'autres projets. \\
-
-Nous avons d'ailleurs mis à disposition un mode d'emploi détaillant leur utilisation pas à pas. \\
+% Hyper lien vers mode d'emploi ?
+Les outils sont à un stade de développement assez avancé pour être utilisés dans d'autres projets, nous avons d'ailleurs mis à disposition un mode d'emploi détaillant leur utilisation pas à pas. \\
 
 \subsection{Projets utilisant Vignette}
-Lors de nos travaux, nous avons bénéficié des retours d'autres groupes travaillant sur nos outils. \\
 
-Par exemple, [... résumé Hector et Damien] \\
+Lors de nos travaux, nous avons bénéficié des retours d'un autre groupe P-ANDROIDE travaillant sur nos outils. \\
+
+Le groupe d'Hector Kohler et Damien Legros cherche à comprendre les différences de résultats donnés par deux méthodes de recherche de politique sur l'environnement \emph{Pendulum}. \\
+
+La première méthode étudiée est la \emph{Cross entropy method}, la seconde est une méthode de descente de gradient \emph{Policy gradient}. \\
+
+Après avoir remarqué que la distance entre politique successives est grande dans le cas de \emph{CEM} et petite dans l'autre cas, ils ont decidé d'utiliser \emph{Vignette} pour directement observer l'espace des politiques. Ils l'ont intégré à leur code, et cela leur a permis de constater que l'initialisation des réseaux de neurones était située dans une zone plate en terme de récompense. \\
+
+Ainsi, ils expliquent la différence de performance entre les deux méthodes par la capacité de \emph{CEM} à rapidement sortir de cette zone pour découvrir de bonnes politiques. \\
 
 % IMAGE Hector et damien
+\begin{figure}[htp]
+    \centering
+    \includegraphics[width=10cm]{Images/cem_example}
+    \caption{Exemple de \emph{Vignette} utilisée par le groupe de Hector Kohler et Damien Legros. \emph{Vignette} autour du point d'initialisation du réseau de neurones. On observe que la politique initiale est située dans une zone uniformément faible en terme de récompense, alors que \emph{CEM} en est éloignée dans une zone de haute récompense.}
+    \label{fig:cemExample}
+\end{figure}
 
 \subsection{Régularisation de l'entropie}
+%% Pas encore de données
 
-\subsection{Stratégies de quadrillage de l'espace}
-% Stratégies
+\section{Future works}
+\label{future}
+
+Dans cette partie, nous détaillons des idées pour aller plus loin dans le développement des outils de visualisation du paysage de valeurs. \\
+
+\subsection{Méthode des faisceaux}
+% méthode des faisceaux
+
+L'outil \emph{Vignette} permet à l'utilisateur d'obtenir un aperçu du paysage de valeur global autour d'une politique. \emph{Etude de gradient} lui permet d'observer un aperçu du chemin prit par celles-ci lors de la descente de gradient. \\
+
+Cependant, plus les sauvegardes du processus d'apprentissage sont espacée dans le temps, moins les visualisations proposées sont pertinentes. En effet, les outils ne donnent qu'un aperçu partiel de l'environnement : plus le nombre de pas entre deux politiques est grand, moins ceux-ci nous informent sur l'environnement dans lequel la descente de gradient a été effectuée. \\
+
+Dès lors, il apparaît nécessaire de développer un nouvel outil permettant de comparer la direction globale prise par le modèle entre deux sauvegardes avec le paysage le long de la direction. \\
+
+L'idée est de reprendre le principe de \emph{Vignette} en focalisant les directions tirées dans le sens de déplacement de la descente de gradient. \\
+
+Cela revient à échantillonner un faisceau reliant un agent à un autre en trois étapes : \\
+
+% IMAGE étapes faisceau
+\begin{figure}[htp]
+    \centering
+    \includegraphics[width=15cm]{Images/faisceaux}
+    \caption{Etapes de la méthode du faisceau}
+    \label{fig:faisceaux}
+\end{figure}
+
+Dans un premier temps, on calcule la doite (direction globale) prise entre deux politiques A et B. On cherche ensuite les deux hyperplans orthogonaux à celle-ci, centrés en ces points. \\
+
+Ensuite, on échantillonne ces hyperplans de manière uniforme pour obtenir un ensemble de politiques semblables à A et semblables à B. \\
+
+Enfin, à chacune de ces politiques on en fait correspondre une autre sur l'autre hyperplan. On calcule les droites les reliant pour les échantillonner sur le modèle de \emph{Vignette} et \emph{étude de gradient} (voir \hyperref[fig:ligne1]{explications}). \\
+
+% IMAGE intérêt faisceau
+\begin{figure}[htp]
+    \centering
+    \includegraphics[width=15cm]{Images/faisceaux_interet}
+    \caption{Intérêt de la méthode du faisceau : focaliser l'étude du paysage de valeur dans le sens de la descente de gradient}
+    \label{fig:faisceauxInteret}
+\end{figure}
+
+On constate l'intérêt que pourrait avoir un tel outil : combiner le principe de \emph{Vignette} et de l'\emph{étude de gradient} pour mieux détecter les structures rencontrées lors de la descente de gradient. \\
+
+\subsection{Fonctionnalités de "qualité de vie"}
+
+A cause du principe de généralisation, les performances des politiques ne sont pas constantes. Il est donc nécessaire de les calculer plusieurs fois pour obtenir la performance moyenne. Cela cause un problème de complexité pour le calcul de nos outils. \\
+
+En effet, chaque pixel correspond à une politique différente. L'utilisateur est donc amené à faire un compromis entre la précision souhaitée et le temps de calcul disponible. \\
+
+Nous proposons comme développement futur, la possibilité de calculer les outils en plusieurs passes, à différents niveaux de précision. Les résultats seraient calculés pour un faible nombre d'évaluations (donc une faible précision), permettant à l'utilisateur d'observer un aperçu des sorties pendant leur calcul. \\
+
+De plus, nous proposons d'implémenter dans les objets \emph{SavedVignette} et \emph{SavedGradient} des méthodes permettant de segmenter l'exécution. L'utilisateur pourrait alors interrompre les calculs pour les reprendre plus tard. \\
+
+Enfin, les échantillonnages des directions tirées dans \emph{Vignette} ou les échantillonnages des directions entre chaque pas de \emph{étude de gradient} étant indépendants entre eux, il est possible de les calculer sur plusieurs coeurs. Nous pensons que cela pourrait améliorer la vitesse d'exécution des outils. \\
 
 \section*{Conclusion}
-% Améliorations : interrompre et sauvegarde reprendre Vignette, Vignette calcul parallèle, nouvel outil faisceaux
+
+Lors de ce projet, nous avons enrichi les outils développés les autres années. Après les avoir porté à la librairie \emph{stable-baselines-3}, nous les avons rendu plus faciles d'utilisation en reprenant le code de zéro. \\
+
+Il est désormais plus facile pour un utilisateur de comprendre leur principe de fonctionnement et leur architecture, notamment à l'aide du cahier des charges (\emph{user-manual}), de ce rapport et des nombreux commentaires détaillant l'exécution du code. \\
+
+Grâce à leur implémentation sous \emph{SB3} et à l'approche objet lors de leur développement, ceux-ci sont aisément modulables et utilisables dans le cadre d'autres projets. \\
+
+Ainsi, de futurs utilisateurs peuvent ajouter de nouvelles fonctionnalités sans avoir à modifier la structure des données. \\
+
+Enfin, ils pourront s'inspirer de notre code pour développer de nouveaux outils de visualisation 2D ou 3D d'un espace de grande dimension, tels que la méthode des faisceaux introduite précédemment. \\
+
 \end{document}

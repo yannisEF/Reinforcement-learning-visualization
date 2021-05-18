@@ -1,0 +1,16 @@
+\BOOKMARK [1][-]{section.1}{Principe de fonctionnement des outils de visualisation}{}% 1
+\BOOKMARK [2][-]{subsection.1.1}{Etude de gradient}{section.1}% 2
+\BOOKMARK [2][-]{subsection.1.2}{Vignette}{section.1}% 3
+\BOOKMARK [1][-]{section.2}{Nouvelles fonctionnalit\351s}{}% 4
+\BOOKMARK [2][-]{subsection.2.1}{Portage \340 stable-baselines-3}{section.2}% 5
+\BOOKMARK [2][-]{subsection.2.2}{Phase de pr\351paration}{section.2}% 6
+\BOOKMARK [2][-]{subsection.2.3}{Phase de calcul}{section.2}% 7
+\BOOKMARK [2][-]{subsection.2.4}{Phase de sauvegarde}{section.2}% 8
+\BOOKMARK [2][-]{subsection.2.5}{Phase d'affichage}{section.2}% 9
+\BOOKMARK [2][-]{subsection.2.6}{Accessibilit\351}{section.2}% 10
+\BOOKMARK [1][-]{section.3}{Exemples d'utilisation des outils}{}% 11
+\BOOKMARK [2][-]{subsection.3.1}{Projets utilisant Vignette}{section.3}% 12
+\BOOKMARK [2][-]{subsection.3.2}{R\351gularisation de l'entropie}{section.3}% 13
+\BOOKMARK [1][-]{section.4}{Future works}{}% 14
+\BOOKMARK [2][-]{subsection.4.1}{M\351thode des faisceaux}{section.4}% 15
+\BOOKMARK [2][-]{subsection.4.2}{Fonctionnalit\351s de "qualit\351 de vie"}{section.4}% 16

@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import argparse
 
+import matplotlib
 from matplotlib.widgets import Slider, Button
 from PIL import Image, ImageDraw
 
@@ -91,19 +92,28 @@ class SavedVignette:
 		if save3D is True: self.save3D(directory3D+'/'+filename+'_3D', elevs=elevs, angles=angles3D)
 		if saveInFile is True: self.saveInFile(directoryFile+'/'+filename)
 		
-	def plot2D(self, color1=None, color2=None, alpha=0):
+	def plot2D(self, color1=None, color2=None, color3=None, cmap=None, alpha=0):
 		"""
 		Compute the 2D image of the Vignette
 
 		Cannot store it as PIL images are non serializable
 		"""
-		color1, color2 = self.color1 if color1 is None else color1, self.color2 if color2 is None else color2
+		meanValue, stdValue = np.mean(self.lines+self.baseLines), np.std(self.lines+self.baseLines)
+		minColor, maxColor = meanValue - stdValue, np.max(self.lines+self.baseLines)
+			
+		if cmap is not None:
+			minColor = np.min(self.lines+self.baseLines)
+			cmap = matplotlib.cm.get_cmap(cmap)
+			norm = matplotlib.colors.Normalize(vmin=minColor, vmax=maxColor)
+		else:
+			getColor = valueToRGB
+			color1, color2 = self.color1 if color1 is None else color1, self.color2 if color2 is None else color2
+			if color3 is not None:	getColor = lambda *args, **kwargs: valueToRGB(*args, color3=color3, **kwargs)
 		
 		width, height = self.pixelWidth * len(self.lines[-1]), self.pixelHeight * (len(self.lines) + len(self.baseLines) + 1)
 		newIm = Image.new("RGB",(width, height))
 		newDraw = ImageDraw.Draw(newIm)
-		meanValue, stdValue = np.mean(self.lines+self.baseLines), np.std(self.lines+self.baseLines)
-		minColor, maxColor = meanValue - stdValue, np.max(self.lines+self.baseLines)
+
 		#	Adding the results
 		y0 = 0
 		for l in range(len(self.lines)):
@@ -114,14 +124,18 @@ class SavedVignette:
 				x1 = x0 + self.pixelWidth
 
 				value = self.lines[l][c] - alpha * self.linesLogProb[l][c]
-				color = valueToRGB(value, color1=color1, color3=color2, minNorm=minColor, maxNorm=maxColor)
+				if cmap is not None :
+					value = cmap(norm(value))[:-1]
+					color = tuple([round(255*v) for v in value])
+				else:	color = getColor(value, color1=color1, color2=color2, minNorm=minColor, maxNorm=maxColor)
 				newDraw.rectangle([x0, y0, x1, y1], fill=color)
 			y0 += self.pixelHeight
 			
 		# 	Adding the separating line
 		y0 += self.pixelHeight
 		y1 = y0 + self.pixelHeight
-		color = valueToRGB(0, color1=color1, color3=color2, minNorm=minColor, maxNorm=maxColor)
+		if cmap is not None:	color = tuple([round(255*v) for v in cmap(0.5)[:-1]])
+		else:	color = getColor(0, color1=color1, color2=color2, minNorm=minColor, maxNorm=maxColor)
 		newDraw.rectangle([0, y0, width, y1], fill=color)
 
 		#	Adding the baseLines (bottom lines)
@@ -132,7 +146,10 @@ class SavedVignette:
 				x0 = c * self.pixelWidth
 				x1 = x0 + self.pixelWidth
 				value = self.baseLines[l][c] - alpha * self.baseLinesLogProb[l][c]
-				color = valueToRGB(value, color1=color1, color3=color2, minNorm=minColor, maxNorm=maxColor)
+				if cmap is not None :
+					value = cmap(norm(value))[:-1]
+					color = tuple([round(255*v) for v in value])
+				else:	color = getColor(value, color1=color1, color2=color2, minNorm=minColor, maxNorm=maxColor)
 				newDraw.rectangle([x0, y0, x1, y1], fill=color)
 		
 		# 	Adding the policies
@@ -147,8 +164,11 @@ class SavedVignette:
 				newDraw.ellipse([x0+ marginX, y0+marginY, x1+(3 * len(str(k)) - 3)*marginX, y1-marginY], fill=color)
 				newDraw.text((x0+ int(1.5 * marginX), y0), str(k), fill=invertColor(color))
 		
+		#	Still need to add a colorbar
+		#		use pil from array or create gradient by hand, hard to put numbers on scale
+		
 		return newIm
-
+		
 	def plot3D(self, function=transformFunction.transformIdentity,
 			   figsize=(12,8), title="Vignette 3D", surfaces=True,
 			   alpha=0, minAlpha=.0, maxAlpha=5, transparency=1,
@@ -157,7 +177,8 @@ class SavedVignette:
 		Compute the 3D image of the Vignette with surfaces or not, can be shaped by an input function
 		"""
 		self.fig, self.ax = plt.figure(title,figsize=figsize), plt.axes(projection='3d')
-				
+		
+			
 		# Computing the intial 3D Vignette
 		if surfaces is True:
 			args = [transformFunction.transformIdentity]
@@ -167,11 +188,16 @@ class SavedVignette:
 			if "width" not in kwargs.keys():	kwargs["width"] = defaultWidth
 			if "linewidth" not in kwargs.keys():	kwargs["linewidth"] = defaultLineWidth
 			if "cmap" not in kwargs.keys():	kwargs["cmap"] = defaultCmap
+			
+			# Creating a norm for surfaces, and a colorbar (warning not normalized with function and entropy)
+			self.norm = matColors.Normalize(vmin = np.min(self.lines), vmax = np.max(self.lines), clip = False)
+			self.fig.colorbar(matplotlib.cm.ScalarMappable(norm=self.norm, cmap=kwargs["cmap"]), orientation="vertical", shrink=.5, label="Reward")
+			
 		else:
 			args = [transformFunction.transformIdentity]
-
+		
 		self.computeFunction(*args, alpha=alpha, transparency=transparency, surfaces=surfaces, **kwargs)
-			
+		
 		# Making a slider to allow to change alpha
 		axEntropy = plt.axes([0.2, 0.1, 0.65, 0.03])
 		self.entropySlider = Slider(ax=axEntropy, label="Alpha", valmin=minAlpha, valmax=maxAlpha, valinit=alpha)
@@ -236,9 +262,6 @@ class SavedVignette:
 			
 			if surfaces is True:
 				kwargs["transparency"] = transparency
-				kwargs["width"] = defaultWidth
-				kwargs["linewidth"] = defaultLineWidth
-				kwargs["cmap"] = defaultCmap
 				self.transSlider.reset()
 			
 			for slider in self.transformSliders:
@@ -258,9 +281,6 @@ class SavedVignette:
 		"""
 		Function called by the slider
 		"""
-		# Creating a norm for surfaces (warning not normalized with function and entropy)
-		if surfaces is True:
-			norm = matColors.Normalize(vmin = np.min(self.lines), vmax = np.max(self.lines), clip = False)
 			
 		# Iterate over all lines
 		for step in range(-1, len(self.directions)):
@@ -292,7 +312,7 @@ class SavedVignette:
 
 				Z = np.array([transformedLine, transformedLine])
 
-				self.ax.plot_surface(self.x_diff * X, self.y_diff * Y, Z, norm=norm, cmap=cmap, linewidth=linewidth, alpha=transparency)
+				self.ax.plot_surface(self.x_diff * X, self.y_diff * Y, Z, norm=self.norm, cmap=cmap, linewidth=linewidth, alpha=transparency)
 			
 			else:
 				x_line = np.linspace(-len(line)/2, len(line)/2, len(line))
@@ -373,8 +393,12 @@ if __name__ == "__main__":
 	print("Processing the 2D plot...")
 	# 	Iterate over all desired alphas
 	for alpha in (0,):
+		# 2 colors gradient
 		img = loadedVignette.plot2D(alpha=alpha)
-		loadedVignette.save2D("Vignette_output/Entropy"+args.filename+"_" + str(alpha) + "_2D", img=img)
+		loadedVignette.save2D("Vignette_output/Entropy"+args.filename+"_2colors" + str(alpha) + "_2D", img=img)
+		# cmap color
+		img = loadedVignette.plot2D(alpha=alpha, cmap="viridis")
+		loadedVignette.save2D("Vignette_output/Entropy"+args.filename+"_cmap" + str(alpha) + "_2D", img=img)
 		#loadedVignette.show2D(img=img)
 
 	
@@ -382,8 +406,8 @@ if __name__ == "__main__":
 	print("Processing 3D plot...")
 	# 	Compute the 3D plot with desired parameters
 	#		function is of type transformFunction (see transformFunction.py) 
-	#		loadedVignette.plot3D(function=transformFunction.transformIsolate, surfaces=True, maxAlpha=15, cmap="PuOr_r")
-	loadedVignette.plot3D(surfaces=True, maxAlpha=15, cmap="PuOr_r")
+	# loadedVignette.plot3D(function=transformFunction.transformIsolate, surfaces=True, maxAlpha=15, cmap="viridis")
+	loadedVignette.plot3D(surfaces=True, maxAlpha=15, cmap="viridis")
 	
 	# 	Save over all desired angles and elevation
 	#angles, elevs = [45, 80, 85, 90], [0, 30, 89, 90]

@@ -5,6 +5,8 @@ import lzma
 import argparse
 import numpy as np
 
+import matplotlib
+
 from PIL import Image
 from PIL import ImageDraw
 
@@ -52,25 +54,34 @@ class SavedGradient:
         with lzma.open(directory+'/'+filename, 'wb') as handle:
             pickle.dump(self, handle)
 
-    def computeImage(self, color1=None, color2=None,
+    def computeImage(self, color1=None, color2=None, color3=None, cmap=None,
                      saveImage=True, filename='output', directory="Gradient_output"):
         """
         Computes the image of the gradient and saves it if asked
         """
-        if color1 == None or color2 == None: color1, color2 = self.color1, self.color2
+        
+        meanValue, stdValue = np.mean(self.results), np.std(self.results)
+        minColor, maxColor = meanValue - stdValue, np.max(self.results)
+        
+        if cmap is not None:
+            minColor = np.min(self.results)
+            cmap = matplotlib.cm.get_cmap(cmap)
+            norm = matplotlib.colors.Normalize(vmin=minColor, vmax=maxColor)
+        else:
+            getColor = valueToRGB
+            color1, color2 = self.color1 if color1 is None else color1, self.color2 if color2 is None else color2
+            if color3 is not None:	getColor = lambda *args, **kwargs: valueToRGB(*args, color3=color3, **kwargs)
 
         width, height = self.pixelWidth * len(self.results[-1]), self.pixelHeight * len(self.results) * (self.nbLines+1)
         newIm = Image.new("RGB",(width+self.dotWidth, height))
         newDraw = ImageDraw.Draw(newIm)
 
-        meanValue, stdValue = np.mean(self.results), np.std(self.results)
-        minColor, maxColor = meanValue - stdValue, np.max(self.results)
         #	Putting the results and markers
         for l in range(len(self.results)):
             #	Separating lines containing the model's markers
             x0, y0 = self.red_markers[l] * self.pixelWidth, l * (self.nbLines+1) * self.pixelHeight
             x1, y1 = x0 + self.pixelWidth, y0 + self.pixelHeight
-            newDraw.rectangle([x0, y0, x1, y1], fill=(255,0,0))
+            if l != 0: newDraw.rectangle([x0, y0, x1, y1], fill=(255,0,0))
 
             x0 = self.green_markers[l] * self.pixelWidth
             x1 = x0 + self.pixelWidth
@@ -82,11 +93,16 @@ class SavedGradient:
             for c in range(len(self.results[l])):
                 x0 = c * self.pixelWidth
                 x1 = x0 + self.pixelWidth
-                color = valueToRGB(self.results[l][c], color1, color2, minNorm=minColor, maxNorm=maxColor)
+                
+                if cmap is not None :
+                    value = cmap(norm(self.results[l][c]))[:-1]
+                    color = tuple([round(255*v) for v in value])
+                else:	color = getColor(self.results[l][c], color1, color2, minNorm=minColor, maxNorm=maxColor)
                 newDraw.rectangle([x0, y0, x1, y1], fill=color)
 
             #	Processing the dot product,
             if l < len(self.results)-1:
+                # Directions sampled in unitball, so normalized dot product !
                 dot_product = np.dot(self.directions[l], self.directions[l+1])
                 color = valueToRGB(dot_product, (255,0,0), (0,255,0), pureNorm=1)
 
@@ -125,4 +141,9 @@ if __name__ == "__main__":
     color1, color2 = colorTest.color1, colorTest.color2
     loadedGradient.changeColor(color1=color1, color2=color2)
     # Computing the new image and saving the results
-    loadedGradient.computeImage(filename=args.outputName, directory=args.outputDir)
+    #	2 colors gradient
+    loadedGradient.computeImage(filename=args.outputName+"_2colors", directory=args.outputDir)
+    #	3 colors gradient
+    loadedGradient.computeImage(filename=args.outputName+"_3colors", directory=args.outputDir, color1=color1, color2=(255,255,255), color3=color2)
+    #	Output with a colormap
+    loadedGradient.computeImage(filename=args.outputName+"_colormap", directory=args.outputDir, cmap="viridis")
