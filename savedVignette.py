@@ -408,7 +408,7 @@ if __name__ == "__main__":
 	#		function is of type transformFunction (see transformFunction.py) 
 	# loadedVignette.plot3D(function=transformFunction.transformIsolate, surfaces=True, maxAlpha=15, cmap="viridis")
 	loadedVignette.plot3D(surfaces=True, maxAlpha=15, cmap="viridis")
-	
+
 	# 	Save over all desired angles and elevation
 	#angles, elevs = [45, 80, 85, 90], [0, 30, 89, 90]
 	#loadedVignette.save3D(filename="Vignette_output/transform", angles=angles, elevs=elevs)

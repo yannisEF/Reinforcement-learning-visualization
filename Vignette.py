@@ -198,7 +198,7 @@ if __name__ == "__main__":
 			newVignette.saveInFile("{}/{}_checkpoint_{}".format(args.directoryFile, args.outputName if args.outputName is not None else filename, step))
 	
 	computedImg = None
-	filename = arg.outputName if args.outputName is not None else filename
+	filename = args.outputName if args.outputName is not None else filename
 	
 	# Currently work in progress
 	#try:
