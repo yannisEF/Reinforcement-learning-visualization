@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2021.2.5)  19 MAY 2021 00:58
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2021.2.5)  19 MAY 2021 02:15
 entering extended mode
  \write18 enabled.
  %&-line parsing enabled.
@@ -827,22 +827,22 @@ LaTeX Warning: Label `fig:vignettePortee' multiply defined.
 )
 \openout1 = `rapport.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 90.
-LaTeX Font Info:    ... okay on input line 90.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 90.
-LaTeX Font Info:    ... okay on input line 90.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 90.
-LaTeX Font Info:    ... okay on input line 90.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 90.
-LaTeX Font Info:    ... okay on input line 90.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 90.
-LaTeX Font Info:    ... okay on input line 90.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 90.
-LaTeX Font Info:    ... okay on input line 90.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 90.
-LaTeX Font Info:    ... okay on input line 90.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 90.
-LaTeX Font Info:    ... okay on input line 90.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 88.
+LaTeX Font Info:    ... okay on input line 88.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 88.
+LaTeX Font Info:    ... okay on input line 88.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 88.
+LaTeX Font Info:    ... okay on input line 88.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 88.
+LaTeX Font Info:    ... okay on input line 88.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 88.
+LaTeX Font Info:    ... okay on input line 88.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 88.
+LaTeX Font Info:    ... okay on input line 88.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 88.
+LaTeX Font Info:    ... okay on input line 88.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 88.
+LaTeX Font Info:    ... okay on input line 88.
  (/usr/share/texlive/texmf-dist/tex/latex/ucs/ucsencs.def
 File: ucsencs.def 2011/01/21 Fixes to fontencodings LGR, T3
 )
@@ -870,7 +870,7 @@ e
 ))
 ABD: EveryShipout initializing macros
 \AtBeginShipoutBox=\box82
-Package hyperref Info: Link coloring ON on input line 90.
+Package hyperref Info: Link coloring ON on input line 88.
 
 (/usr/share/texlive/texmf-dist/tex/latex/hyperref/nameref.sty
 Package: nameref 2019/09/16 v2.46 Cross-referencing by name of section
@@ -883,37 +883,43 @@ Package: gettitlestring 2019/12/15 v1.6 Cleanup title references (HO)
 )
 \c@section@level=\count353
 )
-LaTeX Info: Redefining \ref on input line 90.
-LaTeX Info: Redefining \pageref on input line 90.
-LaTeX Info: Redefining \nameref on input line 90.
+LaTeX Info: Redefining \ref on input line 88.
+LaTeX Info: Redefining \pageref on input line 88.
+LaTeX Info: Redefining \nameref on input line 88.
 
 (./rapport.out) (./rapport.out)
 \@outlinefile=\write8
 \openout8 = `rapport.out'.
 
-<Images/logo_SU.jpeg, id=71, 1629.08624pt x 654.445pt>
+<Images/logo_SU.jpeg, id=67, 1629.08624pt x 654.445pt>
 File: Images/logo_SU.jpeg Graphic file (type jpg)
 <use Images/logo_SU.jpeg>
-Package pdftex.def Info: Images/logo_SU.jpeg  used on input line 97.
+Package pdftex.def Info: Images/logo_SU.jpeg  used on input line 95.
 (pdftex.def)             Requested size: 122.1762pt x 49.08125pt.
 
 (/usr/share/texlive/texmf-dist/tex/latex/ucs/data/uni-0.def
 File: uni-0.def 2013/05/13 UCS: Unicode data U+0000..U+00FF
 ) [1
 
-{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map} <./Images/logo_SU.jpeg>] (.
-/rapport.toc)
-\tf@toc=\write9
-\openout9 = `rapport.toc'.
-
-pdfTeX warning (ext4): destination with the same identifier (name{page.1}) has 
-been already used, duplicate ignored
-<to be read again> 
-                   \relax 
-l.127 \newpage
-               [1] (/usr/share/texlive/texmf-dist/tex/latex/ucs/data/uni-32.def
+{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map} <./Images/logo_SU.jpeg>]
+(/usr/share/texlive/texmf-dist/tex/latex/ucs/data/uni-32.def
 File: uni-32.def 2013/05/13 UCS: Unicode data U+2000..U+20FF
 )
+Underfull \hbox (badness 10000) in paragraph at lines 129--130
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 131--132
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 133--134
+
+ []
+
+
 Underfull \hbox (badness 10000) in paragraph at lines 135--136
 
  []
@@ -923,120 +929,119 @@ Underfull \hbox (badness 10000) in paragraph at lines 137--138
 
  []
 
+pdfTeX warning (ext4): destination with the same identifier (name{page.1}) has 
+been already used, duplicate ignored
+<to be read again> 
+                   \relax 
+l.139 \newpage
+               [1] (./rapport.toc)
+\tf@toc=\write9
+\openout9 = `rapport.toc'.
 
-Underfull \hbox (badness 10000) in paragraph at lines 139--140
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 141--142
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 143--144
-
- []
-
-[2]
-Underfull \hbox (badness 10000) in paragraph at lines 148--149
+ [2]
+Underfull \hbox (badness 10000) in paragraph at lines 147--148
 
  []
 
 
-Overfull \hbox (30.49838pt too wide) in paragraph at lines 150--151
+Overfull \hbox (30.49838pt too wide) in paragraph at lines 149--150
 []\T1/cmr/m/n/12 Les out-ils dévelop-pés per-me-t-tent d'obtenir un aperçu en d
 eux di-men-sions de l'espace d'apprentissage
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 150--151
+Underfull \hbox (badness 10000) in paragraph at lines 149--150
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 152--153
+Underfull \hbox (badness 10000) in paragraph at lines 151--152
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 154--155
+Underfull \hbox (badness 10000) in paragraph at lines 153--154
 
  []
 
-<Images/Ligne.png, id=110, 1332.98pt x 24.09pt>
+
+Underfull \hbox (badness 10000) in paragraph at lines 155--156
+
+ []
+
+<Images/Ligne.png, id=104, 855.195pt x 15.05624pt>
 File: Images/Ligne.png Graphic file (type png)
 <use Images/Ligne.png>
-Package pdftex.def Info: Images/Ligne.png  used on input line 159.
-(pdftex.def)             Requested size: 284.52756pt x 5.14174pt.
+Package pdftex.def Info: Images/Ligne.png  used on input line 160.
+(pdftex.def)             Requested size: 284.52756pt x 5.00923pt.
 
-Underfull \hbox (badness 10000) in paragraph at lines 164--165
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 168--169
+Underfull \hbox (badness 10000) in paragraph at lines 165--166
 
  []
 
-<Images/gradientStudy_dessus.png, id=112, 1016.79875pt x 707.64375pt>
+
+Underfull \hbox (badness 10000) in paragraph at lines 169--170
+
+ []
+
+<Images/gradientStudy_dessus.png, id=106, 1016.79875pt x 707.64375pt>
 File: Images/gradientStudy_dessus.png Graphic file (type png)
 <use Images/gradientStudy_dessus.png>
 Package pdftex.def Info: Images/gradientStudy_dessus.png  used on input line 17
-3.
-(pdftex.def)             Requested size: 284.52756pt x 198.02013pt.
+4.
+(pdftex.def)             Requested size: 227.62204pt x 158.41394pt.
 
-Underfull \hbox (badness 10000) in paragraph at lines 178--179
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 180--181
+Underfull \hbox (badness 10000) in paragraph at lines 179--180
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 182--183
+Underfull \hbox (badness 10000) in paragraph at lines 181--182
 
  []
 
-[3 <./Images/Ligne.png>]
-<Images/gradientStudy.png, id=120, 1776.6375pt x 803.0pt>
+<Images/gradientStudy.png, id=107, 1776.6375pt x 803.0pt>
 File: Images/gradientStudy.png Graphic file (type png)
 <use Images/gradientStudy.png>
-Package pdftex.def Info: Images/gradientStudy.png  used on input line 187.
+Package pdftex.def Info: Images/gradientStudy.png  used on input line 186.
 (pdftex.def)             Requested size: 284.52756pt x 128.5929pt.
-
-Underfull \hbox (badness 10000) in paragraph at lines 192--193
-
- []
-
-[4 <./Images/gradientStudy_dessus.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 197--198
+[3 <./Images/Ligne.png>]
+Underfull \hbox (badness 10000) in paragraph at lines 191--192
 
  []
 
+[4 <./Images/gradientStudy_dessus.png> <./Images/gradientStudy.png (PNG copy)>]
 
-Underfull \hbox (badness 10000) in paragraph at lines 200--201
+Underfull \hbox (badness 10000) in paragraph at lines 196--197
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 202--203
+Underfull \hbox (badness 10000) in paragraph at lines 199--200
 
  []
 
-<Images/vignetteDessin.png, id=128, 1391.1975pt x 826.08624pt>
+
+Underfull \hbox (badness 10000) in paragraph at lines 201--202
+
+ []
+
+<Images/vignetteDessin.png, id=124, 1391.1975pt x 826.08624pt>
 File: Images/vignetteDessin.png Graphic file (type png)
 <use Images/vignetteDessin.png>
-Package pdftex.def Info: Images/vignetteDessin.png  used on input line 207.
-(pdftex.def)             Requested size: 341.43306pt x 202.73953pt.
-<Images/Vignette_pendulum.png, id=129, 2017.5375pt x 521.95pt>
+Package pdftex.def Info: Images/vignetteDessin.png  used on input line 206.
+(pdftex.def)             Requested size: 512.1496pt x 304.1093pt.
+
+Overfull \hbox (27.81255pt too wide) in paragraph at lines 206--207
+ [][] 
+ []
+
+<Images/Vignette_pendulum.png, id=125, 2017.5375pt x 521.95pt>
 File: Images/Vignette_pendulum.png Graphic file (type png)
 <use Images/Vignette_pendulum.png>
-Package pdftex.def Info: Images/Vignette_pendulum.png  used on input line 215.
-(pdftex.def)             Requested size: 341.43306pt x 88.32414pt.
-
+Package pdftex.def Info: Images/Vignette_pendulum.png  used on input line 214.
+(pdftex.def)             Requested size: 426.79134pt x 110.40916pt.
+[5 <./Images/vignetteDessin.png>]
 Underfull \hbox (badness 10000) in paragraph at lines 220--221
 
  []
@@ -1047,32 +1052,32 @@ Underfull \hbox (badness 10000) in paragraph at lines 222--223
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 224--225
+Underfull \hbox (badness 10000) in paragraph at lines 226--227
 
  []
 
-[5 <./Images/gradientStudy.png (PNG copy)>] [6 <./Images/vignetteDessin.png> <.
-/Images/Vignette_pendulum.png (PNG copy)>]
+
 Underfull \hbox (badness 10000) in paragraph at lines 228--229
 
  []
 
-
-Underfull \hbox (badness 10000) in paragraph at lines 230--231
-
- []
-
-<Images/Principe.png, id=143, 1365.1pt x 745.78625pt>
+<Images/Principe.png, id=132, 1365.1pt x 745.78625pt>
 File: Images/Principe.png Graphic file (type png)
 <use Images/Principe.png>
-Package pdftex.def Info: Images/Principe.png  used on input line 235.
+Package pdftex.def Info: Images/Principe.png  used on input line 233.
 (pdftex.def)             Requested size: 512.1496pt x 279.80571pt.
 
-Overfull \hbox (27.81255pt too wide) in paragraph at lines 235--236
+Overfull \hbox (27.81255pt too wide) in paragraph at lines 233--234
  [][] 
  []
 
-[7 <./Images/Principe.png>]
+[6 <./Images/Vignette_pendulum.png (PNG copy)>] [7 <./Images/Principe.png>]
+Overfull \hbox (7.29286pt too wide) in paragraph at lines 252--253
+\T1/cmr/m/n/12 était écrit pour fonc-tion-ner sur un en-vi-ron-nement par-ti-c-
+ulier (\T1/cmr/m/it/12 Mu-joco Swim-mer\T1/cmr/m/n/12 ) sous l'algorithme
+ []
+
+
 Underfull \hbox (badness 10000) in paragraph at lines 252--253
 
  []
@@ -1083,23 +1088,29 @@ Underfull \hbox (badness 10000) in paragraph at lines 254--255
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 256--257
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 258--259
-
- []
-
-
-Overfull \hbox (5.99023pt too wide) in paragraph at lines 260--261
+Overfull \hbox (5.99023pt too wide) in paragraph at lines 256--257
 []\T1/cmr/m/n/12 Ainsi, pour cha-cun des out-ils, il est pos-si-ble pour l'util
 isateur de changer facile-ment l'algorithme
  []
 
 
+Underfull \hbox (badness 10000) in paragraph at lines 256--257
+
+ []
+
+
 Underfull \hbox (badness 10000) in paragraph at lines 260--261
+
+ []
+
+
+Overfull \hbox (4.96289pt too wide) in paragraph at lines 262--263
+[]\T1/cmr/m/n/12 Grâce à leur im-plé-men-ta-tion sous \T1/cmr/m/it/12 stable-ba
+selines-3 (SB3)\T1/cmr/m/n/12 , les out-ils peu-vent re-cevoir n'importe
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 262--263
 
  []
 
@@ -1109,157 +1120,152 @@ Underfull \hbox (badness 10000) in paragraph at lines 264--265
  []
 
 
-Overfull \hbox (4.96289pt too wide) in paragraph at lines 266--267
-[]\T1/cmr/m/n/12 Grâce à leur im-plé-men-ta-tion sous \T1/cmr/m/it/12 stable-ba
-selines-3 (SB3)\T1/cmr/m/n/12 , les out-ils peu-vent re-cevoir n'importe
- []
-
-
 Underfull \hbox (badness 10000) in paragraph at lines 266--267
 
  []
 
-
-Underfull \hbox (badness 10000) in paragraph at lines 268--269
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 270--271
-
- []
-
-<Images/politiques_entrees_vignette.png, id=151, 682.55pt x 271.0125pt>
+[8]
+<Images/politiques_entrees_vignette.png, id=152, 682.55pt x 271.0125pt>
 File: Images/politiques_entrees_vignette.png Graphic file (type png)
 <use Images/politiques_entrees_vignette.png>
 Package pdftex.def Info: Images/politiques_entrees_vignette.png  used on input 
-line 275.
+line 271.
 (pdftex.def)             Requested size: 284.52756pt x 112.97673pt.
-[8]
+
+Underfull \hbox (badness 10000) in paragraph at lines 276--277
+
+ []
+
+
 Underfull \hbox (badness 10000) in paragraph at lines 280--281
 
  []
 
-
-Underfull \hbox (badness 10000) in paragraph at lines 284--285
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 286--287
-
- []
-
-<Images/gradientStudy_swimmer.png, id=158, 1776.6375pt x 1565.85pt>
+<Images/gradientStudy_swimmer.png, id=153, 1776.6375pt x 1565.85pt>
 File: Images/gradientStudy_swimmer.png Graphic file (type png)
 <use Images/gradientStudy_swimmer.png>
 Package pdftex.def Info: Images/gradientStudy_swimmer.png  used on input line 2
-91.
+85.
 (pdftex.def)             Requested size: 426.79134pt x 376.14618pt.
 
-Underfull \hbox (badness 10000) in paragraph at lines 296--297
+Underfull \hbox (badness 10000) in paragraph at lines 290--291
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 298--299
+Underfull \hbox (badness 10000) in paragraph at lines 292--293
 
  []
 
 
-Overfull \hbox (34.95432pt too wide) in paragraph at lines 300--301
+Overfull \hbox (34.95432pt too wide) in paragraph at lines 294--295
 []\T1/cmr/m/n/12 En ef-fet, on rap-pelle que l'utilisateur donne en ar-gu-ment 
 de \T1/cmr/m/it/12 Vi-gnette \T1/cmr/m/n/12 une fréquence d'échantillonnage.
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 300--301
+Underfull \hbox (badness 10000) in paragraph at lines 294--295
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 302--303
+Underfull \hbox (badness 10000) in paragraph at lines 296--297
 
  []
 
 [9 <./Images/politiques_entrees_vignette.png>] [10 <./Images/gradientStudy_swim
 mer.png (PNG copy)>]
-Overfull \hbox (11.53766pt too wide) in paragraph at lines 304--305
+Overfull \hbox (11.53766pt too wide) in paragraph at lines 299--300
 []\T1/cmr/m/n/12 Nous avons donc fait le choix d'imposer une baisse au-toma-tiq
 ue de la fréquence d'échantillonnage
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 304--305
+Underfull \hbox (badness 10000) in paragraph at lines 299--300
 
  []
 
-<Images/vignette_portee1.png, id=171, 1252.68pt x 862.22125pt>
+<Images/vignette_portee1.png, id=167, 1252.68pt x 862.22125pt>
 File: Images/vignette_portee1.png Graphic file (type png)
 <use Images/vignette_portee1.png>
-Package pdftex.def Info: Images/vignette_portee1.png  used on input line 309.
-(pdftex.def)             Requested size: 426.79134pt x 293.75655pt.
+Package pdftex.def Info: Images/vignette_portee1.png  used on input line 304.
+(pdftex.def)             Requested size: 512.1496pt x 352.52628pt.
 
-Underfull \hbox (badness 10000) in paragraph at lines 314--315
+Overfull \hbox (27.81255pt too wide) in paragraph at lines 304--305
+ [][] 
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 309--310
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 316--317
+Underfull \hbox (badness 10000) in paragraph at lines 311--312
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 318--319
+Underfull \hbox (badness 10000) in paragraph at lines 313--314
 
  []
 
-
-Underfull \hbox (badness 10000) in paragraph at lines 320--321
-
- []
-
-<Images/vignette_portee2.png, id=172, 1266.7325pt x 838.13126pt>
+<Images/vignette_portee2.png, id=168, 1266.7325pt x 838.13126pt>
 File: Images/vignette_portee2.png Graphic file (type png)
 <use Images/vignette_portee2.png>
-Package pdftex.def Info: Images/vignette_portee2.png  used on input line 325.
-(pdftex.def)             Requested size: 426.79134pt x 282.3775pt.
+Package pdftex.def Info: Images/vignette_portee2.png  used on input line 318.
+(pdftex.def)             Requested size: 512.1496pt x 338.8658pt.
+
+Overfull \hbox (27.81255pt too wide) in paragraph at lines 318--319
+ [][] 
+ []
+
 [11 <./Images/vignette_portee1.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 330--331
+Underfull \hbox (badness 10000) in paragraph at lines 323--324
 
  []
 
 
 LaTeX Warning: Hyper reference `sec:future' on page 12 undefined on input line 
-332.
+325.
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 332--333
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 334--335
+Underfull \hbox (badness 10000) in paragraph at lines 325--326
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 336--337
+Underfull \hbox (badness 10000) in paragraph at lines 327--328
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 340--341
+Underfull \hbox (badness 10000) in paragraph at lines 329--330
 
  []
 
 [12 <./Images/vignette_portee2.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 342--343
+Underfull \hbox (badness 10000) in paragraph at lines 333--334
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 344--345
+Underfull \hbox (badness 10000) in paragraph at lines 335--336
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 337--338
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 339--340
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 341--342
 
  []
 
@@ -1278,101 +1284,94 @@ Underfull \hbox (badness 10000) in paragraph at lines 350--351
 
  []
 
-[13]
-Underfull \hbox (badness 10000) in paragraph at lines 356--357
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 358--359
-
- []
-
+<Images/palette.png, id=184, 2017.5375pt x 1565.85pt>
+File: Images/palette.png Graphic file (type png)
+<use Images/palette.png>
+Package pdftex.def Info: Images/palette.png  used on input line 355.
+(pdftex.def)             Requested size: 426.79134pt x 331.2275pt.
 
 Underfull \hbox (badness 10000) in paragraph at lines 360--361
 
  []
 
+[13] [14 <./Images/palette.png>]
+<Images/vignette_3D.png, id=196, 941.5175pt x 1413.28pt>
+File: Images/vignette_3D.png Graphic file (type png)
+<use Images/vignette_3D.png>
+Package pdftex.def Info: Images/vignette_3D.png  used on input line 365.
+(pdftex.def)             Requested size: 227.62204pt x 341.67409pt.
 
-Underfull \hbox (badness 10000) in paragraph at lines 362--363
+Underfull \hbox (badness 10000) in paragraph at lines 370--371
 
  []
 
-<Images/palette.png, id=190, 2017.5375pt x 1565.85pt>
-File: Images/palette.png Graphic file (type png)
-<use Images/palette.png>
-Package pdftex.def Info: Images/palette.png  used on input line 367.
-(pdftex.def)             Requested size: 426.79134pt x 331.2275pt.
 
 Underfull \hbox (badness 10000) in paragraph at lines 372--373
 
  []
 
-<Images/vignette_3D.png, id=192, 941.5175pt x 1413.28pt>
-File: Images/vignette_3D.png Graphic file (type png)
-<use Images/vignette_3D.png>
-Package pdftex.def Info: Images/vignette_3D.png  used on input line 377.
-(pdftex.def)             Requested size: 512.1496pt x 768.76672pt.
-
-Overfull \hbox (27.81255pt too wide) in paragraph at lines 377--378
- [][] 
- []
-
-
-LaTeX Warning: Float too large for page by 234.77382pt on input line 380.
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 382--383
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 384--385
-
- []
-
-<Images/vignette_dessus.png, id=193, 958.58125pt x 650.43pt>
+<Images/vignette_dessus.png, id=198, 958.58125pt x 650.43pt>
 File: Images/vignette_dessus.png Graphic file (type png)
 <use Images/vignette_dessus.png>
-Package pdftex.def Info: Images/vignette_dessus.png  used on input line 389.
+Package pdftex.def Info: Images/vignette_dessus.png  used on input line 377.
 (pdftex.def)             Requested size: 284.52756pt x 193.05623pt.
-
-Underfull \hbox (badness 10000) in paragraph at lines 394--395
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 396--397
+[15 <./Images/vignette_3D.png>]
+Underfull \hbox (badness 10000) in paragraph at lines 383--384
 
  []
 
-<Images/vignette_cote.png, id=196, 913.4125pt x 1102.1175pt>
+<Images/vignette_cote.png, id=208, 913.4125pt x 1102.1175pt>
 File: Images/vignette_cote.png Graphic file (type png)
 <use Images/vignette_cote.png>
-Package pdftex.def Info: Images/vignette_cote.png  used on input line 401.
+Package pdftex.def Info: Images/vignette_cote.png  used on input line 388.
 (pdftex.def)             Requested size: 426.79134pt x 514.95143pt.
 
-Underfull \hbox (badness 10000) in paragraph at lines 406--407
+Underfull \hbox (badness 10000) in paragraph at lines 393--394
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 408--409
+Underfull \hbox (badness 10000) in paragraph at lines 395--396
+
+ []
+
+[16 <./Images/vignette_dessus.png>] [17 <./Images/vignette_cote.png>]
+Underfull \hbox (badness 10000) in paragraph at lines 403--404
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 410--411
-
- []
-
-[14] [15 <./Images/palette.png>] [16 <./Images/vignette_3D.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 417--418
+Underfull \hbox (badness 10000) in paragraph at lines 405--406
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 419--420
+Underfull \hbox (badness 10000) in paragraph at lines 407--408
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 412--413
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 416--417
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 418--419
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 420--421
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 422--423
 
  []
 
@@ -1381,54 +1380,50 @@ Underfull \hbox (badness 10000) in paragraph at lines 424--425
 
  []
 
-
-Underfull \hbox (badness 10000) in paragraph at lines 428--429
-
- []
-
-[17 <./Images/vignette_dessus.png>] [18 <./Images/vignette_cote.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 430--431
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 432--433
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 434--435
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 436--437
-
- []
-
-<Images/cem_example.png, id=228, 1027.84pt x 847.165pt>
+[18]
+<Images/cem_example.png, id=229, 1027.84pt x 847.165pt>
 File: Images/cem_example.png Graphic file (type png)
 <use Images/cem_example.png>
-Package pdftex.def Info: Images/cem_example.png  used on input line 441.
+Package pdftex.def Info: Images/cem_example.png  used on input line 429.
 (pdftex.def)             Requested size: 284.52756pt x 234.51582pt.
 
-Underfull \hbox (badness 10000) in paragraph at lines 452--453
+Underfull \hbox (badness 10000) in paragraph at lines 440--441
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 457--458
+Underfull \hbox (badness 10000) in paragraph at lines 445--446
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 459--460
+Underfull \hbox (badness 10000) in paragraph at lines 447--448
 
  []
 
-[19] [20 <./Images/cem_example.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 461--462
+[19 <./Images/cem_example.png>]
+Underfull \hbox (badness 10000) in paragraph at lines 449--450
 
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 451--452
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 453--454
+
+ []
+
+<Images/faisceaux.png, id=236, 1357.07pt x 743.77875pt>
+File: Images/faisceaux.png Graphic file (type png)
+<use Images/faisceaux.png>
+Package pdftex.def Info: Images/faisceaux.png  used on input line 458.
+(pdftex.def)             Requested size: 512.1496pt x 280.69815pt.
+
+Overfull \hbox (27.81255pt too wide) in paragraph at lines 458--459
+ [][] 
  []
 
 
@@ -1436,19 +1431,24 @@ Underfull \hbox (badness 10000) in paragraph at lines 463--464
 
  []
 
-
+[20 <./Images/faisceaux.png>]
 Underfull \hbox (badness 10000) in paragraph at lines 465--466
 
  []
 
-<Images/faisceaux.png, id=239, 1357.07pt x 743.77875pt>
-File: Images/faisceaux.png Graphic file (type png)
-<use Images/faisceaux.png>
-Package pdftex.def Info: Images/faisceaux.png  used on input line 470.
-(pdftex.def)             Requested size: 426.79134pt x 233.90567pt.
 
-Underfull \hbox (badness 10000) in paragraph at lines 475--476
+Underfull \hbox (badness 10000) in paragraph at lines 467--468
 
+ []
+
+<Images/faisceaux_interet.png, id=244, 1272.755pt x 581.17125pt>
+File: Images/faisceaux_interet.png Graphic file (type png)
+<use Images/faisceaux_interet.png>
+Package pdftex.def Info: Images/faisceaux_interet.png  used on input line 472.
+(pdftex.def)             Requested size: 512.1496pt x 233.85664pt.
+
+Overfull \hbox (27.81255pt too wide) in paragraph at lines 472--473
+ [][] 
  []
 
 
@@ -1457,78 +1457,63 @@ Underfull \hbox (badness 10000) in paragraph at lines 477--478
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 479--480
+Underfull \hbox (badness 10000) in paragraph at lines 481--482
 
  []
 
-<Images/faisceaux_interet.png, id=241, 1272.755pt x 581.17125pt>
-File: Images/faisceaux_interet.png Graphic file (type png)
-<use Images/faisceaux_interet.png>
-Package pdftex.def Info: Images/faisceaux_interet.png  used on input line 484.
-(pdftex.def)             Requested size: 426.79134pt x 194.88202pt.
-[21 <./Images/faisceaux.png>]
+
+Underfull \hbox (badness 10000) in paragraph at lines 483--484
+
+ []
+
+[21 <./Images/faisceaux_interet.png>]
+Underfull \hbox (badness 10000) in paragraph at lines 485--486
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 487--488
+
+ []
+
+
 Underfull \hbox (badness 10000) in paragraph at lines 489--490
 
  []
 
-
-Underfull \hbox (badness 10000) in paragraph at lines 493--494
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 495--496
+[22]
+Underfull \hbox (badness 10000) in paragraph at lines 494--495
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 497--498
+Underfull \hbox (badness 10000) in paragraph at lines 496--497
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 499--500
-
- []
-
-[22 <./Images/faisceaux_interet.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 501--502
+Underfull \hbox (badness 10000) in paragraph at lines 498--499
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 505--506
+Underfull \hbox (badness 10000) in paragraph at lines 500--501
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 507--508
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 509--510
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 511--512
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 513--514
+Underfull \hbox (badness 10000) in paragraph at lines 502--503
 
  []
 
 [23]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 515.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 515.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 504.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 504.
  (./rapport.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 515.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 515.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 504.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 504.
 Package rerunfilecheck Info: File `rapport.out' has not changed.
-(rerunfilecheck)             Checksum: 3F28020FE67AA73CB9FE39C03D2670F5;1130.
+(rerunfilecheck)             Checksum: 682AA2A93DB87FC36F79AEA79F461036;1049.
 
 
 LaTeX Warning: There were undefined references.
@@ -1538,13 +1523,13 @@ LaTeX Warning: There were multiply-defined labels.
 
  ) 
 Here is how much of TeX's memory you used:
- 25308 strings out of 483183
- 506857 string characters out of 5966293
- 832765 words of memory out of 5000000
- 39765 multiletter control sequences out of 15000+600000
+ 25306 strings out of 483183
+ 506826 string characters out of 5966293
+ 833855 words of memory out of 5000000
+ 39763 multiletter control sequences out of 15000+600000
  545680 words of font info for 50 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 59i,12n,83p,894b,617s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 59i,12n,83p,927b,617s stack positions out of 5000i,500n,10000p,200000b,80000s
  </home/yannis/.texlive2019/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbi1440.60
 0pk> </home/yannis/.texlive2019/texmf-var/fonts/pk/ljfour/jknappen/ec/tcrm1200.
 600pk> </home/yannis/.texlive2019/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx144
@@ -1558,10 +1543,10 @@ n/ec/ecti1440.600pk> </home/yannis/.texlive2019/texmf-var/fonts/pk/ljfour/jknap
 pen/ec/ecbx2488.600pk> </home/yannis/.texlive2019/texmf-var/fonts/pk/ljfour/jkn
 appen/ec/eccc1728.600pk></usr/share/texlive/texmf-dist/fonts/type1/public/amsfo
 nts/cm/cmmi12.pfb>
-Output written on rapport.pdf (24 pages, 3760787 bytes).
+Output written on rapport.pdf (24 pages, 3763342 bytes).
 PDF statistics:
- 625 PDF objects out of 1000 (max. 8388607)
+ 633 PDF objects out of 1000 (max. 8388607)
  251 compressed objects within 3 object streams
  60 named destinations out of 1000 (max. 500000)
- 231 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 223 words of extra memory for PDF output out of 10000 (max. 10000000)
 
