@@ -124,17 +124,17 @@ Lydia AGUINI
 
 \section*{Introduction}
 
-L’apprentissage par renforcement consiste en une recherche heuristique, dans un environnement donné, d’une stratégie permettant de maximiser une récompense. \par
+L’apprentissage par renforcement \ref{[1]}. consiste en une recherche heuristique, dans un environnement donné, d’une stratégie permettant de maximiser une récompense. \par
 
 Dans certains environnement, cette approche est moins performante que des algorithmes évolutionnaires. De plus, il est démontré que certaines méthodes d’entraînement tirent leur efficacité de transformations de l’espace d’apprentissage. \\
 
 Cette recherche étant propre à l’environnement, et par construction s’effectuant dans un espace en grande dimension, il est nécessaire de s’intéresser au développement d’outils permettant de mieux comprendre ce processus et d’expliquer ces phénomènes. \\
 
-Lors de notre projet, nous avons travaillé à l’amélioration de deux outils de visualisation mis au point les années précédentes. Ils permettent d’obtenir des aperçus du paysage de valeur autour d’un agent. \\
+Lors de notre projet, nous avons travaillé à l’amélioration de deux outils de visualisation mis au point les années précédentes \href{https://github.com/DevMaelFranceschetti/PAnd_Swimmer/blob/master/paper_study_Swimmer.pdf}{[8]}. Ils permettent d’obtenir des aperçus du paysage de valeur autour d’un agent. \\
 
 Lors de nos travaux, nous avons complètement réécrit le code de ces outils pour le rendre plus modulable et plus clair pour l’utilisateur. De plus, nous avons ajouté de nouvelles fonctionnalités de visualisation. \\
 
-Dans ce rapport nous rappelons le fonctionnement des outils développés, puis détaillons notre implémentation de ceux-ci en présentant les nouvelles fonctionnalités. Nous démontrons ensuite l'intérêt de ces derniers grâce à des exemples d'utilisation, pour enfin évoquer des idées d'améliorations futures à apporter aux outils. \\
+Dans ce rapport nous rappelons le fonctionnement des outils développés \href{https://github.com/DevMaelFranceschetti/PAnd_Swimmer }{[9]}., puis détaillons notre implémentation de ceux-ci en présentant les nouvelles fonctionnalités. Nous démontrons ensuite l'intérêt de ces derniers grâce à des exemples d'utilisation \ref{Exemples}, pour enfin évoquer des idées d'améliorations futures à apporter aux outils. \\
 
 \newpage
 
@@ -148,7 +148,7 @@ Le principe de fonctionnement des outils développés les années précédentes 
 
 Les outils développés permettent d'obtenir un aperçu en deux dimensions de l'espace d'apprentissage d'un modèle, alors en grande dimension (de la taille du réseau de neurones). \\
 
-Le premier outil, \emph{étude de gradient}, permet d'observer la trajectoire du modèle lors de son apprentissage. Le second, \emph{Vignette}, permet d'observer le paysage de valeur autour du modèle. \\
+Le premier outil, \emph{étude de gradient} \ref{gradient}, permet d'observer la trajectoire du modèle lors de son apprentissage. Le second, \emph{Vignette} \ref{vign}, permet d'observer le paysage de valeur autour du modèle. \\
 
 La sortie de ces outils est constituée d’un ensemble de lignes de pixels. Chaque ligne est une direction tirée dans l’espace d’apprentissage, le pixel en son centre correspond au modèle à partir duquel elle est tirée. \\
 
@@ -164,7 +164,7 @@ La direction est ensuite échantillonnée à une fréquence entrée par l’util
 
 Nous présentons maintenant leur principe de fonctionnement, et le format de leur sortie. \\
 
-\subsection{Etude de gradient}
+\subsection{Etude de gradient} \label{gradient}.
 
 Le premier outil, \emph{étude de gradient}, permet de suivre la descente de gradient d’un modèle. \\
 
@@ -184,14 +184,14 @@ De plus, le produit scalaire entre deux directions est représenté sur le côt�
 \begin{figure}[!htp]
     \centering
     \includegraphics[width=10cm]{Images/gradientStudy}
-    \caption{Un exemple de sortie de l'étude de gradient, algorithme SAC, environnement \emph{Pendulum} entraînement enregistré tous les 500 pas de 500 à 10.000. La sortie se lit de haut en bas, plus la récompense est grande plus la couleur est claire. De haut en bas, on observe que le modèle se déplace de moins en moins rapidement vers une zone à forte récompense. De plus, l'angle entre chaque direction est faible car le produit scalaire, indiqué sur la droite, est proche de 1. Il pourrait être intéressant d'effectuer une étude de gradient autour des premiers pas, car on observe que le changement de direction est plus le important entre le pas 500 et le pas 1.000.}
+    \caption{Un exemple de sortie de l'étude de gradient, algorithme SAC \ref{[2]}, environnement \emph{Pendulum} \href{https://pendulum.eustace.io/docs/}{[11]}  entraînement enregistré tous les 500 pas de 500 à 10.000. La sortie se lit de haut en bas, plus la récompense est grande plus la couleur est claire. De haut en bas, on observe que le modèle se déplace de moins en moins rapidement vers une zone à forte récompense. De plus, l'angle entre chaque direction est faible car le produit scalaire, indiqué sur la droite, est proche de 1. Il pourrait être intéressant d'effectuer une étude de gradient autour des premiers pas, car on observe que le changement de direction est plus le important entre le pas 500 et le pas 1.000.}
     \label{fig:gradientStudy}
 \end{figure}
 
 Ainsi, cet outil donne un aperçu en deux dimensions de la trajectoire prise par un modèle lors de son apprentissage (en n dimensions, n étant la taille du réseau de neurones). \\
 
 \newpage
-\subsection{Vignette}
+\subsection{Vignette} \label{vign}
 
 L’outil Vignette permet d’obtenir un aperçu des alentours d’un modèle. \\
 
@@ -212,7 +212,7 @@ Les directions tirées aléatoirement sont alors triées par ordre de proximité
 \begin{figure}[htp]
     \centering
     \includegraphics[width=15cm]{Images/Vignette_pendulum}
-    \caption{Un exemple de sortie de \emph{Vignette}, algorithme SAC, environnement \emph{Pendulum} entraîné pendant 5.000 pas, 50 directions tirées aléatoirement. La politique entrée est située au centre de la \emph{Vignette}. Autour du modèle, on observe un environnement bruité, de moyenne récompense. De plus, certaines zones en bordure de la boule observée sont clairement à faible récompense, tandis que deux zones à proximité offrent une meilleur récompense. On en déduit que ce sont deux zones dans lesquelles la descente de gradient est susceptible de converger.}
+    \caption{Un exemple de sortie de \emph{Vignette}, algorithme SAC  \ref{[2]}, environnement \emph{Pendulum} entraîné pendant 5.000 pas, 50 directions tirées aléatoirement. La politique entrée est située au centre de la \emph{Vignette}. Autour du modèle, on observe un environnement bruité, de moyenne récompense. De plus, certaines zones en bordure de la boule observée sont clairement à faible récompense, tandis que deux zones à proximité offrent une meilleur récompense. On en déduit que ce sont deux zones dans lesquelles la descente de gradient est susceptible de converger.}
     \label{fig:vignettePendulum}
 \end{figure}
 
@@ -249,9 +249,10 @@ Dans cette partie, nous détaillons chacune de ces phases.
 
 \subsection*{Portage à \emph{stable-baselines-3}}
 
-Lors de nos travaux, nous avons été contraints de réécrire le code des outils. En effet, celui-ci était écrit pour fonctionner sur un environnement particulier (\emph{Mujoco Swimmer}) sous l’algorithme TD3. \\
+Lors de nos travaux, nous avons été contraints de réécrire le code des outils. En effet, celui-ci était écrit pour fonctionner sur un environnement particulier (\emph{Mujoco Swimmer}) sous l’algorithme TD3 \ref{[7]}. \\
 
-Nous avons procédé à un portage vers la librairie \emph{Stable-baselines-3}, comportant un ensemble fiable d’implémentations d’algorithmes d’apprentissage par renforcement en PyTorch. Le code de cette librairie est accessible sur github et celle-ci propose une documentation détaillée de ses implémentations. \\
+Nous avons procédé à un portage vers la librairie \emph{Stable-baselines-3} \href{https://stable-baselines.readthedocs.io/en/master/ }{[12]}.
+, comportant un ensemble fiable d’implémentations d’algorithmes d’apprentissage par renforcement en PyTorch \href{https://pytorch.org/  }{[13]}. Le code de cette librairie est accessible sur github et celle-ci propose une documentation détaillée de ses implémentations. \\
 
 Ainsi, pour chacun des outils, il est possible pour l’utilisateur de changer facilement l’algorithme d’apprentissage, ses hyper-paramètres et l’environnement utilisé. \\
 
@@ -259,9 +260,10 @@ Ainsi, pour chacun des outils, il est possible pour l’utilisateur de changer f
 
 Avant toutes choses, pour fonctionner, les outils ont besoin de recevoir en entrée un modèle entraîné sous forme de réseau de neurones. \\
 
-Grâce à leur implémentation sous \emph{stable-baselines-3 (SB3)}, les outils peuvent recevoir n'importe quel réseau de neurones au format PyTorch. \\
+Grâce à leur implémentation sous \emph{stable-baselines-3 (SB3)}\href{https://stable-baselines.readthedocs.io/en/master/   }{[12]}., les outils peuvent recevoir n'importe quel réseau de neurones au format PyTorch \href{https://pytorch.org/  }{[13]}. \\
 
-Nous proposons un exemple d'application de \emph{SB3} dans le fichier \emph{trainModel.py}. L'utilisateur peut alors entraîner un réseau de neurones sous l'environnement souhaité, en sauvegardant les étapes de l'apprentissage à un rythme choisi. \\
+Nous proposons un exemple d'application de \emph{SB3} \href{https://stable-baselines.readthedocs.io/en/master/   }{[12]}.
+ dans le fichier \emph{trainModel.py}. L'utilisateur peut alors entraîner un réseau de neurones sous l'environnement souhaité, en sauvegardant les étapes de l'apprentissage à un rythme choisi. \\
 
 De plus, l'étude portant sur une descente de gradient, l'utilisateur peut fournir en entrée de \emph{Vignette} une liste de politiques. Il peut alors observer la position relative de chacune des politiques de la liste avec la politique centrale de la \emph{Vignette}. \\
 
@@ -283,7 +285,7 @@ Nous détaillons comment ces politiques d'entrée sont prises en compte lors du 
 \begin{figure}[htp]
     \centering
     \includegraphics[width=15cm]{Images/gradientStudy_swimmer}
-    \caption{Etude de gradient sur Swimmer 250 pas à 10.000 pas sauvegardé tous les 250 pas, algorithme SAC. On note tout d'abord que la normalisation des couleurs s'effectue sur les valeurs extrèmes observées, ce point sera abordé dans la section \hyperref[sec:affichage]{Phase d'affichage}. On remarque que le modèle se déplace en tatonnant dans une zone uniforme en suivant globalement la même direction (faible angle entre chaque ligne), il finit même par réduire sa récompense. On en déduit que l'initialisation de Swimmer s'effectue dans une zone à faible récompense, plutôt uniforme, ce qui empêche la descente de gradient de converger.}
+    \caption{Etude de gradient sur Swimmer 250 pas à 10.000 pas sauvegardé tous les 250 pas, algorithme SAC \ref{[2]}. On note tout d'abord que la normalisation des couleurs s'effectue sur les valeurs extrèmes observées, ce point sera abordé dans la section \hyperref[sec:affichage]{Phase d'affichage}. On remarque que le modèle se déplace en tatonnant dans une zone uniforme en suivant globalement la même direction (faible angle entre chaque ligne), il finit même par réduire sa récompense. On en déduit que l'initialisation de Swimmer s'effectue dans une zone à faible récompense, plutôt uniforme, ce qui empêche la descente de gradient de converger.}
     \label{fig:gradientStudy}
 \end{figure}
 
@@ -334,7 +336,8 @@ Une fois les calculs effectués, les données sont sauvegardées dans un objet d
 
 Cette approche permet un traitement ultérieur des données si l'utilisateur le souhaite, cependant celles-ci prennent beaucoup de place en mémoire. \\
 
-Nous utilisons une compression au format \emph{.xz} (algorithmes \emph{LZMA/LZMA2}). Bien que ce format soit relativement lent pour la compression, il est très rapide en décompression. \\
+Nous utilisons une compression au format \emph{.xz} (algorithmes \emph{LZMA\href{https://fr.wikipedia.org/wiki/LZMA}{[15]}./LZMA2} \href{https://en.wikipedia.org/wiki/Lempel%E2%80%93Ziv%E2%80%93Markov_chain_algorithm}{[16]}
+). Bien que ce format soit relativement lent pour la compression, il est très rapide en décompression. \\
 
 Cela le rend idéal pour notre application : la lenteur de compression est négligeable par rapport au temps de calcul des outils (quelques secondes contre quelques heures), mais la rapidité de décompression est parfaite car l'utilisateur sera amené à fréquemment charger les résultats (pour faire des essais de modification des attributs par exemple). \\
 
@@ -363,7 +366,7 @@ La majeure partie de nos travaux a consisté à développer une visualisation en
 \begin{figure}[htp]
     \centering
     \includegraphics[width=8cm]{Images/vignette_3D}
-    \caption{Vignette 3D, algorithme SAC, environnement \emph{Pendulum} entraîné pendant 5.000 pas, 50 directions tirées aléatoirement. Il est plus facile d'apréhender les structures présentes dans le paysage de valeur. Le caractère bruité du paysage est flagrant.}
+    \caption{Vignette 3D, algorithme SAC  \ref{[2]}, environnement \emph{Pendulum} (p:\pageref{second}) entraîné pendant 5.000 pas, 50 directions tirées aléatoirement. Il est plus facile d'apréhender les structures présentes dans le paysage de valeur. Le caractère bruité du paysage est flagrant.}
     \label{fig:vignette3D}
 \end{figure}
 
@@ -406,7 +409,7 @@ De plus, le code a été clarifié et largement commenté. En utilisant le mode 
 
 Dans chaque fichier gérant les entrées et les sauvegardes des outils, nous avons laissé à la disposition de l'utilisateur des instructions types. \\
 
-\section{Exemples d'utilisation des outils}
+\section{Exemples d'utilisation des outils} \label{Exemples}.
 
 % Hyper lien vers mode d'emploi ?
 Les outils sont à un stade de développement assez avancé pour être utilisés dans d'autres projets, on rappelle que nous avons mis à disposition un mode d'emploi détaillant leur utilisation pas à pas. \\
@@ -415,11 +418,11 @@ Les outils sont à un stade de développement assez avancé pour être utilisés
 
 Lors de nos travaux, nous avons bénéficié des retours d'un autre groupe P-ANDROIDE travaillant avec nos outils. \\
 
-Le groupe d'Hector Kohler et Damien Legros cherche à comprendre les différences de résultats donnés par deux méthodes de recherche de politique sur l'environnement \emph{Pendulum}. \\
+Le groupe d'Hector Kohler et Damien Legros \href{https://github.com/KohlerHECTOR/PANDROIDE}{[17]}. cherche à comprendre les différences de résultats donnés par deux méthodes de recherche de politique sur l'environnement \emph{Pendulum}. \\
 
-La première méthode étudiée est la \emph{Cross entropy method}, la seconde est une méthode de descente de gradient \emph{Policy gradient}. \\
+La première méthode étudiée est la \emph{Cross entropy method} \ref{[5]}, la seconde est une méthode de descente de gradient \emph{Policy gradient}. \\
 
-Après avoir remarqué que la distance entre politique successives est grande dans le cas de \emph{CEM} et petite dans l'autre cas, ils ont decidé d'utiliser \emph{Vignette} pour directement observer l'espace des politiques. Ils l'ont intégré à leur code, et cela leur a permis de constater que l'initialisation des réseaux de neurones était située dans une zone plate en terme de récompense. \\
+Après avoir remarqué que la distance entre politique successives est grande dans le cas de \emph{CEM} \ref{[5]} et petite dans l'autre cas, ils ont decidé d'utiliser \emph{Vignette} pour directement observer l'espace des politiques. Ils l'ont intégré à leur code, et cela leur a permis de constater que l'initialisation des réseaux de neurones était située dans une zone plate en terme de récompense. \\
 
 Ainsi, ils expliquent la différence de performance entre les deux méthodes par la capacité de \emph{CEM} à rapidement sortir de cette zone pour découvrir de bonnes politiques. \\
 
@@ -499,6 +502,34 @@ Grâce à leur implémentation sous \emph{SB3} et à l'approche objet lors de le
 
 Ainsi, de futurs utilisateurs peuvent ajouter de nouvelles fonctionnalités sans avoir à modifier la structure des données. \\
 
-Enfin, ils pourront s'inspirer de notre code pour développer de nouveaux outils de visualisation 2D ou 3D d'un espace de grande dimension, tels que la méthode des faisceaux introduite précédemment. \\
+Enfin, ils pourront s'inspirer de notre code pour développer de nouveaux outils de visualisation 2D ou 3D d'un espace de grande dimension, tels que la méthode des faisceaux introduite précédemment \\
+
+
+\section{Réferences} \label{second}
+[1] R. S. Sutton et A. G. Barto, Reinforcement learning: an introduction. Cambridge (Mass.),
+Etats-Unis d’Amérique: The MIT Press, 2018. \newline  \label{[1]}
+[2] T. Haarnoja et al., « Soft Actor-Critic Algorithms and Applications », ArXiv181205905 Cs
+Stat, janv. 2019, Consulté le: févr. 26, 2021. [En ligne]. Disponible sur:
+http://arxiv.org/abs/1812.05905   \label{[2]} \newline
+[3] R. S. Sutton et A. G. Barto, Reinforcement learning: an introduction. Cambridge (Mass.),
+Etats-Unis d’Amérique: The MIT Press, 2018.\label{[3]} \newline
+[4] O. Chapelle et M. Wu, « Gradient descent optimization of smoothed information retrieval
+metrics », Inf. Retr., vol. 13, n
+o 3, p. 216-235, juin 2010, doi: 10.1007/s10791-009-9110-3.\label{[4]} \newline
+[5] Z. Botev, D. Kroese, R. Rubinstein, et P. L’Ecuyer, « Chapter 3. The Cross-Entropy
+Method for Optimization », in Handbook of Statistics, vol. 31, 2013,p.35 59. \label{[5]} \newline
+[6] P-T. De Boer, D.P Kroese, S. Mannor, and R.Y. Rubinstein. A tutorial on the cross-entropy method. Annals of Operations Research, 134(1):19–67, 2005.\label{[6]} \newline
+[7] TD3 : https://www.researchgate.net/publication/341648433_Twin-Delayed_DDPG_A_Deep_Reinforcement_Learning_Technique_to_Model_a_Continuous_Movement_of_an_Intelligent_Robot_Agent \label{[7]} \newline
+[8]https://github.com/sohio92/P_androide/blob/main/User 20manual.pdf .\label{[8]} \newline
+[9]https://github.com/DevMaelFranceschetti/PAnd_Swimmer/blob/master/paper_study_Swimmer.pdf. \label{[9]} \newline
+[10]https://github.com/DevMaelFranceschetti/PAnd_Swimmer \label{[10]}.\newline
+[11]https://pendulum.eustace.io/docs/}\label{[11]}.\newline
+[12]https://stable-baselines.readthedocs.io/en/master/  \label{[12]}.\newline
+[13]http://www.mujoco.org/ \label{[13]}.\newline
+[14]https://pytorch.org/  \label {[14]}.\newline
+[15]https://fr.wikipedia.org/wiki/LZMA \label{[15]}.\newline
+[17]https://github.com/KohlerHECTOR/PANDROIDE \label{[17]}.\newline 
+[16]https:"//en.wikipedia.org/wiki/Lempel%E2%80%93Ziv%E2%80%93Markov_chain_algorithm" \label{[16]}.
+\newline
 
 \end{document}
