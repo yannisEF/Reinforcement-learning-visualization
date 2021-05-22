@@ -124,7 +124,7 @@ Lydia AGUINI
 
 \section*{Introduction}
 
-L’apprentissage par renforcement \ref{[1]}. consiste en une recherche heuristique, dans un environnement donné, d’une stratégie permettant de maximiser une récompense. \par
+L’apprentissage par renforcement consiste en une recherche heuristique, dans un environnement donné, d’une stratégie permettant de maximiser une récompense. \par
 
 Dans certains environnement, cette approche est moins performante que des algorithmes évolutionnaires. De plus, il est démontré que certaines méthodes d’entraînement tirent leur efficacité de transformations de l’espace d’apprentissage. \\
 
@@ -134,7 +134,7 @@ Lors de notre projet, nous avons travaillé à l’amélioration de deux outils 
 
 Lors de nos travaux, nous avons complètement réécrit le code de ces outils pour le rendre plus modulable et plus clair pour l’utilisateur. De plus, nous avons ajouté de nouvelles fonctionnalités de visualisation. \\
 
-Dans ce rapport nous rappelons le fonctionnement des outils développés \href{https://github.com/DevMaelFranceschetti/PAnd_Swimmer }{[9]}., puis détaillons notre implémentation de ceux-ci en présentant les nouvelles fonctionnalités. Nous démontrons ensuite l'intérêt de ces derniers grâce à des exemples d'utilisation \ref{Exemples}, pour enfin évoquer des idées d'améliorations futures à apporter aux outils. \\
+Dans ce rapport nous rappelons le fonctionnement des outils développés, puis détaillons notre implémentation de ceux-ci en présentant les nouvelles fonctionnalités. Nous démontrons ensuite l'intérêt de ces derniers grâce à des exemples d'utilisation, pour enfin évoquer des idées d'améliorations futures à apporter aux outils. \\
 
 \newpage
 
@@ -152,7 +152,7 @@ Le premier outil, \emph{étude de gradient} \ref{gradient}, permet d'observer la
 
 La sortie de ces outils est constituée d’un ensemble de lignes de pixels. Chaque ligne est une direction tirée dans l’espace d’apprentissage, le pixel en son centre correspond au modèle à partir duquel elle est tirée. \\
 
-La direction est ensuite échantillonnée à une fréquence entrée par l’utilisateur. La valeur des échantillons, quantifiée par une carte de couleur, correspond à la récompense obtenue en cette position. \\
+La direction est ensuite échantillonnée à une fréquence entrée par l’utilisateur. La valeur d'un échantillon, quantifiée par une carte de couleur, correspond à la récompense obtenue en cette position. \\
 
 % IMAGE d'une seule ligne
 \begin{figure}[htp]
@@ -285,20 +285,19 @@ Nous détaillons comment ces politiques d'entrée sont prises en compte lors du 
 \begin{figure}[htp]
     \centering
     \includegraphics[width=15cm]{Images/gradientStudy_swimmer}
-    \caption{Etude de gradient sur Swimmer 250 pas à 10.000 pas sauvegardé tous les 250 pas, algorithme SAC \ref{[2]}. On note tout d'abord que la normalisation des couleurs s'effectue sur les valeurs extrèmes observées, ce point sera abordé dans la section \hyperref[sec:affichage]{Phase d'affichage}. On remarque que le modèle se déplace en tatonnant dans une zone uniforme en suivant globalement la même direction (faible angle entre chaque ligne), il finit même par réduire sa récompense. On en déduit que l'initialisation de Swimmer s'effectue dans une zone à faible récompense, plutôt uniforme, ce qui empêche la descente de gradient de converger.}
+    \caption{Etude de gradient sur Swimmer 250 pas à 10.000 pas sauvegardé tous les 250 pas, algorithme SAC \ref{[2]}. On note tout d'abord que la normalisation des couleurs s'effectue sur les valeurs extrêmes observées, ce point sera abordé dans la section \hyperref[sec:affichage]{Phase d'affichage}. On remarque que le modèle se déplace en tâtonnant dans une zone uniforme en suivant globalement la même direction (faible angle entre chaque ligne), il finit même par réduire sa récompense. On en déduit que l'initialisation de Swimmer s'effectue dans une zone à gradient uniforme, ce qui fait partir la descente de gradient dans une mauvaise direction.}
     \label{fig:gradientStudy}
 \end{figure}
 
-Pour \emph{Vignette} la possibilité d'entrer une liste de politiques à situer dans la sortie rajoute des étapes de calculs. Leur prise en compte s'effectue en deux étapes. \\
+Pour \emph{Vignette}, la possibilité d'entrer une liste de politiques à situer dans la sortie rajoute des étapes de calculs. Leur prise en compte s'effectue en deux étapes. \\
 
-La première étape consiste à ajuster la fréquence d'echantillonnage des droites. \\
+La première étape consiste à ajuster la fréquence d'échantillonnage des droites. \\
 
 En effet, on rappelle que l'utilisateur donne en argument de \emph{Vignette} une fréquence d'échantillonnage. Cette fréquence correspond à la résolution de chaque ligne. Par conséquent, \emph{Vignette} dispose d'une portée limitée. On ne peut observer qu'un aperçu de la boule ayant pour centre le modèle central, et un rayon résultant de la résolution choisie. \\
 
-Il est possible que des politiques d'entrée soient en dehors de cette boule. \\
+Il est possible que des politiques d'entrée soient en dehors de cette boule. Nous avons donc fait le choix d'imposer une baisse automatique de la fréquence d'échantillonnage de façon à atteindre toutes les politiques. \\
 
 \newpage
-Nous avons donc fait le choix d'imposer une baisse automatique de la fréquence d'échantillonnage de façon à atteindre toutes les politiques. \\
  
 % IMAGE vignette portée
 \begin{figure}[htp]
@@ -322,17 +321,18 @@ Pour que l'introduction de ces politiques bouleverse le moins possible la Vignet
     \label{fig:vignettePortee}
 \end{figure}
 
+\newpage 
 On constate dans l'exemple de la \hyperref[fig:vignettePortee]{figure 10} que cette étape a tendance à écarter les directions les unes des autres. \\
 
-Cela a pour inconvénient de provoquer des discontinuités dans la détection de structures. Au contraire, l'utilisateur pourrait préférer concentrer les directions dans des faisceaux, permettant un meilleur niveau de détail autour de directions particulières. C'est un point abordé dans la partie \hyperref[sec:future]{Future works} du rapport. \\
+Cela a pour inconvénient de provoquer des discontinuités dans la détection de structures. Au contraire, l'utilisateur pourrait préférer concentrer les directions dans des faisceaux, permettant un meilleur niveau de détail autour de directions particulières. C'est un point abordé dans la partie \hyperref[sec:future]{Travaux futurs} du rapport. \\
 
-Une solution pourrait être de, au lieu de choisir la direction la plus proche, prendre la direction la plus isolée et la remplacer par la direction vers la politique. \\
+Au lieu de choisir la direction la plus proche, une solution pourrait être de prendre la direction la plus isolée et la remplacer par la direction vers la politique. \\
 
 C'est un problème flagrant dans notre représentation 2D simplifiée de l'espace d'apprentissage. Mais en réalité, le nombre de directions tirées est bien inférieur à la dimension de l'espace, ce qui réduit l'importance du problème. \\
 
 \subsection{Phase de sauvegarde}
 
-Une fois les calculs effectués, les données sont sauvegardées dans un objet de type \emph{SavedVignette} ou \emph{SavedGradient}. Chacun de ces objets garde en mémoire les directions ayant servis aux calculs, la valeur des récompenses pour chaque pixel. \\
+Une fois les calculs effectués, les données sont sauvegardées dans un objet de type \emph{SavedVignette} ou \emph{SavedGradient}. Chacun de ces objets garde en mémoire les directions ayant servi aux calculs, la valeur des récompenses pour chaque pixel. \\
 
 Cette approche permet un traitement ultérieur des données si l'utilisateur le souhaite, cependant celles-ci prennent beaucoup de place en mémoire. \\
 
@@ -346,11 +346,11 @@ La taille d'un fichier sauvegardé est de l'ordre de 100Mb. \\
 \subsection{Phase d'affichage}
 \label{sec:affichage}
 
-Tout comme dans la version des années précédentes, nous offrons la possibilité d'afficher les résultats en tant qu'image 2D. Grâce à la fonctionnalité de sauvegarde nous avons pu implémenter une gestion des palettes de couleur. \\
+Tout comme dans la version des années précédentes, nous offrons la possibilité d'afficher les résultats en tant qu'image 2D. Grâce à la fonctionnalité de sauvegarde, nous avons pu implémenter une gestion des palettes de couleur. \\
 
-Nous avons constaté que cette gestion des couleurs était utile. En effet elle permet aux personnes malvoyantes de régler le contraste des couleurs. De plus, certains écrans ont du mal à distinguer les faibles variations d'intensité de couleur entre les pixels. \\
+Nous avons constaté que cette gestion des couleurs était utile. En effet, elle permet aux personnes malvoyantes de régler le contraste des couleurs. De plus, certains écrans ont du mal à distinguer les faibles variations d'intensité de couleur entre les pixels. \\
 
-L'utilisateur peut créer ses propres palettes (grâce au fichier \emph{colorTest.py}), ou utiliser des palettes de couleurs préfaites dans \emph{matplotlib}. \\
+L'utilisateur peut créer ses propres palettes (grâce au fichier \emph{colorTest.py}), ou utiliser des palettes de couleurs disponibles dans \emph{matplotlib}. \\
 
 % IMAGE différentes palettes
 \begin{figure}[htp]
@@ -360,19 +360,20 @@ L'utilisateur peut créer ses propres palettes (grâce au fichier \emph{colorTes
     \label{fig:palette}
 \end{figure}
 
+\newpage
 La majeure partie de nos travaux a consisté à développer une visualisation en 3D de l'outil Vignette. Dans cette visualisation, chaque pixel prend pour hauteur la récompense obtenue. \\
 
 % IMAGE Vignette 3D
 \begin{figure}[htp]
     \centering
-    \includegraphics[width=8cm]{Images/vignette_3D}
-    \caption{Vignette 3D, algorithme SAC  \ref{[2]}, environnement \emph{Pendulum} (p:\pageref{second}) entraîné pendant 5.000 pas, 50 directions tirées aléatoirement. Il est plus facile d'apréhender les structures présentes dans le paysage de valeur. Le caractère bruité du paysage est flagrant.}
+    \includegraphics[width=15cm]{Images/vignette_3D}
+    \caption{Vignette 3D, algorithme SAC  \ref{[2]}, environnement \emph{Pendulum} (p:\pageref{second}) entraîné pendant 5.000 pas, 50 directions tirées aléatoirement. Il est plus facile d'appréhender les structures présentes dans le paysage de valeur. Le caractère bruité du paysage est flagrant.}
     \label{fig:vignette3D}
 \end{figure}
 
-Cette visualisation contient bien les mêmes informations que la version en 2D, cependant elle permet une approche plus intuitive de la structure de l'espace échantillonné. \\
+Cette visualisation contient bien les mêmes informations que la version en 2D. Cependant, elle permet une approche plus intuitive de la structure de l'espace échantillonné. \\
 
-On remarque qu'en \hyperref[fig:vignetteDessus]{vue de dessus} on retrouve bien la Vignette en 2D. \\
+Sur la \hyperref[fig:vignetteDessus]{figure 13}, on remarque qu'en vue de dessus on retrouve bien la Vignette en 2D. \\
 
 % IMAGE vue de dessus
 \begin{figure}[htp]
@@ -389,11 +390,11 @@ Nous avons ajouté un curseur permettant de changer l'opacité des surfaces par 
 \begin{figure}[htp]
     \centering
     \includegraphics[width=15cm]{Images/vignette_cote}
-    \caption{Vue de côté de la \hyperref[fig:vignette3D]{Vignette3D}. Les politiques en entrée de la \emph{correspondent} aux sauvegardes effectuées tous les 500 pas. On observe le processus de descente de gradient : le déplacement progressif du modèle vers une zone à forte récompense.}
+    \caption{Vue de côté de la \hyperref[fig:vignette3D]{Vignette3D}. Les politiques en entrée de la \emph{correspondent} aux sauvegardes effectuées tous les 500 pas. On observe le processus de montée de gradient : le déplacement progressif du modèle vers une zone à forte récompense.}
     \label{fig:vignetteCote}
 \end{figure}
 
-La Vignette de la \hyperref[fig:vignetteCote]{figure 14} correspond à un entraînement de Pendulum sur 10.000 pas de temps enregistré tous les 500 pas. La politique centrale est le pas de temps n°5000, est les politiques d'entrée correspondent aux 19 autres enregistrements du n°500 au n°10000. \\
+La Vignette de la \hyperref[fig:vignetteCote]{figure 14} correspond à un entraînement de Pendulum sur 10.000 pas de temps enregistré tous les 500 pas. La politique centrale est le pas de temps n°5000, et les politiques d'entrée correspondent aux 19 autres enregistrements du n°500 au n°10000. \\
 
 Dans l'image \hyperref[fig:vignetteCote]{vue de côté}, on observe clairement le processus de montée de gradient : \emph{Pendulum} se déplace vers des zones de plus en plus hautes (amélioration de la récompense). Cela nous donne un argument pour confirmer le bon fonctionnement de notre réécriture de \emph{Vignette} et du portage en 3D.\\
 
@@ -422,7 +423,7 @@ Le groupe d'Hector Kohler et Damien Legros \href{https://github.com/KohlerHECTOR
 
 La première méthode étudiée est la \emph{Cross entropy method} \ref{[5]}, la seconde est une méthode de descente de gradient \emph{Policy gradient}. \\
 
-Après avoir remarqué que la distance entre politique successives est grande dans le cas de \emph{CEM} \ref{[5]} et petite dans l'autre cas, ils ont decidé d'utiliser \emph{Vignette} pour directement observer l'espace des politiques. Ils l'ont intégré à leur code, et cela leur a permis de constater que l'initialisation des réseaux de neurones était située dans une zone plate en terme de récompense. \\
+Après avoir remarqué que la distance entre politiques successives est grande dans le cas de \emph{CEM} \ref{[5]} et petite dans l'autre cas, ils ont decidé d'utiliser \emph{Vignette} pour directement observer l'espace des politiques. Ils l'ont intégré à leur code, et cela leur a permis de constater que l'initialisation des réseaux de neurones était située dans une zone plate en terme de récompense. \\
 
 Ainsi, ils expliquent la différence de performance entre les deux méthodes par la capacité de \emph{CEM} à rapidement sortir de cette zone pour découvrir de bonnes politiques. \\
 
@@ -437,7 +438,7 @@ Ainsi, ils expliquent la différence de performance entre les deux méthodes par
 \subsection{Régularisation de l'entropie}
 %% Pas encore de données
 
-\section{Future works}
+\section{Travaux futurs}
 \label{future}
 
 Dans cette partie, nous détaillons des idées pour aller plus loin dans le développement des outils de visualisation du paysage de valeurs. \\
@@ -445,9 +446,9 @@ Dans cette partie, nous détaillons des idées pour aller plus loin dans le dév
 \subsection{Méthode des faisceaux}
 % méthode des faisceaux
 
-L'outil \emph{Vignette} permet à l'utilisateur d'obtenir un aperçu global de l'espace d'apprentissage autour d'une politique. \emph{Etude de gradient} lui permet d'observer un aperçu du chemin prit par celle-ci lors de la descente de gradient. \\
+L'outil \emph{Vignette} permet à l'utilisateur d'obtenir un aperçu global de l'espace d'apprentissage autour d'une politique. Par ailleurs, l'outil d'\emph{étude de gradient} permet d'observer un aperçu du chemin pris par celle-ci lors de la descente de gradient. \\
 
-Cependant, plus les sauvegardes du processus d'apprentissage sont espacée dans le temps, moins les visualisations proposées sont pertinentes. En effet, les outils ne donnent qu'un aperçu partiel de l'environnement : plus le nombre de pas entre deux politiques est grand, moins ceux-ci nous informent sur l'environnement dans lequel la descente de gradient a été effectuée. \\
+Cependant, plus les sauvegardes du processus d'apprentissage sont espacées dans le temps, moins les visualisations proposées sont pertinentes. En effet, les outils ne donnent qu'un aperçu partiel de l'environnement : plus le nombre de pas entre deux politiques est grand, moins ceux-ci nous informent sur l'environnement dans lequel la descente de gradient a été effectuée. \\
 
 Dès lors, il apparaît nécessaire de développer un nouvel outil permettant de comparer la direction globale prise par le modèle entre deux sauvegardes avec le paysage de valeur autour de la direction. \\
 
@@ -479,7 +480,7 @@ Enfin, à chacune de ces politiques on en fait correspondre une autre sur l'autr
 
 On constate l'intérêt que pourrait avoir un tel outil : combiner le principe de \emph{Vignette} et de l'\emph{étude de gradient} pour mieux détecter les structures rencontrées lors de la descente de gradient. \\
 
-\subsection{Fonctionnalités de "qualité de vie"}
+\subsection{Autres fonctionnalités envisagées}
 
 A cause du principe de généralisation, les performances des politiques ne sont pas constantes. Il est donc nécessaire de les calculer plusieurs fois pour obtenir la performance moyenne. Cela cause un problème de complexité pour le calcul de nos outils. \\
 
@@ -494,7 +495,7 @@ Enfin, les échantillonnages des directions tirées dans \emph{Vignette} ou les 
 \newpage
 \section*{Conclusion}
 
-Lors de ce projet, nous avons enrichi les outils développés les autres années. Après les avoir porté à la librairie \emph{stable-baselines-3}, nous les avons rendu plus faciles d'utilisation en reprenant le code de zéro. \\
+Lors de ce projet, nous avons enrichi les outils développés les autres années. Après les avoir portés à la librairie \emph{stable-baselines-3}, nous les avons rendus plus faciles d'utilisation en reprenant le code à partir de zéro. \\
 
 Il est désormais plus facile pour un utilisateur de comprendre leur principe de fonctionnement et leur architecture, notamment à l'aide du cahier des charges (\emph{user-manual}), de ce rapport et des nombreux commentaires détaillant l'exécution du code. \\
 
@@ -507,7 +508,7 @@ Enfin, ils pourront s'inspirer de notre code pour développer de nouveaux outils
 
 \section{Réferences} \label{second}
 [1] R. S. Sutton et A. G. Barto, Reinforcement learning: an introduction. Cambridge (Mass.),
-Etats-Unis d’Amérique: The MIT Press, 2018. \newline  \label{[1]}
+Etats-Unis d’Amérique: The MIT Press, 2018. \label{[1]} \newline
 [2] T. Haarnoja et al., « Soft Actor-Critic Algorithms and Applications », ArXiv181205905 Cs
 Stat, janv. 2019, Consulté le: févr. 26, 2021. [En ligne]. Disponible sur:
 http://arxiv.org/abs/1812.05905   \label{[2]} \newline
@@ -519,17 +520,16 @@ o 3, p. 216-235, juin 2010, doi: 10.1007/s10791-009-9110-3.\label{[4]} \newline
 [5] Z. Botev, D. Kroese, R. Rubinstein, et P. L’Ecuyer, « Chapter 3. The Cross-Entropy
 Method for Optimization », in Handbook of Statistics, vol. 31, 2013,p.35 59. \label{[5]} \newline
 [6] P-T. De Boer, D.P Kroese, S. Mannor, and R.Y. Rubinstein. A tutorial on the cross-entropy method. Annals of Operations Research, 134(1):19–67, 2005.\label{[6]} \newline
-[7] TD3 : https://www.researchgate.net/publication/341648433_Twin-Delayed_DDPG_A_Deep_Reinforcement_Learning_Technique_to_Model_a_Continuous_Movement_of_an_Intelligent_Robot_Agent \label{[7]} \newline
-[8]https://github.com/sohio92/P_androide/blob/main/User 20manual.pdf .\label{[8]} \newline
-[9]https://github.com/DevMaelFranceschetti/PAnd_Swimmer/blob/master/paper_study_Swimmer.pdf. \label{[9]} \newline
-[10]https://github.com/DevMaelFranceschetti/PAnd_Swimmer \label{[10]}.\newline
-[11]https://pendulum.eustace.io/docs/}\label{[11]}.\newline
-[12]https://stable-baselines.readthedocs.io/en/master/  \label{[12]}.\newline
-[13]http://www.mujoco.org/ \label{[13]}.\newline
-[14]https://pytorch.org/  \label {[14]}.\newline
-[15]https://fr.wikipedia.org/wiki/LZMA \label{[15]}.\newline
-[17]https://github.com/KohlerHECTOR/PANDROIDE \label{[17]}.\newline 
-[16]https:"//en.wikipedia.org/wiki/Lempel%E2%80%93Ziv%E2%80%93Markov_chain_algorithm" \label{[16]}.
-\newline
+[7] TD3 : https://www.researchgate.net/publication/341648433\_Twin-Delayed\_DDPG\_A\_Deep\_Reinforcement\_Learning\_Technique\_to\_Model\_a\_Continuous\_Movement\_of\_an\_Intelligent\_Robot\_Agent \label{[7]} \newline
+[8] https://github.com/sohio92/P\_androide/blob/main/User 20manual.pdf \label{[8]} \newline
+[9] https://github.com/DevMaelFranceschetti/PAnd\_Swimmer/blob/master/paper\_study\_Swimmer.pdf. \label{[9]} \newline
+[10] https://github.com/DevMaelFranceschetti/PAnd\_Swimmer \label{[10]}\newline
+[11] https://pendulum.eustace.io/docs/ \label{[11]}\newline
+[12] https://stable-baselines.readthedocs.io/en/master/  \label{[12]}\newline
+[13] http://www.mujoco.org/ \label{[13]}\newline
+[14] https://pytorch.org/  \label {[14]}\newline
+[15] https://fr.wikipedia.org/wiki/LZMA \label{[15]}\newline
+[17] https://github.com/KohlerHECTOR/PANDROIDE \label{[17]}\newline 
+[16] https://en.wikipedia.org/wiki/Lempel\%E2\%80\%93Ziv\%E2\%80\%93Markov\_chain\_algorithm \label{[16]} \newline
 
 \end{document}
