@@ -1,4 +1,4 @@
 # .gitignore
 __pycache__/
 .vscode
-"User manual.odt"
+User\ manual.odt
