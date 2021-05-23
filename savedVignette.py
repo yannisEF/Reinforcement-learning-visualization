@@ -379,6 +379,7 @@ if __name__ == "__main__":
 	parser.add_argument('--filename', default="rl_model_8000_steps", type=str) # name of the file to load
 	parser.add_argument('--darkBg', default=False, type=bool) # whether or not to use a dark background
 	parser.add_argument('--cmap', default="viridis", type=str) # cmap to use in 3D and 2D
+	parser.add_argument('--rotate', default=False, type=bool) # whether or not to rotate around Z-axis
 
 	args = parser.parse_args()
 
@@ -426,6 +427,13 @@ if __name__ == "__main__":
 	#		function is of type transformFunction (see transformFunction.py) 
 	# loadedVignette.plot3D(function=transformFunction.transformIsolate, surfaces=True, maxAlpha=15, cmap="viridis")
 	loadedVignette.plot3D(surfaces=True, maxAlpha=15, cmap=args.cmap)
+	
+	if args.rotate is True:
+		for angle in range(0, 360, 2):
+			loadedVignette.ax.view_init(30, angle)
+			if angle % 20 == 0:
+				plt.draw()
+			plt.pause(.001)
 
 	# 	Save over all desired angles and elevation
 	#angles, elevs = [45, 80, 85, 90], [0, 30, 89, 90]
