@@ -377,6 +377,7 @@ if __name__ == "__main__":
 
 	parser.add_argument('--directory', default="SavedVignette", type=str) # directory containing the savedModel
 	parser.add_argument('--filename', default="rl_model_8000_steps", type=str) # name of the file to load
+	parser.add_argument('--darkBg', default=False, type=bool) # whether or not to use a dark background
 
 	args = parser.parse_args()
 
@@ -389,16 +390,32 @@ if __name__ == "__main__":
 	# Updating the color palette
 	loadedVignette.changeColors(color1=colorTest.color1, color2=colorTest.color2)
 	
+	if args.darkBg is True:
+		plt.rcParams.update({
+			"lines.color": "white",
+			"patch.edgecolor": "black",
+			"text.color": "white",
+			"axes.facecolor": "black",
+			"axes.edgecolor": "black",
+			"axes.labelcolor": "white",
+			"xtick.color": "white",
+			"ytick.color": "white",
+			"grid.color": "black",
+			"figure.facecolor": "black",
+			"figure.edgecolor": "black",
+			"savefig.facecolor": "black",
+			"savefig.edgecolor": "black"})
+	
 	# Processing the 2D plot
 	print("Processing the 2D plot...")
 	# 	Iterate over all desired alphas
 	for alpha in (0,):
 		# 2 colors gradient
-		img = loadedVignette.plot2D(alpha=alpha)
-		loadedVignette.save2D("Vignette_output/Entropy"+args.filename+"_2colors" + str(alpha) + "_2D", img=img)
+		#img = loadedVignette.plot2D(alpha=alpha)
+		#loadedVignette.save2D("Vignette_output/"+args.filename+"_2colors" + str(alpha) + "_2D", img=img)
 		# cmap color
-		img = loadedVignette.plot2D(alpha=alpha, cmap="viridis")
-		loadedVignette.save2D("Vignette_output/Entropy"+args.filename+"_cmap" + str(alpha) + "_2D", img=img)
+		img = loadedVignette.plot2D(alpha=alpha, cmap="ocean")
+		loadedVignette.save2D("Vignette_output/"+args.filename+"_cmap" + str(alpha) + "_2D", img=img)
 		#loadedVignette.show2D(img=img)
 
 	

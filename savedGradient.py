@@ -146,4 +146,4 @@ if __name__ == "__main__":
     #	3 colors gradient
     loadedGradient.computeImage(filename=args.outputName+"_3colors", directory=args.outputDir, color1=color1, color2=(255,255,255), color3=color2)
     #	Output with a colormap
-    loadedGradient.computeImage(filename=args.outputName+"_colormap", directory=args.outputDir, cmap="viridis")
+    loadedGradient.computeImage(filename=args.outputName+"_colormap", directory=args.outputDir, cmap="ocean")

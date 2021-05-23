@@ -13,5 +13,5 @@ python3 Vignette.py --env Pendulum-v0 --inputFolder Models --inputName example_p
 clear
 echo Loading the computed Vignette...
 echo
-python3 savedVignette.py --directory SavedVignette --filename example_pendulum_5000_steps
+python3 savedVignette.py --directory SavedVignette --filename example_pendulum_5000_steps_large
 clear
