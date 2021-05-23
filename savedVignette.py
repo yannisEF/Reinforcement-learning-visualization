@@ -378,6 +378,7 @@ if __name__ == "__main__":
 	parser.add_argument('--directory', default="SavedVignette", type=str) # directory containing the savedModel
 	parser.add_argument('--filename', default="rl_model_8000_steps", type=str) # name of the file to load
 	parser.add_argument('--darkBg', default=False, type=bool) # whether or not to use a dark background
+	parser.add_argument('--cmap', default="viridis", type=str) # cmap to use in 3D and 2D
 
 	args = parser.parse_args()
 
@@ -414,7 +415,7 @@ if __name__ == "__main__":
 		#img = loadedVignette.plot2D(alpha=alpha)
 		#loadedVignette.save2D("Vignette_output/"+args.filename+"_2colors" + str(alpha) + "_2D", img=img)
 		# cmap color
-		img = loadedVignette.plot2D(alpha=alpha, cmap="ocean")
+		img = loadedVignette.plot2D(alpha=alpha, cmap=args.cmap)
 		loadedVignette.save2D("Vignette_output/"+args.filename+"_cmap" + str(alpha) + "_2D", img=img)
 		#loadedVignette.show2D(img=img)
 
@@ -424,7 +425,7 @@ if __name__ == "__main__":
 	# 	Compute the 3D plot with desired parameters
 	#		function is of type transformFunction (see transformFunction.py) 
 	# loadedVignette.plot3D(function=transformFunction.transformIsolate, surfaces=True, maxAlpha=15, cmap="viridis")
-	loadedVignette.plot3D(surfaces=True, maxAlpha=15, cmap="viridis")
+	loadedVignette.plot3D(surfaces=True, maxAlpha=15, cmap=args.cmap)
 
 	# 	Save over all desired angles and elevation
 	#angles, elevs = [45, 80, 85, 90], [0, 30, 89, 90]
