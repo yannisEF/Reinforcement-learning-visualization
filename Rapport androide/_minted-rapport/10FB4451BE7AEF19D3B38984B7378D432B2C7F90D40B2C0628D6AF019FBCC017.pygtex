@@ -1,0 +1,5 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{speed} \PYG{o}{=} \PYG{n}{speed}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{prediction} \PYG{o}{=} \PYG{n}{Prediction}\PYG{p}{(}\PYG{n}{speed} \PYG{o}{*} \PYG{n}{lmb}\PYG{p}{,} \PYG{n}{key}\PYG{p}{)}
+        \PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{roundRobin} \PYG{o}{=} \PYG{n}{RoundRobin}\PYG{p}{(}\PYG{n}{speed} \PYG{o}{*} \PYG{p}{(}\PYG{l+m+mi}{1}\PYG{o}{\PYGZhy{}}\PYG{n}{lmb}\PYG{p}{),} \PYG{n}{key}\PYG{p}{)}
+\end{Verbatim}

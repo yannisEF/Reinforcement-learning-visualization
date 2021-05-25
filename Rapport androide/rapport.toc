@@ -14,3 +14,4 @@
 \contentsline {subsection}{\numberline {4.1}M\IeC {\'e}thode des faisceaux}{19}{subsection.4.1}%
 \contentsline {subsection}{\numberline {4.2}Autres fonctionnalit\IeC {\'e}s envisag\IeC {\'e}es}{21}{subsection.4.2}%
 \contentsline {section}{\numberline {5}R\IeC {\'e}ferences}{23}{section.5}%
+\contentsline {section}{\numberline {6}Annexe : mode d'emploi}{25}{section.6}%

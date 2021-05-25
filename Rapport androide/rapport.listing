@@ -1,0 +1,12 @@
+    def updateLmb(self):
+        if len(self.finishedTasks) != 0 and len(self.finishedTasks) % 5 == 0:
+            meanDiff = np.mean([abs(task.currentStep - task.predLength) for task in self.finishedTasks.values()])
+            newLmb = np.exp(-meanDiff*self.coef)
+
+            self.prediction.speed = self.speed * newLmb
+            self.roundRobin.initSpeed = self.speed * (1-newLmb)
+            self.historyLmb.append(newLmb)
+
+    def finishTasks(self):
+        super().finishTasks()
+        self.updateLmb()

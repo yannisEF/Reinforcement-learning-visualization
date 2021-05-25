@@ -429,7 +429,7 @@ if __name__ == "__main__":
 	loadedVignette.plot3D(surfaces=True, maxAlpha=15, cmap=args.cmap)
 	
 	if args.rotate is True:
-		for angle in range(0, 360, 2):
+		for angle in range(-20, 360, 2):
 			loadedVignette.ax.view_init(30, angle)
 			if angle % 20 == 0:
 				plt.draw()
