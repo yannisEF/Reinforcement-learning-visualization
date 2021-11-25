@@ -1,6 +1,6 @@
 # P_androide
 
-Link to a video presentation of the project (French) : https://youtu.be/13yTPtvH4wY
+Link to a video presentation of the project (French audio but intuitive visuals) : https://youtu.be/13yTPtvH4wY
 
  ## How to run Vignette step by step
  
