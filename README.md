@@ -1,6 +1,6 @@
 # Reinforcement learning visualization tool
 
-Link to a video presentation of the project (French, english version underway) : https://youtu.be/13yTPtvH4wY
+Link to a video presentation of the project (French, english translation underway) : https://youtu.be/13yTPtvH4wY
 
 The tools were developped as part of a first year research project at the MSc of Computer Science at Sorbonne University in Paris. They aim to visualize a RL agent's gradient descent through the sampling of random directions casted around its position in the learning space.
 
