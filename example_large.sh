@@ -1,7 +1,7 @@
 clear
 echo Training the model...
 echo
-python trainModel.py --env Pendulum-v0 --max_learn 10000 --save_freq 500 --save_path Models --name_prefix example_pendulum
+python trainModel.py --env Pendulum-v1 --max_learn 10000 --save_freq 500 --save_path Models --name_prefix example_pendulum
 clear
 echo Preparing the input policies...
 echo
@@ -9,7 +9,7 @@ python preparePolicies.py --inputFolder Models --inputNames "example_pendulum_50
 clear
 echo Computing the Vignette...
 echo
-python Vignette.py --env Pendulum-v0 --inputFolder Models --inputName example_pendulum_5000_steps --eval_maxiter 5 --nb_lines 50 --policiesPath ComparePolicies/example_around_5000.xz --maxalpha 100 --stepalpha 0.5 --outputName example_pendulum_5000_steps_large
+python Vignette.py --env Pendulum-v1 --inputFolder Models --inputName example_pendulum_5000_steps --eval_maxiter 5 --nb_lines 50 --policiesPath ComparePolicies/example_around_5000.xz --maxalpha 100 --stepalpha 0.5 --outputName example_pendulum_5000_steps_large
 clear
 echo Loading the computed Vignette...
 echo
