@@ -1,6 +1,9 @@
 # Reinforcement learning visualization tool
 
-![](https://github.com/sohio92/Reinforcement-learning-visualization/blob/main/Rapport%20androide/Readme_images/Vignette_3D_intro_1.png = 250x250) | ![](https://github.com/sohio92/Reinforcement-learning-visualization/blob/main/Rapport%20androide/Readme_images/Vignette_3D_intro_2.png = 250x250) | ![](https://github.com/sohio92/Reinforcement-learning-visualization/blob/main/Rapport%20androide/Readme_images/Vignette_3D_intro_3.png = 250x250)
+<img src="https://github.com/sohio92/Reinforcement-learning-visualization/blob/main/Rapport%20androide/Readme_images/Vignette_3D_intro_1.png" width="200" />
+<img src="https://github.com/sohio92/Reinforcement-learning-visualization/blob/main/Rapport%20androide/Readme_images/Vignette_3D_intro_2.png" width="200" />
+<img src="https://github.com/sohio92/Reinforcement-learning-visualization/blob/main/Rapport%20androide/Readme_images/Vignette_3D_intro_3.png" width="200" />
+
 
 The tools were developped as part of a first year research project at the MSc of Computer Science at Sorbonne University in Paris. They aim to visualize a RL agent's gradient descent through the sampling of random directions casted around its position in the learning space.
 
