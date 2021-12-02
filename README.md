@@ -34,7 +34,7 @@ For a training process of 10000 steps on Pendulum saved in the Models folder wit
 > python trainModel.py --env Pendulum-v0 --max_learn 10000 --save_freq 500 --save_path Models --name_prefix example_pendulum
 
 You should end up with the training process saved as .zip files in the Models folder.
-![Alt text](https://github.com/sohio92/P_androide/blob/d184992a7590902c6de4ea4efd36ab959ca6e030/Rapport%20androide/Readme_images/2.png)
+![Alt text](https://github.com/sohio92/Reinforcement-learning-visualization/blob/main/Rapport%20androide/Readme_images/2.png)
 
 ## Using external policies
 
@@ -48,7 +48,7 @@ To observe the relative location of the model at steps around the 5000th (whose 
 > python preparePolicies.py --inputFolder Models --inputNames "example_pendulum_4000_steps; example_pendulum_4500_steps; example_pendulum_5500_steps; example_pendulum_6000_steps" --outputName "example_around_5000"
 
 You should end up with the policies saved as .xz file in the desired folder.
-![Alt text](https://github.com/sohio92/P_androide/blob/d184992a7590902c6de4ea4efd36ab959ca6e030/Rapport%20androide/Readme_images/4.png)
+![Alt text](https://github.com/sohio92/Reinforcement-learning-visualization/blob/main/Rapport%20androide/Readme_images/4.png)
 
 ## Computing the Vignette
 All the requirement for computing the Vignette are now met.
@@ -67,7 +67,7 @@ To compute the Vignette at the 5000th step, along with the desired input policie
 > python Vignette.py --env Pendulum-v0 --inputFolder Models --inputName example_pendulum_5000_steps --eval_maxiter 5 --nb_lines 10 --policiesPath ComparePolicies/example_around_5000.xz --outputName example_pendulum_5000_steps
 
 You should now have a .xz containing a SavedVignette object.
-![Alt text](https://github.com/sohio92/P_androide/blob/d184992a7590902c6de4ea4efd36ab959ca6e030/Rapport%20androide/Readme_images/6.png)
+![Alt text](https://github.com/sohio92/Reinforcement-learning-visualization/blob/main/Rapport%20androide/Readme_images/6.png)
 
 If anything fails during the saving process (not the computing), the output will be saved in the SavedVignette/temp folder.
 
@@ -83,7 +83,8 @@ An example of their use is provided in savedVignette.py’s main.
 Therefore, the results can be visualized by running savedVignette.py :
 > python savedVignette.py --directory SavedVignette --filename example_pendulum_5000_steps --darkBg True
 
-![Alt text](https://github.com/sohio92/P_androide/blob/d184992a7590902c6de4ea4efd36ab959ca6e030/Rapport%20androide/Readme_images/Vignette_3D_1.png)
+![Alt text](https://github.com/sohio92/Reinforcement-learning-visualization/blob/main/Rapport%20androide/Readme_images/Vignette_3D_1.png)
+
 
 Once it has been run, apart from the Vignette itself, you should see several sliders and buttons :
 
@@ -95,11 +96,11 @@ Once it has been run, apart from the Vignette itself, you should see several sli
         ◦ Alpha slider, changes the amount of entropy
         ◦ Transparency slider, changes the transparency of the surfaces for better readability
 
-![Alt text](https://github.com/sohio92/P_androide/blob/d184992a7590902c6de4ea4efd36ab959ca6e030/Rapport%20androide/Readme_images/Vignette_3D_2.png)
+![Alt text](https://github.com/sohio92/Reinforcement-learning-visualization/blob/main/Rapport%20androide/Readme_images/Vignette_3D_2.png)
 
 Note that the comparison policies are still there, you just need to decrease the opacity of the graph to be able to see them:
 
-![Alt text](https://github.com/sohio92/P_androide/blob/d184992a7590902c6de4ea4efd36ab959ca6e030/Rapport%20androide/Readme_images/Vignette_3D_3.png)
+![Alt text](https://github.com/sohio92/Reinforcement-learning-visualization/blob/main/Rapport%20androide/Readme_images/Vignette_3D_3.png)
 
 ## Transform functions (work in progress)
 
@@ -112,7 +113,7 @@ The transformFunction contains a function and its parameters. It allows the user
 An example of how to instantiate such an object can be found in the transformFunction.py file.
 
 For example, Pendulum being a rough learning space emphasizes the need for transform functions. TransformFunction.isolate is a function that allows to isolate the surroundings’ extrema:
-![Alt text](https://github.com/sohio92/P_androide/blob/d184992a7590902c6de4ea4efd36ab959ca6e030/Rapport%20androide/Readme_images/12.png)
+![Alt text](https://github.com/sohio92/Reinforcement-learning-visualization/blob/main/Rapport%20androide/Readme_images/12.png)
 Please note that due to this feature being a work in progress, the latter only correctly works with one-arguments functions for now.
 
 ## Installation of dependencies
