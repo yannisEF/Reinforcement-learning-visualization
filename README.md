@@ -1,15 +1,16 @@
 # Reinforcement learning visualization tool
 
 <p float="left">
-  <img src="https://github.com/sohio92/Reinforcement-learning-visualization/blob/main/Rapport%20androide/Readme_images/Vignette_3D_intro_1.png" width="250" />
-  <img src="https://github.com/sohio92/Reinforcement-learning-visualization/blob/main/Rapport%20androide/Readme_images/Vignette_3D_intro_2.png" width="250" />
-  <img src="https://github.com/sohio92/Reinforcement-learning-visualization/blob/main/Rapport%20androide/Readme_images/Vignette_3D_intro_3.png" width="250" />
+  <img src="https://github.com/sohio92/Reinforcement-learning-visualization/blob/main/Rapport%20androide/Readme_images/Vignette_3D_intro_1.png" width="275" />
+  <img src="https://github.com/sohio92/Reinforcement-learning-visualization/blob/main/Rapport%20androide/Readme_images/Vignette_3D_intro_2.png" width="275" />
+  <img src="https://github.com/sohio92/Reinforcement-learning-visualization/blob/main/Rapport%20androide/Readme_images/Vignette_3D_intro_3.png" width="275" />
 </p>
 
 The tools were developped as part of a first year research project at the MSc of Computer Science at Sorbonne University in Paris. They aim to visualize a RL agent's gradient descent through the sampling of random directions casted around its position in the learning space.
 
 **Link to a video presentation of the project** (French, english translation underway) : https://youtu.be/13yTPtvH4wY
-A report is also available in *PANDROIDE_ELRHARBI-FLEURY_KERRICHE_AGUINI.pdf* (french, english translation underway).
+
+A report is also available in *PANDROIDE_ELRHARBI-FLEURY_KERRICHE_AGUINI.pdf* (French, english translation underway).
 
 **In order to quickly visualize the tools' output, you can run:**
 > python savedVignette.py --directory SavedVignette --filename example_pendulum_5000_steps_large --darkBg True --rotate False
