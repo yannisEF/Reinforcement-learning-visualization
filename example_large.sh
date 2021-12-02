@@ -13,5 +13,5 @@ python Vignette.py --env Pendulum-v1 --inputFolder Models --inputName example_pe
 clear
 echo Loading the computed Vignette...
 echo
-python savedVignette.py --directory SavedVignette --filename example_pendulum_5000_steps_large --darkBg True --rotate False
+python savedVignette.py --directory SavedVignette --filename example_pendulum_5000_steps_large --darkBg True
 clear
