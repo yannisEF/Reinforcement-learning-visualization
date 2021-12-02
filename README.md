@@ -1,12 +1,13 @@
 # Reinforcement learning visualization tool
 
-Link to a video presentation of the project (French, english translation underway) : https://youtu.be/13yTPtvH4wY
+**Link to a video presentation of the project** (French, english translation underway) : https://youtu.be/13yTPtvH4wY
 
 The tools were developped as part of a first year research project at the MSc of Computer Science at Sorbonne University in Paris. They aim to visualize a RL agent's gradient descent through the sampling of random directions casted around its position in the learning space.
 
-In order to quickly visualize the tools' output, you can run: python savedVignette.py --directory SavedVignette --filename example_pendulum_5000_steps_large --darkBg True --rotate False
+**In order to quickly visualize the tools' output, you can run:**
+> python savedVignette.py --directory SavedVignette --filename example_pendulum_5000_steps_large --darkBg True --rotate False
 
-The following readme quickly runs down the functionnalities of the tools, the instructions of which are coded in example.sh and example_large.sh (takes about an hour to compute).
+The following readme quickly runs down the functionnalities of the tools, the instructions of which are coded in *example.sh* and *example_large.sh* (takes about an hour to compute).
 
 ## How to run Vignette step by step
  
